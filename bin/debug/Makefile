@@ -1,0 +1,34 @@
+#all: ../../src/main.cpp ../../src/maze_generator.cpp ../../src/logger.cpp
+#	g++ ../../src/main.cpp ../../src/maze_generator.cpp ../../src/logger.cpp -std=c++11 -W -Wall -g -o maze `pkg-config gtkmm-3.0 --cflags --libs`
+
+PATH_TO_SOURCES :=  ../../src/
+CXXFLAGS += -std=c++14 -W -Wall -g `pkg-config gtkmm-3.0 --cflags --libs`
+LFLAGS += `pkg-config gtkmm-3.0 --cflags --libs`
+program_NAME := maze
+program_C_SRCS := $(wildcard $(PATH_TO_SOURCES)*.c)
+program_CXX_SRCS := $(wildcard $(PATH_TO_SOURCES)*.cpp)
+program_C_OBJS := ${program_C_SRCS:.c=.o}
+program_CXX_OBJS := ${program_CXX_SRCS:.cpp=.o}
+program_OBJS := $(program_C_OBJS) $(program_CXX_OBJS)
+program_INCLUDE_DIRS :=
+program_LIBRARY_DIRS :=
+program_LIBRARIES :=
+
+CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))
+LDFLAGS += $(foreach librarydir,$(program_LIBRARY_DIRS),-L$(librarydir))
+LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
+
+.PHONY: all clean distclean
+
+all: $(program_NAME)
+
+$(program_NAME): $(program_OBJS)
+	$(LINK.cc) $(program_OBJS) -o $(program_NAME) `pkg-config gtkmm-3.0 --cflags --libs`
+
+clean:
+	@- $(RM) $(program_NAME)
+	@- $(RM) $(program_OBJS)
+
+distclean: clean
+
+#$(warning program_CXX_SRCS is $(program_CXX_SRCS))

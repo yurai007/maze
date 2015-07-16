@@ -7,7 +7,7 @@ namespace framework
 class logger
 {
 public:
-    logger();
+    logger() = default;
 };
 
 }

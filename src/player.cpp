@@ -6,9 +6,9 @@
 namespace core
 {
 
-player::player(presentation::renderer *renderer_,
-               control::controller *controller_,
-               core::maze *maze_)
+player::player(std::shared_ptr<presentation::renderer> renderer_,
+               std::shared_ptr<control::controller> controller_,
+               std::shared_ptr<core::maze> maze_)
 : renderer(renderer_),
   controller(controller_),
   maze(maze_)
@@ -32,8 +32,7 @@ void player::draw()
 
     static char old_direction = 0;
 
-    int oldx = posx;
-    int oldy = posy;
+    int oldx = posx, oldy = posy;
 
     char direction = controller->get_direction();
 
@@ -53,9 +52,17 @@ void player::draw()
     {
         posx = oldx;
         posy = oldy;
+        perform_rotation = false;
     }
     else
     if ((old_direction != direction) && (direction != 0))
+        perform_rotation = true;
+    else
+        perform_rotation = false;
+    controller->reset_direction();
+    old_direction = direction;
+
+    if (perform_rotation)
     {
         if (direction == 'L')
             renderer->rotate_image("player", presentation::clockwise_rotation::d270);
@@ -66,9 +73,6 @@ void player::draw()
         if (direction == 'U')
             renderer->rotate_image("player", presentation::clockwise_rotation::d360);
     }
-
-    old_direction = direction;
-    controller->reset_direction();
     renderer->draw_image("player", 30*posx, 30*posy);
 }
 

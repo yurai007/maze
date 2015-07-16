@@ -14,7 +14,7 @@
 namespace core
 {
 
-maze::maze(presentation::renderer *renderer_)
+maze::maze(std::shared_ptr<presentation::renderer> renderer_)
  : renderer(renderer_)
 {
 }
@@ -28,8 +28,6 @@ void maze::load_from_file(const std::string &file_name)
         content.push_back(line);
     }
     input_file.close();
-
-    renderer->load_image_and_register("brick", "../../data/brick.bmp");
 }
 
 bool maze::is_field_filled(int column, int row)
@@ -44,21 +42,26 @@ int maze::size()
     return content.size();
 }
 
+void maze::load()
+{
+    load_from_file("maze.txt");
+    renderer->load_image_and_register("brick", "../../data/brick.bmp");
+}
+
 void maze::tick()
 {
 }
 
 void maze::draw()
 {
-    int posx = 0, posy = 0;
     const int brick_size = 30;
     for (int row = 0; row < size(); row++)
         for (int column = 0; column < size(); column++)
         {
             if (is_field_filled(column, row))
             {
-                posx = column * brick_size;
-                posy = row * brick_size;
+                int posx = column * brick_size;
+                int posy = row * brick_size;
 
                 renderer->draw_image("brick", posx, posy);
             }

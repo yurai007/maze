@@ -1,22 +1,23 @@
 #include "renderer.hpp"
 #include <iostream>
 #include <cassert>
+#include <memory>
 
 namespace presentation
 {
 
-renderer::renderer(control::controller *controller_)
-    : maze(this),
-      player(this, controller_, &maze)
+renderer::renderer()
 {
-    maze.load_from_file("maze.txt");
-    player.load();
-
     Glib::signal_timeout().connect( sigc::mem_fun(*this, &renderer::on_timeout), 25 );
 
     #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
         signal_draw().connect(sigc::mem_fun(*this, &renderer::on_draw), false);
     #endif
+}
+
+void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
+{
+    world_manager = world_manager_;
 }
 
 void renderer::draw_image(const std::string &image_name, int pos_x, int pos_y)
@@ -92,8 +93,11 @@ bool renderer::on_timeout()
 
 bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
 {
-    maze.draw();
-    player.draw();
+    if (world_manager != nullptr)
+    {
+        world_manager->tick_all();
+        world_manager->draw_all();
+    }
 
     for (auto &arguments : buffer_calls)
     {

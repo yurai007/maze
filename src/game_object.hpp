@@ -7,6 +7,7 @@ namespace core
 class game_object
 {
 public:
+    virtual void load() = 0;
     virtual void tick() = 0;
     virtual void draw() = 0;
     virtual ~game_object() {}

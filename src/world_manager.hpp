@@ -5,6 +5,18 @@
 #include <memory>
 
 #include "game_object.hpp"
+#include "controller.hpp"
+#include "maze.hpp"
+
+namespace presentation
+{
+    class renderer;
+}
+
+namespace control
+{
+    class controller;
+}
 
 namespace core
 {
@@ -12,12 +24,19 @@ namespace core
 class world_manager
 {
 public:
-    world_manager();
+    world_manager(std::shared_ptr<presentation::renderer> renderer_,
+                  std::shared_ptr<control::controller> controller_);
+    void add_maze();
+    void add_player();
     void load_all();
+    void tick_all();
     void draw_all();
 
 private:
-    std::vector<std::unique_ptr<game_object>> game_objects;
+    std::vector<std::shared_ptr<game_object>> game_objects;
+    std::shared_ptr<maze> maze_;
+    std::shared_ptr<presentation::renderer> renderer;
+    std::shared_ptr<control::controller> controller;
 };
 
 }

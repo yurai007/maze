@@ -23,6 +23,10 @@
  * Suppose renderer has : public enable_shared_from_this. Despite that I cannot use shared_from_this
    in renderer constructor because I get std::bad_weak_ptr exception. So I decided to introduce setter
    in renderer.
+
+ * 1. rvalue reference: int &&x = 123; Foo &&foo = Foo();
+   2. move-semantics: emplace_back(123) but emplace_back(std::move(foo)) where foo is left value.
+   3. world_manager is unique_ptr
 */
 
 class gui_driver
@@ -40,12 +44,12 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
+        auto world_manager = std::make_unique<core::world_manager>(qt_renderer, qt_controller);
 
         world_manager->add_maze();
         world_manager->add_player();
         world_manager->load_all();
-        qt_renderer->set_world(world_manager);
+        qt_renderer->set_world(std::move(world_manager));
 
 
         qt_controller->set_title("The Maze");

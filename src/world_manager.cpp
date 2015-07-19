@@ -24,7 +24,7 @@ void world_manager::add_maze()
 void world_manager::add_player()
 {
     assert(maze_ != nullptr);
-    game_objects.push_back(std::make_shared<player>(renderer, controller, maze_));
+    game_objects.emplace_back(std::make_shared<player>(renderer, controller, maze_));
 }
 
 void world_manager::load_all()

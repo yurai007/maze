@@ -31,11 +31,14 @@ public:
     void load() override;
     void tick() override;
     void draw() override;
+
 private:
     std::shared_ptr<presentation::renderer> renderer;
     std::shared_ptr<control::controller> controller;
     std::shared_ptr<core::maze> maze;
     bool perform_rotation {false};
+    char direction;
+    int posx {19}, posy {12};
 };
 
 }

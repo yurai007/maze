@@ -22,31 +22,12 @@ void player::load()
 
 void player::tick()
 {
-
-}
-
-void player::draw()
-{
-    static int posx = 19;
-    static int posy = 12;
-
     static char old_direction = 0;
-
     int oldx = posx, oldy = posy;
 
-    char direction = controller->get_direction();
-
-    if (direction == 'L')
-        posx -= 1;
-    else
-        if (direction == 'R')
-            posx += 1;
-        else
-            if (direction == 'U')
-                posy -= 1;
-            else
-                if (direction == 'D')
-                    posy += 1;
+    direction = controller->get_direction();
+    posx += (direction == 'L')? -1 : (direction == 'R')? 1 :0;
+    posy += (direction == 'U')? -1 : (direction == 'D')? 1 :0;
 
     if (maze->is_field_filled(posx, posy))
     {
@@ -61,7 +42,10 @@ void player::draw()
         perform_rotation = false;
     controller->reset_direction();
     old_direction = direction;
+}
 
+void player::draw()
+{
     if (perform_rotation)
     {
         if (direction == 'L')

@@ -15,9 +15,9 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
+void renderer::set_world(std::unique_ptr<core::world_manager> &&world_manager_)
 {
-    world_manager = world_manager_;
+    world_manager = std::move(world_manager_);
 }
 
 void renderer::draw_image(const std::string &image_name, int pos_x, int pos_y)
@@ -76,7 +76,7 @@ void renderer::load_image_and_register(const std::string &image_name, const std:
 
 void renderer::deffered_draw_image(const std::string &image_name, int pos_x, int pos_y)
 {
-    buffer_calls.push_back(std::make_tuple(image_name, pos_x, pos_y));
+    buffer_calls.emplace_back(std::make_tuple(image_name, pos_x, pos_y));
 }
 
 bool renderer::on_timeout()

@@ -1,6 +1,8 @@
 #ifndef GAME_OBJECT_HPP
 #define GAME_OBJECT_HPP
 
+#include <tuple>
+
 namespace core
 {
 
@@ -10,6 +12,7 @@ public:
     virtual void load() = 0;
     virtual void tick() = 0;
     virtual void draw() = 0;
+    virtual std::tuple<int, int> get_position() const = 0;
     virtual ~game_object() {}
 };
 

@@ -27,10 +27,12 @@ class player : public creature
 public:
     player(std::shared_ptr<presentation::renderer> renderer_,
            std::shared_ptr<control::controller> controller_,
-           std::shared_ptr<core::maze> maze_);
+           std::shared_ptr<core::maze> maze_,
+           int posx_, int posy_);
     void load() override;
     void tick() override;
     void draw() override;
+    std::tuple<int, int> get_position() const override;
 
 private:
     std::shared_ptr<presentation::renderer> renderer;
@@ -38,7 +40,7 @@ private:
     std::shared_ptr<core::maze> maze;
     bool perform_rotation {false};
     char direction;
-    int posx {19}, posy {12};
+    int posx, posy;
 };
 
 }

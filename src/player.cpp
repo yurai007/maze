@@ -8,10 +8,12 @@ namespace core
 
 player::player(std::shared_ptr<presentation::renderer> renderer_,
                std::shared_ptr<control::controller> controller_,
-               std::shared_ptr<core::maze> maze_)
+               std::shared_ptr<core::maze> maze_, int posx_, int posy_)
 : renderer(renderer_),
   controller(controller_),
-  maze(maze_)
+  maze(maze_),
+  posx(posx_),
+  posy(posy_)
 {
 }
 
@@ -58,6 +60,11 @@ void player::draw()
             renderer->rotate_image("player", presentation::clockwise_rotation::d360);
     }
     renderer->draw_image("player", 30*posx, 30*posy);
+}
+
+std::tuple<int, int> player::get_position() const
+{
+    return std::make_tuple(posx, posy);
 }
 
 }

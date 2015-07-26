@@ -19,11 +19,15 @@ class maze : public game_object
 public:
     maze(std::shared_ptr<presentation::renderer> renderer_);
     void load_from_file(const std::string &file_name);
-    bool is_field_filled(int column, int row);
+    bool is_field_filled(int column, int row) const;
+    char get_field(int column, int row) const;
+    void move_field(int column, int row, int new_column, int new_row);
+    void reset_field(int column, int row);
     int size();
     void load() override;
     void tick() override;
     void draw() override;
+    std::tuple<int, int> get_position() const override;
 
 private:
     std::shared_ptr<presentation::renderer> renderer;

@@ -27,7 +27,9 @@ public:
     world_manager(std::shared_ptr<presentation::renderer> renderer_,
                   std::shared_ptr<control::controller> controller_);
     void add_maze();
-    void add_player();
+    void add_player(int posx, int posy);
+    void add_enemy(int posx, int posy);
+    void add_resource(const std::string &name, int posx, int posy);
     void load_all();
     void tick_all();
     void draw_all();

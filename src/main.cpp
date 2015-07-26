@@ -46,8 +46,9 @@ public:
         auto qt_renderer = std::make_shared<presentation::renderer>();
         auto world_manager = std::make_unique<core::world_manager>(qt_renderer, qt_controller);
 
+
         world_manager->add_maze();
-        world_manager->add_player();
+        //world_manager->add_player(19, 12);
         world_manager->load_all();
         qt_renderer->set_world(std::move(world_manager));
 

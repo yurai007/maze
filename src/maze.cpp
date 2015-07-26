@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iterator>
 #include <cassert>
+#include <climits>
 
 #include "renderer.hpp"
 
@@ -30,11 +31,40 @@ void maze::load_from_file(const std::string &file_name)
     input_file.close();
 }
 
-bool maze::is_field_filled(int column, int row)
+bool maze::is_field_filled(int column, int row) const
+{
+//    assert((0 <= column) && (column < content.size()));
+//    assert((0 <= row) && (row < content.size()));
+    if (!((0 <= column) && (column < content.size())))
+        return true;
+    if (!((0 <= row) && (row < content.size())))
+        return true;
+
+    return content[column][row] != ' ';
+}
+
+char maze::get_field(int column, int row) const
 {
     assert((0 <= column) && (column < content.size()));
     assert((0 <= row) && (row < content.size()));
-    return content[column][row] == 'X';
+    return content[column][row];
+}
+
+void maze::move_field(int column, int row, int new_column, int new_row)
+{
+    assert((0 <= column) && (column < content.size()));
+    assert((0 <= row) && (row < content.size()));
+    assert((0 <= new_column) && (new_column < content.size()));
+    assert((0 <= new_row) && (new_row < content.size()));
+    content[new_column][new_row] = content[column][row];
+    content[column][row] = ' ';
+}
+
+void maze::reset_field(int column, int row)
+{
+    assert((0 <= column) && (column < content.size()));
+    assert((0 <= row) && (row < content.size()));
+    content[column][row] = ' ';
 }
 
 int maze::size()
@@ -66,6 +96,11 @@ void maze::draw()
                 renderer->draw_image("brick", posx, posy);
             }
         }
+}
+
+std::tuple<int, int> maze::get_position() const
+{
+    return std::make_tuple(INT_MAX, INT_MAX);
 }
 
 }

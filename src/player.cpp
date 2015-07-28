@@ -22,7 +22,7 @@ void player::load()
      renderer->load_image_and_register("player", "../../data/player.bmp");
 }
 
-void player::tick()
+void player::tick(unsigned short)
 {
     static char old_direction = 0;
     int oldx = posx, oldy = posy;

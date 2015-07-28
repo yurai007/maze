@@ -33,13 +33,12 @@ void maze::load_from_file(const std::string &file_name)
 
 bool maze::is_field_filled(int column, int row) const
 {
-//    assert((0 <= column) && (column < content.size()));
-//    assert((0 <= row) && (row < content.size()));
     if (!((0 <= column) && (column < content.size())))
         return true;
     if (!((0 <= row) && (row < content.size())))
         return true;
-
+    if ( content[column][row] == 'G')
+        return false;
     return content[column][row] != ' ';
 }
 
@@ -78,7 +77,7 @@ void maze::load()
     renderer->load_image_and_register("brick", "../../data/brick.bmp");
 }
 
-void maze::tick()
+void maze::tick(unsigned short tick_counter)
 {
 }
 

@@ -4,39 +4,39 @@ XXXXXXX    XXXX  X X X  XXXX XX  XXX X X X  XXXXX
  X     X   X X     X  X     X  X  X     X XX    XX
   XXXXX  X XX   X X    X X   XX  X  XXXX   X  X  X
        XXX X XX    XX          XX       XXX     X 
-XX  X   X    X  X  X        X  X   X X XX     X   
+XX  X   X    X  X  X   G    X  X   X X XX     X
  X X  X X X   X  XX  XXXXXXX    XX X  X X XXXX  X 
 X   XXX X          XX            X X   X      XXX 
-      XX XX     X     X XX  X     X  X      X     
+	  XXGXX     X     X XX  X     X  X      X
 XXXXXX X  X XXX  XXXXX   X X  XXX  XX   X X XXXXXX
       X  X              X   XX       XX   X X     
-XX              X            X    X  X  X      X  
+XX              X        G   X    X  X  X      X
  X XXXXXXXXXXXXX   X XXX X X X X X    X  X X X XXX
 X        E                 X X    XX         X X
- X  X  X     X XX     X  X  X  X  X     X  X  X   
+ X  X  X     X XX  G  X  X  X  X  X  G  X  X  X
 X  X  X  XXXX   X  X X  X  X  X  X   XE  XX  X  XX
  XX XX       XXX      XX XX    XX         E
- X   X X  X  X    XX      X X     X  X  X        X
+ X   X X  X  X    XX      X X     X  X  X    G   X
   XX X  XX  P X X  XGXXXX XX   X   X  XX  XXX X
-   X X            X     X X XX                    
+   X X  G         X     X X XX
 XX XX   X X  X XX  X  X  X   X X     X      X     
  X  X X X  XX   X X    XX  X X  XXXX  XXXXX XXXXXX
-X  X  X X    XXX         XXX X            X X     
+X  X  X X    XXX     G   XXX X      G     X X
   X X     X  X   X X  X      XXX XX    XX  X  X  X
-X X  XXXXX  X  X X  XX  XXXX X X  X XXX X X  X  X 
-X X       XX XXX X         X XX  X     X   XX XX X
+X X  XXXXX  X  X X  XX  XXXX X XG X XXX X X  X  X
+X X    G  XX XXX X  G      X XX  X     X G XX XX X
 XX  X  X   X             X  X  X  X XX  X     X  X
  X X    XX X X XXXXXXXXXX  X  X    X X X  XXXX  X 
-X   XX   X X       E        E       X            X
+X   XX   X X       E        E G     X            X
 XX      X    X   X    X   X  X X XX     X        X
- X XXXX X X X  X X X X  X XX XX   X  X X   X XXXX 
+ X XXXX X X X  X X X X  X XX XX   X  X X G X XXXX
 X     X X    XXX X      X XX X   X      XX   E   X
- X   X X      X      XX  X        X  X  X XX  X   
+ X   X X      X      XX  X   G    X  X  X XX  X
   XX XX  XXXX X X XXX XE  X X XXXX  X  X   X   XX
    X X      X X      X            XX XX XXX     X 
  X   X  X    X  X   XXX  X  X  X  X     X     X   
 X  X XX XXXX  X  XX X X   XX  X  X  XXX  XXXXX  XX
-   X XX X         X XX         XX             XX  
+   X XX X     G   X XX         XX             XX
  X   X X              X       XX XX  X  X   X  X X
 X  X XX  XXX X  X XXXX   X XXX X  X   X  XX XX XX 
    X X                        X  X        X XX X X

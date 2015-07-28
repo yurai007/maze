@@ -18,9 +18,8 @@ void resource::load()
     renderer->load_image_and_register("gold", "../../data/gold.bmp");
 }
 
-void resource::tick()
+void resource::tick(unsigned short tick_counter)
 {
-
 }
 
 void resource::draw()

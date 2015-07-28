@@ -3,7 +3,7 @@
 namespace core
 {
 
-void creature::tick()
+void creature::tick(unsigned short tick_counter)
 {
 
 }

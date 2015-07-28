@@ -24,8 +24,11 @@ void enemy::load()
     renderer->load_image_and_register("enemy", "../../data/enemy.bmp");
 }
 
-void enemy::tick()
+void enemy::tick(unsigned short tick_counter)
 {
+    if (tick_counter % 10 != 0)
+        return;
+
     std::vector<char> is_proper = {0, 0, 0, 0};
     is_proper[0] += (int)!maze->is_field_filled(posx-1, posy);
     is_proper[1] += (int)!maze->is_field_filled(posx+1, posy);

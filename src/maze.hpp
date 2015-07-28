@@ -25,7 +25,7 @@ public:
     void reset_field(int column, int row);
     int size();
     void load() override;
-    void tick() override;
+    void tick(unsigned short tick_counter) override;
     void draw() override;
     std::tuple<int, int> get_position() const override;
 

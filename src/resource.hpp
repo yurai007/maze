@@ -20,7 +20,7 @@ public:
              std::shared_ptr<presentation::renderer> renderer_,
              int posx_, int posy_);
     void load() override;
-    void tick() override;
+    void tick(unsigned short tick_counter) override;
     void draw() override;
     std::tuple<int, int> get_position() const override;
 

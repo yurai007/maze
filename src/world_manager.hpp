@@ -7,6 +7,7 @@
 #include "game_object.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
+#include "logger.hpp"
 
 namespace presentation
 {

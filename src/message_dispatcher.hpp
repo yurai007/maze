@@ -2,169 +2,172 @@
 #define MESSAGE_DISPATCHER_HPP
 
 #include <memory>
+#include <cassert>
+#include <string>
+#include <functional>
+#include <vector>
+#include <boost/any.hpp>
+#include <map>
 
 #include "remote_transport.hpp"
+#include "logger.hpp"
 
 namespace networking
 {
 
-namespace messages
+/*
+ * Ok. This is the most crazy implementation I have ever worked with.
+       Ref: http://stackoverflow.com/questions/25714390/is-it-possible-to-do-this-lambda-event-manager-in-c
+ * 1. boost::any
+     - holds any type. Sth like dynamic in C#.
+     - It's impossible to implicit cast form boost::any. We must use boost::any_cast
+     - It's not implemented by void*! It uses dynamic polymorphism and virtual methods instead.
+   2. Observing callstack is good idea to understanding how it works
+ */
+
+typedef std::function<bool(std::vector<boost::any> const&)> dispatcher_type;
+
+// Remains those traits to understand
+
+template<typename T>
+struct function_traits;
+
+template<typename R, typename C, typename... Args>
+struct function_traits<R(C::*)(Args...)>
 {
-	struct get_chunk
-	{
-		int ld_x, ld_y, ru_x, ru_y;
-	};
+    using args_type = std::tuple<Args...>;
+};
 
-	struct get_chunk_response
-	{
-	};
+template<typename R, typename C, typename... Args>
+struct function_traits<R(C::*)(Args...) const>
+{
+    using args_type = std::tuple<Args...>;
+};
 
-	struct position_changed
-	{
-		int old_x, old_y, new_x, new_y;
-	};
 
-	struct position_changed_response
-	{
-	};
+template<typename T>
+struct dispatcher_maker;
+
+template<typename Arg>
+struct dispatcher;
+
+/* It converts somehow dispatcher to dispatcher_type.
+   So it converts functor (with operator()) to std::function<void()> const&)>
+*/
+template<typename Arg>
+struct dispatcher_maker<std::tuple<Arg>>
+{
+    template<typename F>
+    dispatcher_type make(F&& f)
+    {
+        return dispatcher<Arg>{std::forward<F>(f)};
+    }
+};
+
+template<typename F>
+std::function<bool(std::vector<boost::any> const&)> make_dispatcher(F&& f)
+{
+    using f_type = decltype(&F::operator());
+
+    using args_type = typename function_traits<f_type>::args_type;
+
+    return dispatcher_maker<args_type>{}.make(std::forward<F>(f));
 }
 
-namespace dispatching
+template<typename Arg>
+struct dispatcher
 {
+    template<typename F> dispatcher(F f) : _f(std::move(f)) { }
+    bool operator () (std::vector<boost::any> const& v)
+    {
+        return do_call(v);
+    }
+private:
 
-struct last_msg
-{
-	static char message_id()
-	{
-		return 0;
-	}
+    bool do_call(std::vector<boost::any> const& v)
+    {
+        try
+        {
+            _f(boost::any_cast<Arg>(v[0]));
+        }
+        catch (boost::bad_any_cast const&)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    std::function<void(Arg)> _f;
 };
 
-template<typename previous_dispatcher, typename Msg, typename Func>
-class template_dispatcher
+
+/*
+ * be aware that there is no implicit conversion so 1.0 is double but 1.0f is float and "dupa"
+   is c-string
+
+ * static variables don't have to be captured by lambda!
+ */
+struct message_dispatcher
 {
-	std::shared_ptr<remote_transport::receiver> receiver;
-	previous_dispatcher* prev;
-	Func handler;
-	bool chained;
-
-	template_dispatcher(template_dispatcher const&) = delete;
-	template_dispatcher& operator=(template_dispatcher const&) = delete;
-
-	template<typename Dispatcher, typename OtherMsg, typename OtherFunc> friend class template_dispatcher;
-
-	void wait_and_dispatch()
-	{
-		receiver->wait_on_msg();
-		dispatch();
-	}
-
-	bool dispatch()
-	{
-		char id = Msg::message_id();
-		if (receiver->received_msg_with_type(id))
-		{
-			Msg msg;
-			receiver->deserialize_from_buffer(msg);
-			handler(msg);
-			return true;
-		}
-		else
-			return prev->dispatch();
-	}
-
 public:
+    template<typename F>
+    void add_handler(F&& f)
+    {
+        callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
+    }
 
-	template_dispatcher(template_dispatcher&& other) :
-		receiver(other.receiver),
-		prev(other.prev),
-		handler(std::move(other.handler)),
-		chained(other.chained)
-	{
-		other.chained = true;
-	}
+    template<typename Arg>
+    void dispatch(Arg const& arg)
+    {
+        for (auto some_dispatcher : callbacks)
+        {
+            if (call(some_dispatcher, arg))
+                return;
+        }
+        framework::logger::get().log("message dispatcher: there is no handler for this msg");
+    }
 
-	template_dispatcher(std::shared_ptr<remote_transport::receiver> preceiver,
-						previous_dispatcher* prev_, Func&& handler_) :
-		receiver(preceiver),
-		prev(prev_),
-		handler(std::forward<Func>(handler_)),
-		chained(false)
-	{
-		prev_->chained = true;
-	}
+private:
 
-	template<typename OtherMsg, typename OtherFunc>
-	template_dispatcher<template_dispatcher, OtherMsg, OtherFunc> handle(OtherFunc&& handler_)
-	{
-		return template_dispatcher<template_dispatcher, OtherMsg, OtherFunc>(
-			receiver, this, std::forward<OtherFunc>(handler_));
-	}
+    template<typename F, typename Arg>
+    bool call(F const& f, Arg const& arg)
+    {
+        std::vector<boost::any> v{arg};
+        return f(v);
+    }
 
-	~template_dispatcher()
-	{
-		if (!chained)
-			wait_and_dispatch();
-	}
+private:
+    std::vector<dispatcher_type> callbacks;
 };
 
+//void test_case()
+//{
+//    int foo = 0;
+//    message_dispatcher dispatcher;
 
+//    dispatcher.add_handler( [&] (std::string const& msg1)
+//    {
+//        framework::logger::get().log("Got a %s and %d", msg1.c_str(), foo);
+//    });
 
-class dispatcher
-{
-	std::shared_ptr<remote_transport::receiver> receiver;
-	bool chained;
+//    dispatcher.add_handler( [] (int msg2)
+//    {
+//        framework::logger::get().log("Got a %d", msg2);
+//    });
 
-	dispatcher(dispatcher const&) = delete;
-	dispatcher& operator=(dispatcher const&) = delete;
+//    dispatcher.add_handler( [] (double msg3)
+//    {
+//        framework::logger::get().log("Got a %f", msg3);
+//    });
 
-	template<typename Dispatcher, typename Msg, typename Func> friend class template_dispatcher;
+//    dispatcher.dispatch(dispatcher);
+//    dispatcher.dispatch(42);
+//    dispatcher.dispatch("pupka");
+//    dispatcher.dispatch(42.0123);
+//    foo = 666;
+//    dispatcher.dispatch(std::string("dupa"));
 
-	void wait_and_dispatch()
-	{
-		receiver->wait_on_msg();
-		dispatch();
-	}
-
-	bool dispatch()
-	{
-		char id = last_msg::message_id();
-		if (receiver->received_msg_with_type(id))
-		{
-			assert(false);
-		}
-		return false;
-	}
-
-public:
-	dispatcher(dispatcher&& other) :
-		receiver(other.receiver),
-		chained(other.chained)
-	{
-		other.chained = true;
-	}
-
-	explicit dispatcher(std::shared_ptr<remote_transport::receiver> preceiver) :
-		receiver(preceiver),
-		chained(false)
-	{
-	}
-
-	template<typename Message, typename Func>
-	template_dispatcher<dispatcher, Message, Func> handle(Func&& handler)
-	{
-		return template_dispatcher<dispatcher, Message, Func>(
-			receiver, this, std::forward<Func>(handler));
-	}
-
-	~dispatcher()
-	{
-		if (!chained)
-			wait_and_dispatch();
-	}
-};
-
-}
+//}
 
 }
 

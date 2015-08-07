@@ -16,28 +16,33 @@ world_manager::world_manager(
     : renderer(renderer_),
       controller(controller_)
 {
+    framework::logger::get().log("world_manager: started");
 }
 
 void world_manager::add_maze()
 {
     maze_ = std::make_shared<maze>(renderer);
+    framework::logger::get().log("world_manager: added maze");
 }
 
 void world_manager::add_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
     game_objects.emplace_back(std::make_shared<player>(renderer, controller, maze_, posx, posy));
+    framework::logger::get().log("world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
 void world_manager::add_enemy(int posx, int posy)
 {
     assert(maze_ != nullptr);
     game_objects.emplace_back(std::make_shared<enemy>(renderer, maze_, posx, posy));
+    framework::logger::get().log("world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
 void world_manager::add_resource(const std::string &name, int posx, int posy)
 {
     game_objects.emplace_back(std::make_shared<resource>(name, renderer, posx, posy));
+    framework::logger::get().log("world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
 void world_manager::load_all()
@@ -60,6 +65,8 @@ void world_manager::load_all()
 
     for (auto &object : game_objects)
         object->load();
+
+    framework::logger::get().log("world_manager: all game objects were loaded successfully");
 }
 
 void world_manager::tick_all()
@@ -92,9 +99,14 @@ void world_manager::tick_all()
                 // dirty hack, downcasting for zombie
                 if (std::dynamic_pointer_cast<resource>(object) != nullptr)
                     if (maze_->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
+                    {
                         object.reset();
+                        framework::logger::get().log("world_manager: removed resource from positon = {%d, %d}",
+                            std::get<0>(old_position), std::get<1>(old_position));
+                    }
             }
         }
+    framework::logger::get().log("world_manager: finished tick with id = %d successfully", tick_counter);
     tick_counter++;
 }
 

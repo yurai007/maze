@@ -42,4 +42,6 @@ private:
 
 }
 
+#define logger_ framework::logger::get()
+
 #endif // LOGGER_HPP

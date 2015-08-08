@@ -124,7 +124,7 @@ public:
             if (call(some_dispatcher, arg))
                 return;
         }
-        framework::logger::get().log("message dispatcher: there is no handler for this msg");
+        logger_.log("message dispatcher: there is no handler for this msg");
     }
 
 private:
@@ -139,35 +139,6 @@ private:
 private:
     std::vector<dispatcher_type> callbacks;
 };
-
-//void test_case()
-//{
-//    int foo = 0;
-//    message_dispatcher dispatcher;
-
-//    dispatcher.add_handler( [&] (std::string const& msg1)
-//    {
-//        framework::logger::get().log("Got a %s and %d", msg1.c_str(), foo);
-//    });
-
-//    dispatcher.add_handler( [] (int msg2)
-//    {
-//        framework::logger::get().log("Got a %d", msg2);
-//    });
-
-//    dispatcher.add_handler( [] (double msg3)
-//    {
-//        framework::logger::get().log("Got a %f", msg3);
-//    });
-
-//    dispatcher.dispatch(dispatcher);
-//    dispatcher.dispatch(42);
-//    dispatcher.dispatch("pupka");
-//    dispatcher.dispatch(42.0123);
-//    foo = 666;
-//    dispatcher.dispatch(std::string("dupa"));
-
-//}
 
 }
 

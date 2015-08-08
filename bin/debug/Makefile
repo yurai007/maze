@@ -1,5 +1,5 @@
 PATH_TO_SOURCES :=  ../../src/
-CXXFLAGS += -std=c++14 -W -Wall -g `pkg-config gtkmm-3.0 --cflags --libs` -lpthread
+CXXFLAGS += -std=c++14 -W -Wall -g `pkg-config gtkmm-3.0 --cflags --libs` -lpthread -L/home/yurai/Downloads/boost_1_58_0/bin.v2/libs/system/build/gcc-4.9.2/release/link-static/threading-multi -lboost_system
 #-lpthread
 #-lboost_system
 LFLAGS += `pkg-config gtkmm-3.0 --cflags --libs`
@@ -22,7 +22,7 @@ LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 all: $(program_NAME)
 
 $(program_NAME): $(program_OBJS)
-	$(LINK.cc) $(program_OBJS) -o $(program_NAME) `pkg-config gtkmm-3.0 --cflags --libs`
+	$(LINK.cc) $(program_OBJS) -o $(program_NAME) -lpthread -L/home/yurai/Downloads/boost_1_58_0/bin.v2/libs/system/build/gcc-4.9.2/release/link-static/threading-multi -lboost_system `pkg-config gtkmm-3.0 --cflags --libs`
 
 clean:
 	@- $(RM) $(program_NAME)

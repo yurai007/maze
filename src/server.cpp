@@ -21,12 +21,12 @@ void server::run()
 void server::remove_connection(std::shared_ptr<connection> connection_)
 {
     connections.erase(connection_);
-    framework::logger::get().log("server: connection was removed");
+    logger_.log("server: connection was removed");
 }
 
 void server::register_handler_for_listening()
 {
-    framework::logger::get().log("server: start listening");
+    logger_.log("server: start listening");
     auto new_connection = std::make_shared<connection>(m_io_service, *this);
     connections.insert(new_connection);
 
@@ -42,12 +42,12 @@ void server::handle_accept(std::shared_ptr<connection> new_connection,
     {
         std::string endpoint = boost::lexical_cast<std::string>(
                                     new_connection->get_socket().remote_endpoint());
-        framework::logger::get().log("server: accepted next connection from %s", endpoint.c_str());
+        logger_.log("server: accepted next connection from %s", endpoint.c_str());
         new_connection->start();
     }
     else
     {
-        framework::logger::get().log("server: connection accepting failed");
+        logger_.log("server: connection accepting failed");
         new_connection.reset();
     }
     register_handler_for_listening();

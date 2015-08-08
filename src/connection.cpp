@@ -30,7 +30,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 {
     if (!error)
     {
-        framework::logger::get().log("connection %d: recieved %d B", socket.native_handle(),
+        logger_.log("connection %d: recieved %d B", socket.native_handle(),
                                      bytes_transferred);
 
         if (remaining_bytes == 0)
@@ -38,7 +38,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
             unsigned char msg_length = data_buffer[0];
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
-            framework::logger::get().log("connection %d: expected %d B",
+            logger_.log("connection %d: expected %d B",
                                          socket.native_handle(), msg_length);
         }
         else
@@ -49,7 +49,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 
         if (remaining_bytes > 0)
         {
-            framework::logger::get().log("connection %d: waiting for next %d B",
+            logger_.log("connection %d: waiting for next %d B",
                                          socket.native_handle(), remaining_bytes);
             socket.async_read_some(buffer(&data_buffer[current], remaining_bytes),
                                    boost::bind(&connection::handle_read, this, placeholders::error,
@@ -57,10 +57,15 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         }
         else
         {
-            framework::logger::get().log("connection %d: recieved full msg", socket.native_handle());
-
-            // do sth with msg
-            //dispatcher.
+            logger_.log("connection %d: recieved full msg", socket.native_handle());
+            // 1. id = 'Recieved msg with type' from data_buffer.
+            //    For each msg_type in registered_type_from_handlers
+            //    if( id == msg_type::id())
+            //       msg = deserialize and go to 2.
+            //
+            // 2. sender.current_socket = socket;
+            //    dispatcher.dispatch(msg);
+            //
 
 //            async_write(socket,
 //                        buffer(data_buffer, current),
@@ -78,7 +83,7 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
 {
     if (!error)
     {
-        framework::logger::get().log("connection %d: sent %d B", socket.native_handle(),
+        logger_.log("connection %d: sent %d B", socket.native_handle(),
                                      bytes_transferred);
         socket.async_read_some(buffer(data_buffer, max_buffer_size),
                                  boost::bind(&connection::handle_read, this, placeholders::error,

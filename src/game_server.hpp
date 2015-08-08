@@ -11,6 +11,9 @@ class game_server
 {
 public:
     game_server(std::shared_ptr<core::maze> maze);
+
+private:
+
 };
 
 }

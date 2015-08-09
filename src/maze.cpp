@@ -35,7 +35,7 @@ bool maze::is_field_filled(int column, int row) const
 {
     if (!((0 <= column) && (column < content.size())))
         return true;
-    if (!((0 <= row) && (row < content.size())))
+    if (!((0 <= row) && (row < content[column].size())))
         return true;
     if ( content[column][row] == 'G')
         return false;
@@ -45,8 +45,15 @@ bool maze::is_field_filled(int column, int row) const
 char maze::get_field(int column, int row) const
 {
     assert((0 <= column) && (column < content.size()));
-    assert((0 <= row) && (row < content.size()));
+    assert((0 <= row) && (row < content[column].size()));
     return content[column][row];
+}
+
+std::vector<std::string> maze::get_chunk(int leftdown_x, int leftdown_y,
+                                         int rightupper_x, int rightupper_y) const
+{
+    assert(false);
+    return content;
 }
 
 void maze::move_field(int column, int row, int new_column, int new_row)

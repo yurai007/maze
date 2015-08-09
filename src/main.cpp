@@ -1,11 +1,9 @@
 #include "maze_generator.hpp"
 #include "logger.hpp"
-//#include "creature.hpp"
-//#include "enemy.hpp"
-//#include "maze.hpp"
 #include "world_manager.hpp"
 #include "renderer.hpp"
 #include "controller.hpp"
+#include "message_dispatcher.hpp"
 
 /*
  * Great makefile tutorial:
@@ -27,6 +25,9 @@
  * 1. rvalue reference: int &&x = 123; Foo &&foo = Foo();
    2. move-semantics: emplace_back(123) but emplace_back(std::move(foo)) where foo is left value.
    3. world_manager is unique_ptr
+   
+ * valgrind "invalid read of size" helped me a lot in finding serious problem with maze.txt
+ * still many "possibly lost" reports!
 */
 
 class gui_driver
@@ -66,6 +67,35 @@ private:
     char **argv;
 };
 
+void message_dispatcher_test_case()
+{
+    int foo = 0;
+    networking::message_dispatcher dispatcher;
+
+    dispatcher.add_handler( [&] (std::string const& msg1)
+    {
+        logger_.log("Got a %s and %d", msg1.c_str(), foo);
+    });
+
+    dispatcher.add_handler( [] (int msg2)
+    {
+       logger_.log("Got a %d", msg2);
+    });
+
+    dispatcher.add_handler( [] (double msg3)
+    {
+        logger_.log("Got a %f", msg3);
+    });
+
+    dispatcher.dispatch(dispatcher);
+    dispatcher.dispatch(42);
+    dispatcher.dispatch("pupka");
+    dispatcher.dispatch(42.0123);
+    foo = 666;
+    dispatcher.dispatch(std::string("dupa"));
+
+}
+
 void generator_test_case()
 {
     utils::maze_generator generator(50);
@@ -75,6 +105,7 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
+    message_dispatcher_test_case();
     gui_driver qt_driver(argc, argv);
     return qt_driver.run();
 }

@@ -82,6 +82,12 @@ struct dispatcher
     {
         return do_call(v);
     }
+
+//    template<typename F> dispatcher(F f) : _f(std::move(f)) { }
+//    bool operator () (int id)
+//    {
+//        return do_call(id);
+//    }
 private:
 
     bool do_call(std::vector<boost::any> const& v)
@@ -127,6 +133,16 @@ public:
         logger_.log("message dispatcher: there is no handler for this msg");
     }
 
+//    void dispatch_v2(int id)
+//    {
+//        for (auto some_dispatcher : callbacks)
+//        {
+//            if (call_v2(some_dispatcher, id))
+//                return;
+//        }
+//        logger_.log("message dispatcher: there is no handler for this msg");
+//    }
+
 private:
 
     template<typename F, typename Arg>
@@ -135,6 +151,13 @@ private:
         std::vector<boost::any> v{arg};
         return f(v);
     }
+
+//    template<typename F>
+//    bool call_v2(F const& f, int id)
+//    {
+//        //std::vector<boost::any> v{arg};
+//        return f(id);
+//    }
 
 private:
     std::vector<dispatcher_type> callbacks;

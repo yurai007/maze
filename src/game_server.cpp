@@ -1,6 +1,7 @@
 #include "game_server.hpp"
 #include "message_dispatcher.hpp"
 #include "remote_transport.hpp"
+#include "byte_buffer.hpp"
 
 namespace networking
 {
@@ -10,7 +11,28 @@ namespace messages
 
 struct get_chunk
 {
-	short ld_x, ld_y, ru_x, ru_y;
+	int ld_x, ld_y, ru_x, ru_y;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int(ld_x);
+		buffer.put_int(ld_y);
+		buffer.put_int(ru_x);
+		buffer.put_int(ru_y);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		ld_x = buffer.get_int();
+		ld_y = buffer.get_int();
+		ru_x = buffer.get_int();
+		ru_y = buffer.get_int();
+	}
+
+	static int message_id()
+	{
+		return 0;
+	}
 };
 
 struct get_chunk_response
@@ -18,17 +40,48 @@ struct get_chunk_response
 	get_chunk_response(const std::vector<std::string> &chunk)
 	{
 	}
+
+	static int message_id()
+	{
+		return 1;
+	}
 };
 
 struct position_changed
 {
-	short old_x, old_y, new_x, new_y;
+	int old_x, old_y, new_x, new_y;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int(old_x);
+		buffer.put_int(old_y);
+		buffer.put_int(new_x);
+		buffer.put_int(new_y);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		old_x = buffer.get_int();
+		old_y = buffer.get_int();
+		new_x = buffer.get_int();
+		new_y = buffer.get_int();
+	}
+
+	static int message_id()
+	{
+		return 2;
+	}
 };
 
 struct position_changed_response
 {
 	position_changed_response(position_changed const& msg)
 	{
+	}
+
+	static int message_id()
+	{
+		return 3;
 	}
 };
 

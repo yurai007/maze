@@ -6,7 +6,6 @@
 #include <string>
 #include <functional>
 #include <vector>
-#include <boost/any.hpp>
 #include <map>
 
 #include "remote_transport.hpp"
@@ -25,23 +24,22 @@ namespace networking
    2. Observing callstack is good idea to understanding how it works
  */
 
-typedef std::function<bool(std::vector<boost::any> const&)> dispatcher_type;
+typedef std::function<bool(int)> dispatcher_type;
 
-// Remains those traits to understand
-
+// those traits converts argument sequence e.g. int, std::string, Foo.. to std::tuple<int, std::string, Foo>
 template<typename T>
 struct function_traits;
 
-template<typename R, typename C, typename... Args>
-struct function_traits<R(C::*)(Args...)>
+template<typename R, typename C, typename Arg>
+struct function_traits<R(C::*)(Arg)>
 {
-    using args_type = std::tuple<Args...>;
+    using arg_type = Arg;
 };
 
-template<typename R, typename C, typename... Args>
-struct function_traits<R(C::*)(Args...) const>
+template<typename R, typename C, typename Arg>
+struct function_traits<R(C::*)(Arg) const>
 {
-    using args_type = std::tuple<Args...>;
+    using arg_type = Arg;
 };
 
 
@@ -51,11 +49,9 @@ struct dispatcher_maker;
 template<typename Arg>
 struct dispatcher;
 
-/* It converts somehow dispatcher to dispatcher_type.
-   So it converts functor (with operator()) to std::function<void()> const&)>
-*/
+
 template<typename Arg>
-struct dispatcher_maker<std::tuple<Arg>>
+struct dispatcher_maker
 {
     template<typename F>
     dispatcher_type make(F&& f)
@@ -65,99 +61,69 @@ struct dispatcher_maker<std::tuple<Arg>>
 };
 
 template<typename F>
-std::function<bool(std::vector<boost::any> const&)> make_dispatcher(F&& f)
+dispatcher_type make_dispatcher(F&& f) // add dispatcher_type
 {
-    using f_type = decltype(&F::operator());
+    using f_type = decltype(&F::operator()); // e.g. void (message_dispatcher_test_case()::<lambda(int)>::*)(int) const
+    using arg_type = typename function_traits<f_type>::arg_type; // e.g std::tuple<int>
 
-    using args_type = typename function_traits<f_type>::args_type;
-
-    return dispatcher_maker<args_type>{}.make(std::forward<F>(f));
+    return dispatcher_maker<arg_type>().make(std::forward<F>(f)); // temporary dispatcher_maker<arg_type>
 }
 
 template<typename Arg>
 struct dispatcher
 {
-    template<typename F> dispatcher(F f) : _f(std::move(f)) { }
-    bool operator () (std::vector<boost::any> const& v)
+    template<typename F> dispatcher(F f) : handler(std::move(f)) { }
+
+    bool operator () (int id)
     {
-        return do_call(v);
+        typedef typename std::remove_reference<Arg>::type Msg;
+        if (id == Msg::message_id())
+        {
+            Msg msg = {};
+            // deserialization from buffer
+            handler(msg);
+            return true;
+        }
+        return false;
     }
 
-//    template<typename F> dispatcher(F f) : _f(std::move(f)) { }
-//    bool operator () (int id)
-//    {
-//        return do_call(id);
-//    }
 private:
-
-    bool do_call(std::vector<boost::any> const& v)
-    {
-        try
-        {
-            _f(boost::any_cast<Arg>(v[0]));
-        }
-        catch (boost::bad_any_cast const&)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    std::function<void(Arg)> _f;
+    std::function<void(Arg)> handler;
 };
 
 
 /*
  * be aware that there is no implicit conversion so 1.0 is double but 1.0f is float and "dupa"
    is c-string
-
  * static variables don't have to be captured by lambda!
  */
 struct message_dispatcher
 {
 public:
+
     template<typename F>
     void add_handler(F&& f)
     {
         callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
     }
 
-    template<typename Arg>
-    void dispatch(Arg const& arg)
+    void dispatch(int id)
     {
         for (auto some_dispatcher : callbacks)
         {
-            if (call(some_dispatcher, arg))
+            if (call(some_dispatcher, id))
                 return;
         }
         logger_.log("message dispatcher: there is no handler for this msg");
     }
 
-//    void dispatch_v2(int id)
-//    {
-//        for (auto some_dispatcher : callbacks)
-//        {
-//            if (call_v2(some_dispatcher, id))
-//                return;
-//        }
-//        logger_.log("message dispatcher: there is no handler for this msg");
-//    }
-
 private:
 
-    template<typename F, typename Arg>
-    bool call(F const& f, Arg const& arg)
+    template<typename Dispatcher>
+    bool call(Dispatcher const& dispatcher, int id)
     {
-        std::vector<boost::any> v{arg};
-        return f(v);
+        return dispatcher(id);
     }
-
-//    template<typename F>
-//    bool call_v2(F const& f, int id)
-//    {
-//        //std::vector<boost::any> v{arg};
-//        return f(id);
-//    }
 
 private:
     std::vector<dispatcher_type> callbacks;

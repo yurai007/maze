@@ -1,6 +1,10 @@
 #ifndef BYTE_BUFFER_HPP
 #define BYTE_BUFFER_HPP
 
+#include <cstring>
+#include <array>
+#include <cassert>
+
 namespace serialization
 {
 

@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "controller.hpp"
 #include "message_dispatcher.hpp"
+#include "game_server.hpp"
+
+//using namespace networking;
 
 /*
  * Great makefile tutorial:
@@ -67,33 +70,28 @@ private:
     char **argv;
 };
 
+using namespace networking::messages;
+
 void message_dispatcher_test_case()
 {
     int foo = 0;
     networking::message_dispatcher dispatcher;
 
-    dispatcher.add_handler( [&] (std::string const& msg1)
+    dispatcher.add_handler( [&] (const get_chunk_response &msg1)
     {
-        logger_.log("Got a %s and %d", msg1.c_str(), foo);
+        logger_.log("Got a get_chunk_response: %s and %d", msg1.content.c_str(), foo);
     });
 
-    dispatcher.add_handler( [] (int msg2)
+    dispatcher.add_handler( [&] (const position_changed_response &msg2)
     {
-       logger_.log("Got a %d", msg2);
+        logger_.log("Got a position_changed_response: %s", msg2.content.c_str());
     });
 
-    dispatcher.add_handler( [] (double msg3)
-    {
-        logger_.log("Got a %f", msg3);
-    });
-
-    dispatcher.dispatch(dispatcher);
-    dispatcher.dispatch(42);
-    dispatcher.dispatch("pupka");
-    dispatcher.dispatch(42.0123);
+    dispatcher.dispatch(1);
+    dispatcher.dispatch(3);
     foo = 666;
-    dispatcher.dispatch(std::string("dupa"));
-
+    dispatcher.dispatch(0);
+    dispatcher.dispatch(1);
 }
 
 void generator_test_case()

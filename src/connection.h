@@ -7,6 +7,7 @@
 #include <array>
 
 #include "logger.hpp"
+#include "byte_buffer.hpp"
 
 namespace networking
 {
@@ -32,10 +33,9 @@ private:
     void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
     void handle_write(const boost::system::error_code& error, size_t bytes_transferred);
 
-    const static int max_buffer_size = 128;
     server &m_server;
     tcp::socket socket;
-    std::array<char, max_buffer_size> data_buffer;
+    serialization::byte_buffer data_buffer;
     int remaining_bytes {0};
     int current {0};
 };

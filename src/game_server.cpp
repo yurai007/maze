@@ -1,38 +1,10 @@
 #include "game_server.hpp"
 #include "message_dispatcher.hpp"
 #include "remote_transport.hpp"
+#include "byte_buffer.hpp"
 
 namespace networking
 {
-
-namespace messages
-{
-
-struct get_chunk
-{
-	short ld_x, ld_y, ru_x, ru_y;
-};
-
-struct get_chunk_response
-{
-	get_chunk_response(const std::vector<std::string> &chunk)
-	{
-	}
-};
-
-struct position_changed
-{
-	short old_x, old_y, new_x, new_y;
-};
-
-struct position_changed_response
-{
-	position_changed_response(position_changed const& msg)
-	{
-	}
-};
-
-}
 
 // instead saturating 1Gb I should trend to low latency and high req/s
 game_server::game_server(std::shared_ptr<core::maze> maze)

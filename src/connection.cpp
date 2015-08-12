@@ -20,7 +20,7 @@ tcp::socket& connection::get_socket()
 
 void connection::start()
 {
-    socket.async_read_some(buffer(data_buffer, max_buffer_size),
+    socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
                              boost::bind(&connection::handle_read, this, placeholders::error,
                                          placeholders::bytes_transferred));
 }
@@ -35,7 +35,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 
         if (remaining_bytes == 0)
         {
-            unsigned char msg_length = data_buffer[0];
+            unsigned char msg_length = data_buffer.m_byte_buffer[0];
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
             logger_.log("connection %d: expected %d B",
@@ -51,7 +51,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         {
             logger_.log("connection %d: waiting for next %d B",
                                          socket.native_handle(), remaining_bytes);
-            socket.async_read_some(buffer(&data_buffer[current], remaining_bytes),
+            socket.async_read_some(buffer(&data_buffer.m_byte_buffer[current], remaining_bytes),
                                    boost::bind(&connection::handle_read, this, placeholders::error,
                                                placeholders::bytes_transferred));
         }
@@ -68,7 +68,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
             //
 
 //            async_write(socket,
-//                        buffer(data_buffer, current),
+//                        buffer(data_buffer.m_byte_buffer, current),
 //                        boost::bind(&connection::handle_write, this, placeholders::error,
 //                                    placeholders::bytes_transferred));
         }
@@ -85,7 +85,7 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
     {
         logger_.log("connection %d: sent %d B", socket.native_handle(),
                                      bytes_transferred);
-        socket.async_read_some(buffer(data_buffer, max_buffer_size),
+        socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
                                  boost::bind(&connection::handle_read, this, placeholders::error,
                                              placeholders::bytes_transferred));
     }

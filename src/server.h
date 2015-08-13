@@ -2,9 +2,12 @@
 #define SERVER_H
 
 #include <set>
+#include <memory>
 #include <boost/asio.hpp>
 #include "connection.h"
 #include "logger.hpp"
+
+#include "message_dispatcher.hpp"
 
 /*
         *  TCP echo server
@@ -51,13 +54,6 @@
 //    }
 //}
 
-/*
- TO DO:
- 1. Add boost::asio.
- 2. Add boost::serialization
-*/
-
-
 
 namespace networking
 {
@@ -66,9 +62,16 @@ class server
 {
 public:
     server(short port);
+    void add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher);
     void run();
     void remove_connection(std::shared_ptr<connection> connection_);
+    void send_on_current_connection(const std::array<unsigned char, serialization::max_size>
+                                    & data);
+    void dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size>
+                                  & buffer);
 
+
+    std::shared_ptr<connection> current_connection {nullptr};
 private:
     void register_handler_for_listening();
     void handle_accept(std::shared_ptr<connection> new_connection,
@@ -76,6 +79,7 @@ private:
 
     io_service m_io_service;
     tcp::acceptor acceptor;
+    std::shared_ptr<message_dispatcher> m_dispatcher;
     std::set<std::shared_ptr<connection>> connections;
 };
 

@@ -49,11 +49,18 @@ char maze::get_field(int column, int row) const
     return content[column][row];
 }
 
-std::vector<std::string> maze::get_chunk(int leftdown_x, int leftdown_y,
+std::string maze::get_chunk(int leftdown_x, int leftdown_y,
                                          int rightupper_x, int rightupper_y) const
 {
-    assert(false);
-    return content;
+    // IV cw
+    assert(0 <= leftdown_x && leftdown_x < content.size());
+    assert(leftdown_x >= rightupper_x);
+    assert(leftdown_y <= rightupper_y);
+    int length = rightupper_y - leftdown_y + 1;
+    std::string result;
+    for (size_t i = rightupper_x; i <= leftdown_x; i++)
+        result += content[i].substr(leftdown_y, length);
+    return result;
 }
 
 void maze::move_field(int column, int row, int new_column, int new_row)

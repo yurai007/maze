@@ -8,8 +8,9 @@
 #include <vector>
 #include <map>
 
-#include "remote_transport.hpp"
+#include "remote_transport.hpp" // Not needed??????/
 #include "logger.hpp"
+#include "byte_buffer.hpp"
 
 namespace networking
 {
@@ -105,6 +106,11 @@ public:
     void add_handler(F&& f)
     {
         callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
+    }
+
+    void dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size> &buffer)
+    {
+        dispatch(buffer[0]);
     }
 
     void dispatch(int id)

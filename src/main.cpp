@@ -6,8 +6,6 @@
 #include "message_dispatcher.hpp"
 #include "game_server.hpp"
 
-//using namespace networking;
-
 /*
  * Great makefile tutorial:
    https://sites.google.com/site/michaelsafyan/software-engineering/how-to-write-a-makefile

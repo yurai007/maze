@@ -25,11 +25,23 @@ void connection::start()
                                          placeholders::bytes_transferred));
 }
 
+void connection::send(const std::array<unsigned char, serialization::max_size> &buffer)
+{
+    // TO DO; set proper offset inside data_buffer
+    data_buffer.m_byte_buffer = buffer;
+    async_write(socket,
+                buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
+                boost::bind(&connection::handle_write, this, placeholders::error,
+                            placeholders::bytes_transferred));
+}
+
 // TCP doesn't ensure that 1 x send N bytes == 1 x recv N bytes
 void connection::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
     if (!error)
     {
+        m_server.current_connection = shared_from_this();
+
         logger_.log("connection %d: recieved %d B", socket.native_handle(),
                                      bytes_transferred);
 
@@ -58,19 +70,8 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         else
         {
             logger_.log("connection %d: recieved full msg", socket.native_handle());
-            // 1. id = 'Recieved msg with type' from data_buffer.
-            //    For each msg_type in registered_type_from_handlers
-            //    if( id == msg_type::id())
-            //       msg = deserialize and go to 2.
-            //
-            // 2. sender.current_socket = socket;
-            //    dispatcher.dispatch(msg);
-            //
 
-//            async_write(socket,
-//                        buffer(data_buffer.m_byte_buffer, current),
-//                        boost::bind(&connection::handle_write, this, placeholders::error,
-//                                    placeholders::bytes_transferred));
+            m_server.dispatch_msg_from_buffer(data_buffer.m_byte_buffer);
         }
     }
     else

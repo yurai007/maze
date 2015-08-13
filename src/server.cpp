@@ -13,6 +13,11 @@ server::server(short port)
     register_handler_for_listening();
 }
 
+void server::add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher)
+{
+    m_dispatcher = dispatcher;
+}
+
 void server::run()
 {
     m_io_service.run();
@@ -22,6 +27,18 @@ void server::remove_connection(std::shared_ptr<connection> connection_)
 {
     connections.erase(connection_);
     logger_.log("server: connection was removed");
+}
+
+void server::send_on_current_connection(const std::array<unsigned char, serialization::max_size>
+                                        &data)
+{
+    current_connection->send(data);
+}
+
+void server::dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size>
+                                      &buffer)
+{
+    m_dispatcher->dispatch_msg_from_buffer(buffer);
 }
 
 void server::register_handler_for_listening()

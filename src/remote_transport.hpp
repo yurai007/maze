@@ -13,22 +13,22 @@ public:
     template<class Msg>
     void send(Msg &msg)
     {
-
+        m_server->send(msg); // should lead to async_write in connection
     }
 };
 
-class receiver
-{
-public:
-    void wait_on_msg();
-    bool received_msg_with_type(char id);
+//class receiver
+//{
+//public:
+//    void wait_on_msg();
+//    bool received_msg_with_type(char id);
 
-    template<class Msg>
-    void deserialize_from_buffer(Msg &msg)
-    {
+//    template<class Msg>
+//    void deserialize_from_buffer(Msg &msg)
+//    {
 
-    }
-};
+//    }
+//};
 
 }
 

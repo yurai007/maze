@@ -1,9 +1,10 @@
 #ifndef GAME_SERVER_HPP
 #define GAME_SERVER_HPP
 
+#include <memory>
 #include "maze.hpp"
 #include "byte_buffer.hpp"
-#include <memory>
+#include "server.h"
 
 namespace networking
 {
@@ -41,8 +42,19 @@ struct get_chunk_response
 {
 	get_chunk_response() = default;
 
-	get_chunk_response(const std::vector<std::string> &chunk)
+	get_chunk_response(const std::string &chunk)
 	{
+		content = chunk;
+	}
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
 	}
 
 	static int message_id()
@@ -50,7 +62,7 @@ struct get_chunk_response
 		return 1;
 	}
 
-	std::string content {"abc"};
+	std::string content;
 };
 
 struct position_changed
@@ -83,8 +95,14 @@ struct position_changed_response
 {
 	position_changed_response() = default;
 
-	position_changed_response(position_changed const& msg)
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
 	}
 
 	static int message_id()
@@ -92,7 +110,7 @@ struct position_changed_response
 		return 3;
 	}
 
-	std::string content {"xyz"};
+	std::string content {"OK"};
 };
 
 }
@@ -103,7 +121,7 @@ public:
     game_server(std::shared_ptr<core::maze> maze);
 
 private:
-
+    server main_server {5555};
 };
 
 }

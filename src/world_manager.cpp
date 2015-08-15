@@ -34,8 +34,8 @@ void world_manager::add_player(int posx, int posy)
 
 void world_manager::add_enemy(int posx, int posy)
 {
-    assert(maze_ != nullptr);
-    game_objects.emplace_back(std::make_shared<enemy>(renderer, maze_, posx, posy));
+    assert(maze_ != nullptr); 
+    game_objects.push_back(std::make_shared<enemy>(renderer, maze_, posx, posy)); //Wtf ?? emplace_back
     logger_.log("world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 

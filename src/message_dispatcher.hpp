@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 
-#include "remote_transport.hpp" // Not needed??????/
 #include "logger.hpp"
 #include "byte_buffer.hpp"
 

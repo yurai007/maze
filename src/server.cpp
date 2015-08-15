@@ -2,6 +2,8 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "server.h"
+#include "byte_buffer.hpp"
+#include "message_dispatcher.hpp"
 
 namespace networking
 {
@@ -29,7 +31,7 @@ void server::remove_connection(std::shared_ptr<connection> connection_)
     logger_.log("server: connection was removed");
 }
 
-void server::send_on_current_connection(const std::array<unsigned char, serialization::max_size>
+void server::send_on_current_connection(const serialization::byte_buffer
                                         &data)
 {
     current_connection->send(data);

@@ -1,6 +1,12 @@
 #ifndef REMOTE_TRANSPORT_HPP
 #define REMOTE_TRANSPORT_HPP
 
+#include <memory>
+#include "byte_buffer.hpp"
+#include "server.h"
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 namespace networking
 {
 
@@ -10,25 +16,19 @@ namespace remote_transport
 class sender
 {
 public:
+    sender(server &main_server)
+        : m_server(main_server) {}
+
     template<class Msg>
     void send(Msg &msg)
     {
-        m_server->send(msg); // should lead to async_write in connection
+        serialization::byte_buffer data;
+        msg.serialize_to_buffer(data);
+        m_server.send_on_current_connection(data);
     }
+private:
+    server &m_server;
 };
-
-//class receiver
-//{
-//public:
-//    void wait_on_msg();
-//    bool received_msg_with_type(char id);
-
-//    template<class Msg>
-//    void deserialize_from_buffer(Msg &msg)
-//    {
-
-//    }
-//};
 
 }
 

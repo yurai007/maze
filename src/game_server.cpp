@@ -1,6 +1,5 @@
 #include "game_server.hpp"
 #include "message_dispatcher.hpp"
-#include "remote_transport.hpp"
 #include "byte_buffer.hpp"
 
 namespace networking
@@ -9,7 +8,6 @@ namespace networking
 // instead saturating 1Gb I should trend to low latency and high req/s
 game_server::game_server(std::shared_ptr<core::maze> maze)
 {
-	remote_transport::sender sender;
 	auto dispatcher = std::make_shared<networking::message_dispatcher>();
 
 	dispatcher->add_handler(

@@ -25,10 +25,10 @@ void connection::start()
                                          placeholders::bytes_transferred));
 }
 
-void connection::send(const std::array<unsigned char, serialization::max_size> &buffer)
+void connection::send(const serialization::byte_buffer &data)
 {
     // TO DO; set proper offset inside data_buffer
-    data_buffer.m_byte_buffer = buffer;
+    data_buffer = data;
     async_write(socket,
                 buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
                 boost::bind(&connection::handle_write, this, placeholders::error,

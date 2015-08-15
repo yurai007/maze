@@ -5,6 +5,7 @@
 #include "maze.hpp"
 #include "byte_buffer.hpp"
 #include "server.h"
+#include "remote_transport.hpp"
 
 namespace networking
 {
@@ -122,6 +123,7 @@ public:
 
 private:
     server main_server {5555};
+    remote_transport::sender sender {main_server};
 };
 
 }

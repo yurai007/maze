@@ -105,8 +105,9 @@ void world_manager::tick_all()
                             std::get<0>(old_position), std::get<1>(old_position));
                     }
             }
-        }
-    logger_.log("world_manager: finished tick with id = %d successfully", tick_counter);
+    }
+    if (tick_counter%10 == 0)
+        logger_.log("world_manager: finished tick with id = %d successfully", tick_counter);
     tick_counter++;
 }
 

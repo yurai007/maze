@@ -7,7 +7,7 @@
 #include "connection.h"
 #include "logger.hpp"
 
-#include "message_dispatcher.hpp"
+//#include "message_dispatcher.hpp"
 
 /*
         *  TCP echo server
@@ -58,6 +58,8 @@
 namespace networking
 {
 
+class message_dispatcher;
+
 class server
 {
 public:
@@ -65,8 +67,7 @@ public:
     void add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher);
     void run();
     void remove_connection(std::shared_ptr<connection> connection_);
-    void send_on_current_connection(const std::array<unsigned char, serialization::max_size>
-                                    & data);
+    void send_on_current_connection(const serialization::byte_buffer &data);
     void dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size>
                                   & buffer);
 

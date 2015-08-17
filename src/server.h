@@ -66,10 +66,10 @@ public:
     server(short port);
     void add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher);
     void run();
+    void stop();
     void remove_connection(std::shared_ptr<connection> connection_);
     void send_on_current_connection(const serialization::byte_buffer &data);
-    void dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size>
-                                  & buffer);
+    void dispatch_msg_from_buffer(serialization::byte_buffer &buffer);
 
 
     std::shared_ptr<connection> current_connection {nullptr};
@@ -77,9 +77,11 @@ private:
     void register_handler_for_listening();
     void handle_accept(std::shared_ptr<connection> new_connection,
                      const boost::system::error_code& error);
+    void handle_stop();
 
     io_service m_io_service;
     tcp::acceptor acceptor;
+    boost::asio::signal_set m_signals;
     std::shared_ptr<message_dispatcher> m_dispatcher;
     std::set<std::shared_ptr<connection>> connections;
 };

@@ -5,6 +5,7 @@
 #include "controller.hpp"
 #include "message_dispatcher.hpp"
 #include "game_server.hpp"
+#include <thread>
 
 /*
  * Great makefile tutorial:
@@ -29,6 +30,16 @@
    
  * valgrind "invalid read of size" helped me a lot in finding serious problem with maze.txt
  * still many "possibly lost" reports!
+
+ * local objects are cool but we must remember about lifetime. Local objects are dangerous in
+   callbacks/handlers.
+
+ * WTF?? Emplace_back problem in world_manager::add_enemy and enemy::id.
+   I had to replace emplace_back to push_back.
+
+ TO DO:
+    2. Maze must be multithreaded.
+
 */
 
 class gui_driver
@@ -46,11 +57,11 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_unique<core::world_manager>(qt_renderer, qt_controller);
+        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
 
         world_manager->add_maze();
         world_manager->load_all();
-        qt_renderer->set_world(std::move(world_manager));
+        qt_renderer->set_world(world_manager);
 
 
         qt_controller->set_title("The Maze");
@@ -59,7 +70,31 @@ public:
         qt_controller->add(*qt_renderer);
         qt_renderer->show();
 
-        return application->run(*qt_controller);
+        networking::game_server server;
+
+        // thread 2
+        std::thread network_thread([&]()
+        {
+            try
+            {
+                // I have no fucking idea why removing emplaces,
+                // std::move (with unique_ptr) and moving world_manager->maze_ here
+                // fixed lock_guard...
+                server.init(world_manager->maze_);
+                server.run();
+            }
+            catch (std::exception& e)
+            {
+                logger_.log("exception: %s", e.what());
+            }
+
+        });
+        int result = application->run(*qt_controller);
+        server.stop(); // without that network_thread is still working and
+        // cannot be join so join blocks and application hangs.
+        network_thread.join();
+
+        return result;
     }
 
 private:
@@ -70,27 +105,29 @@ private:
 
 using namespace networking::messages;
 
-void message_dispatcher_test_case()
-{
-    int foo = 0;
-    networking::message_dispatcher dispatcher;
+//void message_dispatcher_test_case()
+//{
+//    int foo = 0;
+//    networking::message_dispatcher dispatcher;
 
-    dispatcher.add_handler( [&] (const get_chunk_response &msg1)
-    {
-        logger_.log("Got a get_chunk_response: %s and %d", msg1.content.c_str(), foo);
-    });
+//    dispatcher.add_handler( [&] (const get_chunk_response &msg1)
+//    {
+//        logger_.log("Got a get_chunk_response: %s and %d", msg1.content.c_str(), foo);
+//    });
 
-    dispatcher.add_handler( [&] (const position_changed_response &msg2)
-    {
-        logger_.log("Got a position_changed_response: %s", msg2.content.c_str());
-    });
+//    dispatcher.add_handler( [&] (const position_changed_response &msg2)
+//    {
+//        logger_.log("Got a position_changed_response: %s", msg2.content.c_str());
+//    });
 
-    dispatcher.dispatch(1);
-    dispatcher.dispatch(3);
-    foo = 666;
-    dispatcher.dispatch(0);
-    dispatcher.dispatch(1);
-}
+
+
+//    dispatcher.dispatch(1);
+//    dispatcher.dispatch(3);
+//    foo = 666;
+//    dispatcher.dispatch(0);
+//    dispatcher.dispatch(1);
+//}
 
 void generator_test_case()
 {
@@ -101,7 +138,7 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
-    message_dispatcher_test_case();
+    //message_dispatcher_test_case();
     gui_driver qt_driver(argc, argv);
     return qt_driver.run();
 }

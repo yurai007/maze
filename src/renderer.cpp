@@ -15,9 +15,9 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::unique_ptr<core::world_manager> &&world_manager_)
+void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
 {
-    world_manager = std::move(world_manager_);
+    world_manager = world_manager_;
 }
 
 void renderer::draw_image(const std::string &image_name, int pos_x, int pos_y)

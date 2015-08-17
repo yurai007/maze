@@ -6,12 +6,17 @@ namespace networking
 {
 
 // instead saturating 1Gb I should trend to low latency and high req/s
-game_server::game_server(std::shared_ptr<core::maze> maze)
+game_server::game_server()
+{
+
+}
+
+void game_server::init(std::shared_ptr<core::maze> maze)
 {
 	auto dispatcher = std::make_shared<networking::message_dispatcher>();
 
 	dispatcher->add_handler(
-				[&](messages::get_chunk const& msg)
+				[&](messages::get_chunk &msg)
 	{
 		messages::get_chunk_response response(maze->get_chunk(msg.ld_x, msg.ld_y,
 															  msg.ru_x, msg.ru_y));
@@ -21,7 +26,7 @@ game_server::game_server(std::shared_ptr<core::maze> maze)
 	});
 
 	dispatcher->add_handler(
-				[&](messages::position_changed const& msg)
+				[&](messages::position_changed &msg)
 	{
 		maze->move_field(msg.old_x, msg.old_y, msg.new_x, msg.new_y);
 		messages::position_changed_response response;
@@ -32,6 +37,16 @@ game_server::game_server(std::shared_ptr<core::maze> maze)
 	});
 
 	main_server.add_dispatcher(dispatcher);
+}
+
+void game_server::run()
+{
+	main_server.run();
+}
+
+void game_server::stop()
+{
+	main_server.stop();
 }
 
 }

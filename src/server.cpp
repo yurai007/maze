@@ -1,4 +1,5 @@
 #include <iostream>
+#include <csignal>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "server.h"
@@ -10,8 +11,20 @@ namespace networking
 
 server::server(short port)
     : m_io_service(),
-      acceptor(m_io_service, tcp::endpoint(tcp::v4(), port))
+      acceptor(m_io_service, tcp::endpoint(tcp::v4(), port)),
+      m_signals(m_io_service)
 {
+    // Register to handle the signals that indicate when the server should exit.
+     // It is safe to register for the same signal multiple times in a program,
+     // provided all registration for the specified signal is made through Asio.
+     m_signals.add(SIGINT);
+     m_signals.add(SIGTERM);
+   #if defined(SIGQUIT)
+     m_signals.add(SIGQUIT);
+   #endif // defined(SIGQUIT)
+     // not sure if this is safe here
+     m_signals.async_wait(boost::bind(&server::stop, this));
+
     register_handler_for_listening();
 }
 
@@ -23,6 +36,12 @@ void server::add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher)
 void server::run()
 {
     m_io_service.run();
+}
+
+void server::stop()
+{
+    m_io_service.stop();
+    handle_stop();
 }
 
 void server::remove_connection(std::shared_ptr<connection> connection_)
@@ -37,7 +56,7 @@ void server::send_on_current_connection(const serialization::byte_buffer
     current_connection->send(data);
 }
 
-void server::dispatch_msg_from_buffer(const std::array<unsigned char, serialization::max_size>
+void server::dispatch_msg_from_buffer(serialization::byte_buffer
                                       &buffer)
 {
     m_dispatcher->dispatch_msg_from_buffer(buffer);
@@ -70,6 +89,22 @@ void server::handle_accept(std::shared_ptr<connection> new_connection,
         new_connection.reset();
     }
     register_handler_for_listening();
+}
+
+void server::handle_stop()
+{
+    logger_.log("server: stopped listening");
+    // The server is stopped by cancelling all outstanding asynchronous
+     // operations. Once all operations have finished the io_service::run() call
+     // will exit.
+     acceptor.close();
+
+     for (auto &connection : connections)
+     {
+         connections.erase(connection);
+         connection->stop();
+     }
+     connections.clear();
 }
 
 }

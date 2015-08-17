@@ -35,9 +35,11 @@ public:
     void tick_all();
     void draw_all();
 
+    std::shared_ptr<maze> maze_;
+
 private:
     std::vector<std::shared_ptr<game_object>> game_objects;
-    std::shared_ptr<maze> maze_;
+
     std::shared_ptr<presentation::renderer> renderer;
     std::shared_ptr<control::controller> controller;
 };

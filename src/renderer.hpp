@@ -43,7 +43,7 @@ class renderer : public Gtk::DrawingArea,
 {
 public:
     renderer();
-    void set_world(std::unique_ptr<core::world_manager> &&world_manager_);
+    void set_world(std::shared_ptr<core::world_manager> world_manager_);
     void draw_image(const std::string &image_name, int pos_x, int pos_y);
     void rotate_image(const std::string &image_name, clockwise_rotation rotation);
     void load_image_and_register(const std::string &image_name, const std::string &path);
@@ -57,7 +57,7 @@ private:
     std::unordered_map<std::string, Glib::RefPtr<Gdk::Pixbuf>> name_to_image;
     std::vector<std::tuple<std::string, int, int>> buffer_calls;
 
-    std::unique_ptr<core::world_manager> world_manager {nullptr};
+    std::shared_ptr<core::world_manager> world_manager {nullptr};
 };
 
 }

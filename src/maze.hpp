@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <mutex>
 #include "game_object.hpp"
 
 namespace presentation
@@ -13,6 +14,8 @@ namespace presentation
 
 namespace core
 {
+
+// TO DO: thread safe constructor/assignment operator
 
 class maze : public game_object
 {
@@ -36,6 +39,8 @@ public:
 private:
     std::shared_ptr<presentation::renderer> renderer;
     std::vector<std::string> content;
+    mutable std::mutex maze_mutex;
+
 };
 
 }

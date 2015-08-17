@@ -119,7 +119,10 @@ struct position_changed_response
 class game_server
 {
 public:
-    game_server(std::shared_ptr<core::maze> maze);
+    game_server();
+    void init(std::shared_ptr<core::maze> maze);
+    void run();
+    void stop();
 
 private:
     server main_server {5555};

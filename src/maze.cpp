@@ -24,6 +24,8 @@ void maze::load_from_file(const std::string &file_name)
 {
     std::ifstream input_file(file_name);
     std::string line;
+
+    std::lock_guard<std::mutex> lock(maze_mutex);
     while (std::getline(input_file, line))
     {
         content.push_back(line);
@@ -33,6 +35,7 @@ void maze::load_from_file(const std::string &file_name)
 
 bool maze::is_field_filled(int column, int row) const
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
     if (!((0 <= column) && (column < content.size())))
         return true;
     if (!((0 <= row) && (row < content[column].size())))
@@ -44,6 +47,7 @@ bool maze::is_field_filled(int column, int row) const
 
 char maze::get_field(int column, int row) const
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
     assert((0 <= column) && (column < content.size()));
     assert((0 <= row) && (row < content[column].size()));
     return content[column][row];
@@ -52,6 +56,7 @@ char maze::get_field(int column, int row) const
 std::string maze::get_chunk(int leftdown_x, int leftdown_y,
                                          int rightupper_x, int rightupper_y) const
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
     // IV cw
     assert(0 <= leftdown_x && leftdown_x < content.size());
     assert(leftdown_x >= rightupper_x);
@@ -65,6 +70,8 @@ std::string maze::get_chunk(int leftdown_x, int leftdown_y,
 
 void maze::move_field(int column, int row, int new_column, int new_row)
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
+
     assert((0 <= column) && (column < content.size()));
     assert((0 <= row) && (row < content.size()));
     assert((0 <= new_column) && (new_column < content.size()));
@@ -75,6 +82,7 @@ void maze::move_field(int column, int row, int new_column, int new_row)
 
 void maze::reset_field(int column, int row)
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
     assert((0 <= column) && (column < content.size()));
     assert((0 <= row) && (row < content.size()));
     content[column][row] = ' ';
@@ -82,12 +90,14 @@ void maze::reset_field(int column, int row)
 
 int maze::size()
 {
+    std::lock_guard<std::mutex> lock(maze_mutex);
     return content.size();
 }
 
 void maze::load()
 {
     load_from_file("maze.txt");
+    std::lock_guard<std::mutex> lock(maze_mutex);
     renderer->load_image_and_register("brick", "../../data/brick.bmp");
 }
 
@@ -106,6 +116,7 @@ void maze::draw()
                 int posx = column * brick_size;
                 int posy = row * brick_size;
 
+                std::lock_guard<std::mutex> lock(maze_mutex);
                 renderer->draw_image("brick", posx, posy);
             }
         }

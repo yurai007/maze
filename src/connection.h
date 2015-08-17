@@ -27,6 +27,7 @@ public:
     connection(io_service& io_service, server &server_);
     tcp::socket& get_socket();
     void start();
+    void stop();
     void send(const serialization::byte_buffer &data);
 
 private:

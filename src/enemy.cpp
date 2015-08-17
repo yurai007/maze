@@ -19,13 +19,12 @@ enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
 {
     static int id_generator = 0;
     id_generator++;
-    id = id_generator; 
+    id = id_generator;
     srand(time(NULL));
 }
 
 void enemy::load()
 {
-    //
     renderer->load_image_and_register("enemy" + std::to_string(id), "../../data/enemy.bmp");
 }
 

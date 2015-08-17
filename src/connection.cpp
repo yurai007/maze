@@ -25,6 +25,11 @@ void connection::start()
                                          placeholders::bytes_transferred));
 }
 
+void connection::stop()
+{
+    socket.close();
+}
+
 void connection::send(const serialization::byte_buffer &data)
 {
     // TO DO; set proper offset inside data_buffer
@@ -71,7 +76,8 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         {
             logger_.log("connection %d: recieved full msg", socket.native_handle());
 
-            m_server.dispatch_msg_from_buffer(data_buffer.m_byte_buffer);
+            data_buffer.offset++;
+            m_server.dispatch_msg_from_buffer(data_buffer);
         }
     }
     else

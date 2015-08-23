@@ -52,7 +52,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 
         if (remaining_bytes == 0)
         {
-            unsigned char msg_length = data_buffer.m_byte_buffer[0];
+            unsigned char msg_length = data_buffer.m_byte_buffer[0]; // type_id + payload
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
             logger_.log("connection %d: expected %d B",
@@ -76,7 +76,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         {
             logger_.log("connection %d: recieved full msg", socket.native_handle());
 
-            data_buffer.offset++;
+            data_buffer.offset = 1;
             m_server.dispatch_msg_from_buffer(data_buffer);
         }
     }

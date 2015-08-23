@@ -59,12 +59,12 @@ std::string maze::get_chunk(int leftdown_x, int leftdown_y,
     std::lock_guard<std::mutex> lock(maze_mutex);
     // IV cw
     assert(0 <= leftdown_x && leftdown_x < content.size());
-    assert(leftdown_x >= rightupper_x);
-    assert(leftdown_y <= rightupper_y);
-    int length = rightupper_y - leftdown_y + 1;
+    assert(leftdown_x <= rightupper_x);
+    assert(leftdown_y >= rightupper_y);
+    int length = rightupper_x - leftdown_x + 1;
     std::string result;
-    for (size_t i = rightupper_x; i <= leftdown_x; i++)
-        result += content[i].substr(leftdown_y, length);
+    for (size_t i = rightupper_y; i <= leftdown_y; i++)
+        result += content[i].substr(leftdown_x, length);
     return result;
 }
 

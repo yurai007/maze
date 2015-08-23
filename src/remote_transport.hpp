@@ -23,6 +23,9 @@ public:
     void send(Msg &msg)
     {
         serialization::byte_buffer data;
+        char size = char(sizeof(msg) + 1);
+        data.put_char(size);
+        data.put_char(msg.message_id());
         msg.serialize_to_buffer(data);
         m_server.send_on_current_connection(data);
     }
@@ -33,6 +36,5 @@ private:
 }
 
 }
-
 
 #endif // REMOTE_TRANSPORT_HPP

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <cassert>
 #include <cstdarg>
+#include <thread>
 
 namespace framework
 {
@@ -13,15 +14,16 @@ logger::logger(bool enabled, bool log_to_file, bool log_date)
         file_proxy = fopen ("log.txt", "w");
 }
 
+// TO DO: lock may be much relaxed probably (maybe even to put_time_in_buffer)
 void logger::log(const char *string, ...)
 {
     if (!on)
         return;
-
     char *current_pos = buffer;
-    if (write_date)
-        current_pos = get_time();
 
+    std::lock_guard<std::mutex> lock(mutex);
+    if (write_date)
+        current_pos = put_time_in_buffer();
     va_list args;
     va_start (args, string);
     vsnprintf (current_pos, max_log_size, string, args);
@@ -46,7 +48,7 @@ logger::~logger()
 }
 
 
-char *logger::get_time()
+char *logger::put_time_in_buffer()
 {
     auto current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <array>
 #include <cassert>
+#include <vector>
 
 namespace serialization
 {

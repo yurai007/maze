@@ -9,7 +9,7 @@ namespace core
 class creature : public game_object
 {
 public:
-    void tick(unsigned short tick_counter) override;
+    void tick(unsigned short) override;
     void draw() override;
 };
 

@@ -28,20 +28,20 @@ void world_manager::add_maze()
 void world_manager::add_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
-    game_objects.emplace_back(std::make_shared<player>(renderer, controller, maze_, posx, posy));
+    game_objects.push_back(std::make_shared<player>(renderer, controller, maze_, posx, posy));
     logger_.log("world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
 void world_manager::add_enemy(int posx, int posy)
 {
-    assert(maze_ != nullptr);
-    game_objects.emplace_back(std::make_shared<enemy>(renderer, maze_, posx, posy));
+    assert(maze_ != nullptr); 
+    game_objects.push_back(std::make_shared<enemy>(renderer, maze_, posx, posy)); //Wtf ?? emplace_back
     logger_.log("world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
 void world_manager::add_resource(const std::string &name, int posx, int posy)
 {
-    game_objects.emplace_back(std::make_shared<resource>(name, renderer, posx, posy));
+    game_objects.push_back(std::make_shared<resource>(name, renderer, posx, posy));
     logger_.log("world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
@@ -105,8 +105,9 @@ void world_manager::tick_all()
                             std::get<0>(old_position), std::get<1>(old_position));
                     }
             }
-        }
-    logger_.log("world_manager: finished tick with id = %d successfully", tick_counter);
+    }
+    if (tick_counter%10 == 0)
+        logger_.log("world_manager: finished tick with id = %d successfully", tick_counter);
     tick_counter++;
 }
 

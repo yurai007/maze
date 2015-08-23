@@ -2,10 +2,12 @@
 #define LOGGER_HPP
 
 #include <cstdio>
+#include <mutex>
 
 namespace framework
 {
 
+/* logger is singleton so protection is needed only in log method */
 class logger
 {
 public:
@@ -25,19 +27,18 @@ private:
     template<class Msg>
     void log_message(const Msg &msg)
     {
-        if (!on)
-            return;
         log("Message: {name = \"%s\", id = %d}", msg.name.c_str(), msg.id);
     }
 
     ~logger();
 
-    char *get_time();
+    char *put_time_in_buffer();
 
-    bool on, write_to_file, write_date;
+    const bool on, write_to_file, write_date;
     static const int max_log_size = 128;
     char buffer[max_log_size];
     FILE * file_proxy = nullptr;
+    std::mutex mutex;
 };
 
 }

@@ -8,8 +8,8 @@
 #include <vector>
 #include <map>
 
-#include "remote_transport.hpp"
 #include "logger.hpp"
+#include "byte_buffer.hpp"
 
 namespace networking
 {
@@ -24,7 +24,7 @@ namespace networking
    2. Observing callstack is good idea to understanding how it works
  */
 
-typedef std::function<bool(int)> dispatcher_type;
+typedef std::function<bool(serialization::byte_buffer &buffer)> dispatcher_type;
 
 // those traits converts argument sequence e.g. int, std::string, Foo.. to std::tuple<int, std::string, Foo>
 template<typename T>
@@ -74,13 +74,16 @@ struct dispatcher
 {
     template<typename F> dispatcher(F f) : handler(std::move(f)) { }
 
-    bool operator () (int id)
+    bool operator() (serialization::byte_buffer &buffer)
     {
         typedef typename std::remove_reference<Arg>::type Msg;
+        int id = buffer.m_byte_buffer[buffer.offset];
+
         if (id == Msg::message_id())
         {
             Msg msg = {};
-            // deserialization from buffer
+            buffer.offset++;
+            msg.deserialize_from_buffer(buffer);
             handler(msg);
             return true;
         }
@@ -107,11 +110,16 @@ public:
         callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
     }
 
-    void dispatch(int id)
+    void dispatch_msg_from_buffer(serialization::byte_buffer &buffer)
+    {
+        dispatch(buffer); // buffer[0] is data size
+    }
+
+    void dispatch(serialization::byte_buffer &buffer)
     {
         for (auto some_dispatcher : callbacks)
         {
-            if (call(some_dispatcher, id))
+            if (call(some_dispatcher, buffer))
                 return;
         }
         logger_.log("message dispatcher: there is no handler for this msg");
@@ -120,9 +128,9 @@ public:
 private:
 
     template<typename Dispatcher>
-    bool call(Dispatcher const& dispatcher, int id)
+    bool call(Dispatcher const& dispatcher, serialization::byte_buffer &buffer)
     {
-        return dispatcher(id);
+        return dispatcher(buffer);
     }
 
 private:

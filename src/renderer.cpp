@@ -8,16 +8,16 @@ namespace presentation
 
 renderer::renderer()
 {
-    Glib::signal_timeout().connect( sigc::mem_fun(*this, &renderer::on_timeout), 25 );
+    Glib::signal_timeout().connect( sigc::mem_fun(*this, &renderer::on_timeout), 30 );
 
     #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
         signal_draw().connect(sigc::mem_fun(*this, &renderer::on_draw), false);
     #endif
 }
 
-void renderer::set_world(std::unique_ptr<core::world_manager> &&world_manager_)
+void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
 {
-    world_manager = std::move(world_manager_);
+    world_manager = world_manager_;
 }
 
 void renderer::draw_image(const std::string &image_name, int pos_x, int pos_y)
@@ -69,9 +69,6 @@ void renderer::load_image_and_register(const std::string &image_name, const std:
             set_size_request(name_to_image[image_name]->get_width()/2,
                              name_to_image[image_name]->get_height()/2);
     }
-//    else
-//        std::cerr << "Load_image_and_register failed. " << image_name << " from " << path
-//                  << " is actually loaded.\n";
 }
 
 void renderer::deffered_draw_image(const std::string &image_name, int pos_x, int pos_y)

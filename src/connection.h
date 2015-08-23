@@ -27,6 +27,8 @@ public:
     connection(io_service& io_service, server &server_);
     tcp::socket& get_socket();
     void start();
+    void stop();
+    void send(const serialization::byte_buffer &data);
 
 private:
 
@@ -35,6 +37,7 @@ private:
 
     server &m_server;
     tcp::socket socket;
+    // I'm not sure yet but maybe send and recieve buffers will be needed
     serialization::byte_buffer data_buffer;
     int remaining_bytes {0};
     int current {0};

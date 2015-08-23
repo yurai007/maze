@@ -25,17 +25,34 @@ void connection::start()
                                          placeholders::bytes_transferred));
 }
 
+void connection::stop()
+{
+    socket.close();
+}
+
+void connection::send(const serialization::byte_buffer &data)
+{
+    // TO DO; set proper offset inside data_buffer
+    data_buffer = data;
+    async_write(socket,
+                buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
+                boost::bind(&connection::handle_write, this, placeholders::error,
+                            placeholders::bytes_transferred));
+}
+
 // TCP doesn't ensure that 1 x send N bytes == 1 x recv N bytes
 void connection::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
     if (!error)
     {
+        m_server.current_connection = shared_from_this();
+
         logger_.log("connection %d: recieved %d B", socket.native_handle(),
                                      bytes_transferred);
 
         if (remaining_bytes == 0)
         {
-            unsigned char msg_length = data_buffer.m_byte_buffer[0];
+            unsigned char msg_length = data_buffer.m_byte_buffer[0]; // type_id + payload
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
             logger_.log("connection %d: expected %d B",
@@ -58,19 +75,9 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         else
         {
             logger_.log("connection %d: recieved full msg", socket.native_handle());
-            // 1. id = 'Recieved msg with type' from data_buffer.
-            //    For each msg_type in registered_type_from_handlers
-            //    if( id == msg_type::id())
-            //       msg = deserialize and go to 2.
-            //
-            // 2. sender.current_socket = socket;
-            //    dispatcher.dispatch(msg);
-            //
 
-//            async_write(socket,
-//                        buffer(data_buffer.m_byte_buffer, current),
-//                        boost::bind(&connection::handle_write, this, placeholders::error,
-//                                    placeholders::bytes_transferred));
+            data_buffer.offset = 1;
+            m_server.dispatch_msg_from_buffer(data_buffer);
         }
     }
     else

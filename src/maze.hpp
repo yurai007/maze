@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <mutex>
 #include "game_object.hpp"
 
 namespace presentation
@@ -14,6 +15,8 @@ namespace presentation
 namespace core
 {
 
+// TO DO: thread safe constructor/assignment operator
+
 class maze : public game_object
 {
 public:
@@ -22,7 +25,7 @@ public:
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
 
-    std::vector<std::string> get_chunk(int leftdown_x, int leftdown_y,
+    std::string get_chunk(int leftdown_x, int leftdown_y,
                                        int rightupper_x, int rightupper_y) const;
 
     void move_field(int column, int row, int new_column, int new_row);
@@ -36,6 +39,8 @@ public:
 private:
     std::shared_ptr<presentation::renderer> renderer;
     std::vector<std::string> content;
+    mutable std::mutex maze_mutex;
+
 };
 
 }

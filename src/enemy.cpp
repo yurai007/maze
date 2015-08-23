@@ -14,14 +14,18 @@ enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
     : renderer(renderer_),
       maze(maze_),
       posx(posx_),
-      posy(posy_)
+      posy(posy_),
+      id(0)
 {
+    static int id_generator = 0;
+    id_generator++;
+    id = id_generator;
     srand(time(NULL));
 }
 
 void enemy::load()
 {
-    renderer->load_image_and_register("enemy", "../../data/enemy.bmp");
+    renderer->load_image_and_register("enemy" + std::to_string(id), "../../data/enemy.bmp");
 }
 
 void enemy::tick(unsigned short tick_counter)
@@ -29,6 +33,7 @@ void enemy::tick(unsigned short tick_counter)
     if (tick_counter % 10 != 0)
         return;
 
+    direction = 0;
     std::vector<char> is_proper = {0, 0, 0, 0};
     is_proper[0] += (int)!maze->is_field_filled(posx-1, posy);
     is_proper[1] += (int)!maze->is_field_filled(posx+1, posy);
@@ -45,19 +50,44 @@ void enemy::tick(unsigned short tick_counter)
         if (is_proper[current++])
             where--;
     current--;
+    perform_rotation = true;
     if (current == 0)
+    {
+        direction = 'L';
         posx--;
+    }
     if (current == 1)
+    {
+        direction = 'R';
         posx++;
+    }
     if (current == 2)
+    {
+        direction = 'U';
         posy--;
+    }
     if (current == 3)
+    {
+        direction = 'D';
         posy++;
+    }
 }
 
 void enemy::draw()
 {
-    renderer->draw_image("enemy", 30*posx, 30*posy);
+    std::string image_name = "enemy" + std::to_string(id);
+    if (perform_rotation)
+    {
+        if (direction == 'L')
+            renderer->rotate_image(image_name, presentation::clockwise_rotation::d270);
+        if (direction == 'R')
+            renderer->rotate_image(image_name, presentation::clockwise_rotation::d90);
+        if (direction == 'D')
+            renderer->rotate_image(image_name, presentation::clockwise_rotation::d180);
+        if (direction == 'U')
+            renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
+    }
+    renderer->draw_image(image_name, 30*posx, 30*posy);
 }
 
 std::tuple<int, int> enemy::get_position() const

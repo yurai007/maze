@@ -33,6 +33,8 @@ private:
     std::shared_ptr<core::maze> maze;
     char direction;
     int posx, posy;
+    bool perform_rotation {false};
+    int id;
 };
 
 }

@@ -30,6 +30,12 @@ void enemy::load()
 
 void enemy::tick(unsigned short tick_counter)
 {
+    /* for small number of enemies:
+            client: get_enemy(id)_pos??
+       otherwise:
+            client: get_chunk for all visible chunks
+    */
+
     if (tick_counter % 10 != 0)
         return;
 

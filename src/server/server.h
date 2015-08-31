@@ -5,7 +5,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 #include "connection.h"
-#include "logger.hpp"
+#include "../common/logger.hpp"
 
 //#include "message_dispatcher.hpp"
 
@@ -73,13 +73,15 @@ public:
 
 
     std::shared_ptr<connection> current_connection {nullptr};
+    io_service m_io_service;
+
 private:
     void register_handler_for_listening();
     void handle_accept(std::shared_ptr<connection> new_connection,
                      const boost::system::error_code& error);
     void handle_stop();
 
-    io_service m_io_service;
+
     tcp::acceptor acceptor;
     boost::asio::signal_set m_signals;
     std::shared_ptr<message_dispatcher> m_dispatcher;

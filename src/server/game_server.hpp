@@ -2,11 +2,11 @@
 #define GAME_SERVER_HPP
 
 #include <memory>
-#include "maze.hpp"
+#include "../common/maze.hpp"
 //#include "byte_buffer.hpp"
 #include "server.h"
 #include "remote_transport.hpp"
-#include "messages.hpp"
+#include "../common/messages.hpp"
 
 namespace networking
 {
@@ -19,8 +19,10 @@ public:
     void run();
     void stop();
 
+     server main_server {5555};
+
 private:
-    server main_server {5555};
+
     remote_transport::sender sender {main_server};
 };
 

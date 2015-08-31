@@ -1,4 +1,4 @@
-#include "player.hpp"
+#include "remote_player.hpp"
 #include "renderer.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
@@ -6,7 +6,7 @@
 namespace core
 {
 
-player::player(std::shared_ptr<presentation::renderer> renderer_,
+remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
                std::shared_ptr<control::controller> controller_,
                std::shared_ptr<core::maze> maze_, int posx_, int posy_)
 : renderer(renderer_),
@@ -17,13 +17,16 @@ player::player(std::shared_ptr<presentation::renderer> renderer_,
 {
 }
 
-void player::load()
+void remote_player::load()
 {
      renderer->load_image_and_register("player", "../../data/player.bmp");
 }
 
-void player::tick(unsigned short)
+void remote_player::tick(unsigned short)
 {
+    if (controller == nullptr)
+        return;
+
     static char old_direction = 0;
     int oldx = posx, oldy = posy;
 
@@ -31,6 +34,7 @@ void player::tick(unsigned short)
     posx += (direction == 'L')? -1 : (direction == 'R')? 1 :0;
     posy += (direction == 'U')? -1 : (direction == 'D')? 1 :0;
 
+    // client: get_chunk request to server
     if (maze->is_field_filled(posx, posy))
     {
         posx = oldx;
@@ -46,7 +50,7 @@ void player::tick(unsigned short)
     old_direction = direction;
 }
 
-void player::draw()
+void remote_player::draw()
 {
     if (perform_rotation)
     {
@@ -62,7 +66,7 @@ void player::draw()
     renderer->draw_image("player", 30*posx, 30*posy);
 }
 
-std::tuple<int, int> player::get_position() const
+std::tuple<int, int> remote_player::get_position() const
 {
     return std::make_tuple(posx, posy);
 }

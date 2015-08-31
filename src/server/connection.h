@@ -6,8 +6,8 @@
 #include <memory>
 #include <array>
 
-#include "logger.hpp"
-#include "byte_buffer.hpp"
+#include "../common/logger.hpp"
+#include "../common/byte_buffer.hpp"
 
 namespace networking
 {

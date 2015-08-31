@@ -2,7 +2,7 @@
 #define REMOTE_TRANSPORT_HPP
 
 #include <memory>
-#include "byte_buffer.hpp"
+#include "../common/byte_buffer.hpp"
 #include "server.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>

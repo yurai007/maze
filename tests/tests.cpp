@@ -3,11 +3,14 @@
 #include <boost/bind.hpp>
 #include <cassert>
 
-#include "../src/messages.hpp"
+#include "../src/common/messages.hpp"
 //#include "../src/logger.hpp"
 
-// TO DO: pause/resume for server, fix test_get_chunk_response3 and add tests for position_changed
-
+/* This is asynchronous client
+ * write_some and read_some blocks.
+ *
+ *  TO DO: pause/resume for server, fix test_get_chunk_response3 and add tests for position_changed
+*/
 using boost::asio::ip::tcp;
 using namespace networking;
 

@@ -3,8 +3,8 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "server.h"
-#include "byte_buffer.hpp"
-#include "message_dispatcher.hpp"
+#include "../common/byte_buffer.hpp"
+#include "../common/message_dispatcher.hpp"
 
 namespace networking
 {

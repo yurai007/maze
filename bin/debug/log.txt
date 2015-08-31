@@ -1,0 +1,391 @@
+[2015-08-31 22:22:45] Arg: gui=off
+[2015-08-31 22:22:45] server: start listening
+[2015-08-31 22:22:45] world_manager: started
+[2015-08-31 22:22:45] world_manager: added maze
+[2015-08-31 22:22:45] world_manager: added enemy on position = {21, 7}
+[2015-08-31 22:22:45] world_manager: added gold on position = {26, 7}
+[2015-08-31 22:22:45] world_manager: added gold on position = {9, 8}
+[2015-08-31 22:22:45] world_manager: added gold on position = {20, 8}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {9, 11}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {17, 11}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {14, 12}
+[2015-08-31 22:22:45] world_manager: added player on position = {19, 12}
+[2015-08-31 22:22:45] world_manager: added gold on position = {38, 14}
+[2015-08-31 22:22:45] world_manager: added gold on position = {15, 19}
+[2015-08-31 22:22:45] world_manager: added gold on position = {19, 20}
+[2015-08-31 22:22:45] world_manager: added gold on position = {26, 20}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {29, 20}
+[2015-08-31 22:22:45] world_manager: added gold on position = {23, 21}
+[2015-08-31 22:22:45] world_manager: added gold on position = {6, 23}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {6, 25}
+[2015-08-31 22:22:45] world_manager: added gold on position = {12, 25}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {16, 25}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {8, 29}
+[2015-08-31 22:22:45] world_manager: added gold on position = {33, 29}
+[2015-08-31 22:22:45] world_manager: added gold on position = {29, 30}
+[2015-08-31 22:22:45] world_manager: added gold on position = {25, 32}
+[2015-08-31 22:22:45] world_manager: added gold on position = {23, 36}
+[2015-08-31 22:22:45] world_manager: added enemy on position = {24, 36}
+[2015-08-31 22:22:45] world_manager: added gold on position = {15, 37}
+[2015-08-31 22:22:45] world_manager: added gold on position = {26, 41}
+[2015-08-31 22:22:45] world_manager: added gold on position = {31, 41}
+[2015-08-31 22:22:45] world_manager: added gold on position = {18, 45}
+[2015-08-31 22:22:45] world_manager: finished tick with id = 0 successfully
+[2015-08-31 22:22:45] world_manager: removed resource from positon = {23, 36}
+[2015-08-31 22:22:46] world_manager: finished tick with id = 10 successfully
+[2015-08-31 22:22:46] world_manager: finished tick with id = 20 successfully
+[2015-08-31 22:22:46] world_manager: finished tick with id = 30 successfully
+[2015-08-31 22:22:47] world_manager: finished tick with id = 40 successfully
+[2015-08-31 22:22:47] world_manager: finished tick with id = 50 successfully
+[2015-08-31 22:22:47] world_manager: finished tick with id = 60 successfully
+[2015-08-31 22:22:47] world_manager: finished tick with id = 70 successfully
+[2015-08-31 22:22:48] world_manager: finished tick with id = 80 successfully
+[2015-08-31 22:22:48] world_manager: finished tick with id = 90 successfully
+[2015-08-31 22:22:48] world_manager: finished tick with id = 100 successfully
+[2015-08-31 22:22:49] world_manager: finished tick with id = 110 successfully
+[2015-08-31 22:22:49] world_manager: finished tick with id = 120 successfully
+[2015-08-31 22:22:49] server: accepted next connection from 127.0.0.1:40101
+[2015-08-31 22:22:49] server: start listening
+[2015-08-31 22:22:49] connection 10: recieved 18 B
+[2015-08-31 22:22:49] connection 10: expected 17 B
+[2015-08-31 22:22:49] connection 10: recieved full msg
+[2015-08-31 22:22:49] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:49] game_server: send get_chunk_response
+[2015-08-31 22:22:49] connection 10: sent 10 B
+[2015-08-31 22:22:49] connection 10: recieved 18 B
+[2015-08-31 22:22:49] connection 10: expected 17 B
+[2015-08-31 22:22:49] connection 10: recieved full msg
+[2015-08-31 22:22:49] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:49] game_server: send get_chunk_response
+[2015-08-31 22:22:49] connection 10: sent 20 B
+[2015-08-31 22:22:49] connection 10: recieved 18 B
+[2015-08-31 22:22:49] connection 10: expected 17 B
+[2015-08-31 22:22:49] connection 10: recieved full msg
+[2015-08-31 22:22:49] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:49] game_server: send get_chunk_response
+[2015-08-31 22:22:49] connection 10: sent 66 B
+[2015-08-31 22:22:49] server: connection was removed
+[2015-08-31 22:22:49] world_manager: finished tick with id = 130 successfully
+[2015-08-31 22:22:50] world_manager: finished tick with id = 140 successfully
+[2015-08-31 22:22:50] world_manager: finished tick with id = 150 successfully
+[2015-08-31 22:22:50] world_manager: finished tick with id = 160 successfully
+[2015-08-31 22:22:50] world_manager: finished tick with id = 170 successfully
+[2015-08-31 22:22:51] world_manager: finished tick with id = 180 successfully
+[2015-08-31 22:22:51] world_manager: finished tick with id = 190 successfully
+[2015-08-31 22:22:51] world_manager: finished tick with id = 200 successfully
+[2015-08-31 22:22:52] server: accepted next connection from 127.0.0.1:40102
+[2015-08-31 22:22:52] server: start listening
+[2015-08-31 22:22:52] connection 11: recieved 18 B
+[2015-08-31 22:22:52] connection 11: expected 17 B
+[2015-08-31 22:22:52] connection 11: recieved full msg
+[2015-08-31 22:22:52] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:52] game_server: send get_chunk_response
+[2015-08-31 22:22:52] connection 11: sent 10 B
+[2015-08-31 22:22:52] connection 11: recieved 18 B
+[2015-08-31 22:22:52] connection 11: expected 17 B
+[2015-08-31 22:22:52] connection 11: recieved full msg
+[2015-08-31 22:22:52] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:52] game_server: send get_chunk_response
+[2015-08-31 22:22:52] connection 11: sent 20 B
+[2015-08-31 22:22:52] connection 11: recieved 18 B
+[2015-08-31 22:22:52] connection 11: expected 17 B
+[2015-08-31 22:22:52] connection 11: recieved full msg
+[2015-08-31 22:22:52] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:52] game_server: send get_chunk_response
+[2015-08-31 22:22:52] connection 11: sent 66 B
+[2015-08-31 22:22:52] server: connection was removed
+[2015-08-31 22:22:52] world_manager: finished tick with id = 210 successfully
+[2015-08-31 22:22:52] world_manager: finished tick with id = 220 successfully
+[2015-08-31 22:22:52] world_manager: finished tick with id = 230 successfully
+[2015-08-31 22:22:53] world_manager: finished tick with id = 240 successfully
+[2015-08-31 22:22:53] world_manager: finished tick with id = 250 successfully
+[2015-08-31 22:22:53] world_manager: finished tick with id = 260 successfully
+[2015-08-31 22:22:53] world_manager: finished tick with id = 270 successfully
+[2015-08-31 22:22:54] world_manager: finished tick with id = 280 successfully
+[2015-08-31 22:22:54] server: accepted next connection from 127.0.0.1:40103
+[2015-08-31 22:22:54] server: start listening
+[2015-08-31 22:22:54] connection 10: recieved 18 B
+[2015-08-31 22:22:54] connection 10: expected 17 B
+[2015-08-31 22:22:54] connection 10: recieved full msg
+[2015-08-31 22:22:54] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:54] game_server: send get_chunk_response
+[2015-08-31 22:22:54] connection 10: sent 10 B
+[2015-08-31 22:22:54] connection 10: recieved 18 B
+[2015-08-31 22:22:54] connection 10: expected 17 B
+[2015-08-31 22:22:54] connection 10: recieved full msg
+[2015-08-31 22:22:54] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:54] game_server: send get_chunk_response
+[2015-08-31 22:22:54] connection 10: sent 20 B
+[2015-08-31 22:22:54] connection 10: recieved 18 B
+[2015-08-31 22:22:54] connection 10: expected 17 B
+[2015-08-31 22:22:54] connection 10: recieved full msg
+[2015-08-31 22:22:54] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:54] game_server: send get_chunk_response
+[2015-08-31 22:22:54] connection 10: sent 66 B
+[2015-08-31 22:22:54] server: connection was removed
+[2015-08-31 22:22:54] world_manager: removed resource from positon = {20, 8}
+[2015-08-31 22:22:54] world_manager: finished tick with id = 290 successfully
+[2015-08-31 22:22:54] world_manager: finished tick with id = 300 successfully
+[2015-08-31 22:22:55] world_manager: finished tick with id = 310 successfully
+[2015-08-31 22:22:55] world_manager: finished tick with id = 320 successfully
+[2015-08-31 22:22:55] world_manager: finished tick with id = 330 successfully
+[2015-08-31 22:22:56] world_manager: finished tick with id = 340 successfully
+[2015-08-31 22:22:56] server: accepted next connection from 127.0.0.1:40104
+[2015-08-31 22:22:56] server: start listening
+[2015-08-31 22:22:56] connection 11: recieved 18 B
+[2015-08-31 22:22:56] connection 11: expected 17 B
+[2015-08-31 22:22:56] connection 11: recieved full msg
+[2015-08-31 22:22:56] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:56] game_server: send get_chunk_response
+[2015-08-31 22:22:56] connection 11: sent 10 B
+[2015-08-31 22:22:56] connection 11: recieved 18 B
+[2015-08-31 22:22:56] connection 11: expected 17 B
+[2015-08-31 22:22:56] connection 11: recieved full msg
+[2015-08-31 22:22:56] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:56] game_server: send get_chunk_response
+[2015-08-31 22:22:56] connection 11: sent 20 B
+[2015-08-31 22:22:56] connection 11: recieved 18 B
+[2015-08-31 22:22:56] connection 11: expected 17 B
+[2015-08-31 22:22:56] connection 11: recieved full msg
+[2015-08-31 22:22:56] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:56] game_server: send get_chunk_response
+[2015-08-31 22:22:56] connection 11: sent 66 B
+[2015-08-31 22:22:56] server: connection was removed
+[2015-08-31 22:22:56] world_manager: finished tick with id = 350 successfully
+[2015-08-31 22:22:56] world_manager: finished tick with id = 360 successfully
+[2015-08-31 22:22:56] world_manager: finished tick with id = 370 successfully
+[2015-08-31 22:22:57] world_manager: finished tick with id = 380 successfully
+[2015-08-31 22:22:57] world_manager: finished tick with id = 390 successfully
+[2015-08-31 22:22:57] server: accepted next connection from 127.0.0.1:40105
+[2015-08-31 22:22:57] server: start listening
+[2015-08-31 22:22:57] connection 10: recieved 18 B
+[2015-08-31 22:22:57] connection 10: expected 17 B
+[2015-08-31 22:22:57] connection 10: recieved full msg
+[2015-08-31 22:22:57] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:57] game_server: send get_chunk_response
+[2015-08-31 22:22:57] connection 10: sent 10 B
+[2015-08-31 22:22:57] connection 10: recieved 18 B
+[2015-08-31 22:22:57] connection 10: expected 17 B
+[2015-08-31 22:22:57] connection 10: recieved full msg
+[2015-08-31 22:22:57] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:57] game_server: send get_chunk_response
+[2015-08-31 22:22:57] connection 10: sent 20 B
+[2015-08-31 22:22:57] connection 10: recieved 18 B
+[2015-08-31 22:22:57] connection 10: expected 17 B
+[2015-08-31 22:22:57] connection 10: recieved full msg
+[2015-08-31 22:22:57] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:57] game_server: send get_chunk_response
+[2015-08-31 22:22:57] connection 10: sent 66 B
+[2015-08-31 22:22:57] server: connection was removed
+[2015-08-31 22:22:57] world_manager: finished tick with id = 400 successfully
+[2015-08-31 22:22:58] world_manager: finished tick with id = 410 successfully
+[2015-08-31 22:22:58] world_manager: finished tick with id = 420 successfully
+[2015-08-31 22:22:58] server: accepted next connection from 127.0.0.1:40106
+[2015-08-31 22:22:58] server: start listening
+[2015-08-31 22:22:58] connection 11: recieved 18 B
+[2015-08-31 22:22:58] connection 11: expected 17 B
+[2015-08-31 22:22:58] connection 11: recieved full msg
+[2015-08-31 22:22:58] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:22:58] game_server: send get_chunk_response
+[2015-08-31 22:22:58] connection 11: sent 10 B
+[2015-08-31 22:22:58] connection 11: recieved 18 B
+[2015-08-31 22:22:58] connection 11: expected 17 B
+[2015-08-31 22:22:58] connection 11: recieved full msg
+[2015-08-31 22:22:58] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:22:58] game_server: send get_chunk_response
+[2015-08-31 22:22:58] connection 11: sent 20 B
+[2015-08-31 22:22:58] connection 11: recieved 18 B
+[2015-08-31 22:22:58] connection 11: expected 17 B
+[2015-08-31 22:22:58] connection 11: recieved full msg
+[2015-08-31 22:22:58] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:22:58] game_server: send get_chunk_response
+[2015-08-31 22:22:58] connection 11: sent 66 B
+[2015-08-31 22:22:58] server: connection was removed
+[2015-08-31 22:22:58] world_manager: finished tick with id = 430 successfully
+[2015-08-31 22:22:59] world_manager: finished tick with id = 440 successfully
+[2015-08-31 22:22:59] world_manager: finished tick with id = 450 successfully
+[2015-08-31 22:22:59] world_manager: finished tick with id = 460 successfully
+[2015-08-31 22:22:59] world_manager: finished tick with id = 470 successfully
+[2015-08-31 22:23:00] world_manager: removed resource from positon = {12, 25}
+[2015-08-31 22:23:00] world_manager: finished tick with id = 480 successfully
+[2015-08-31 22:23:00] world_manager: finished tick with id = 490 successfully
+[2015-08-31 22:23:00] world_manager: finished tick with id = 500 successfully
+[2015-08-31 22:23:01] world_manager: finished tick with id = 510 successfully
+[2015-08-31 22:23:01] world_manager: finished tick with id = 520 successfully
+[2015-08-31 22:23:01] world_manager: finished tick with id = 530 successfully
+[2015-08-31 22:23:02] world_manager: finished tick with id = 540 successfully
+[2015-08-31 22:23:02] world_manager: finished tick with id = 550 successfully
+[2015-08-31 22:23:02] world_manager: finished tick with id = 560 successfully
+[2015-08-31 22:23:02] world_manager: finished tick with id = 570 successfully
+[2015-08-31 22:23:03] world_manager: finished tick with id = 580 successfully
+[2015-08-31 22:23:03] world_manager: finished tick with id = 590 successfully
+[2015-08-31 22:23:03] world_manager: finished tick with id = 600 successfully
+[2015-08-31 22:23:04] world_manager: finished tick with id = 610 successfully
+[2015-08-31 22:23:04] world_manager: finished tick with id = 620 successfully
+[2015-08-31 22:23:04] world_manager: finished tick with id = 630 successfully
+[2015-08-31 22:23:05] world_manager: finished tick with id = 640 successfully
+[2015-08-31 22:23:05] world_manager: finished tick with id = 650 successfully
+[2015-08-31 22:23:05] server: accepted next connection from 127.0.0.1:40107
+[2015-08-31 22:23:05] server: start listening
+[2015-08-31 22:23:05] connection 10: recieved 18 B
+[2015-08-31 22:23:05] connection 10: expected 17 B
+[2015-08-31 22:23:05] connection 10: recieved full msg
+[2015-08-31 22:23:05] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:05] game_server: send get_chunk_response
+[2015-08-31 22:23:05] connection 10: sent 10 B
+[2015-08-31 22:23:05] connection 10: recieved 18 B
+[2015-08-31 22:23:05] connection 10: expected 17 B
+[2015-08-31 22:23:05] connection 10: recieved full msg
+[2015-08-31 22:23:05] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:05] game_server: send get_chunk_response
+[2015-08-31 22:23:05] connection 10: sent 20 B
+[2015-08-31 22:23:05] connection 10: recieved 18 B
+[2015-08-31 22:23:05] connection 10: expected 17 B
+[2015-08-31 22:23:05] connection 10: recieved full msg
+[2015-08-31 22:23:05] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:05] game_server: send get_chunk_response
+[2015-08-31 22:23:05] connection 10: sent 66 B
+[2015-08-31 22:23:05] server: connection was removed
+[2015-08-31 22:23:05] world_manager: finished tick with id = 660 successfully
+[2015-08-31 22:23:05] world_manager: finished tick with id = 670 successfully
+[2015-08-31 22:23:06] world_manager: finished tick with id = 680 successfully
+[2015-08-31 22:23:06] world_manager: finished tick with id = 690 successfully
+[2015-08-31 22:23:06] world_manager: finished tick with id = 700 successfully
+[2015-08-31 22:23:07] world_manager: finished tick with id = 710 successfully
+[2015-08-31 22:23:07] server: accepted next connection from 127.0.0.1:40108
+[2015-08-31 22:23:07] server: start listening
+[2015-08-31 22:23:07] connection 11: recieved 18 B
+[2015-08-31 22:23:07] connection 11: expected 17 B
+[2015-08-31 22:23:07] connection 11: recieved full msg
+[2015-08-31 22:23:07] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:07] game_server: send get_chunk_response
+[2015-08-31 22:23:07] connection 11: sent 10 B
+[2015-08-31 22:23:07] connection 11: recieved 18 B
+[2015-08-31 22:23:07] connection 11: expected 17 B
+[2015-08-31 22:23:07] connection 11: recieved full msg
+[2015-08-31 22:23:07] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:07] game_server: send get_chunk_response
+[2015-08-31 22:23:07] connection 11: sent 20 B
+[2015-08-31 22:23:07] connection 11: recieved 18 B
+[2015-08-31 22:23:07] connection 11: expected 17 B
+[2015-08-31 22:23:07] connection 11: recieved full msg
+[2015-08-31 22:23:07] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:07] game_server: send get_chunk_response
+[2015-08-31 22:23:07] connection 11: sent 66 B
+[2015-08-31 22:23:07] server: connection was removed
+[2015-08-31 22:23:07] world_manager: finished tick with id = 720 successfully
+[2015-08-31 22:23:07] world_manager: finished tick with id = 730 successfully
+[2015-08-31 22:23:08] world_manager: finished tick with id = 740 successfully
+[2015-08-31 22:23:08] world_manager: finished tick with id = 750 successfully
+[2015-08-31 22:23:08] world_manager: finished tick with id = 760 successfully
+[2015-08-31 22:23:08] server: accepted next connection from 127.0.0.1:40109
+[2015-08-31 22:23:08] server: start listening
+[2015-08-31 22:23:08] connection 10: recieved 18 B
+[2015-08-31 22:23:08] connection 10: expected 17 B
+[2015-08-31 22:23:08] connection 10: recieved full msg
+[2015-08-31 22:23:08] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:08] game_server: send get_chunk_response
+[2015-08-31 22:23:08] connection 10: sent 10 B
+[2015-08-31 22:23:08] connection 10: recieved 18 B
+[2015-08-31 22:23:08] connection 10: expected 17 B
+[2015-08-31 22:23:08] connection 10: recieved full msg
+[2015-08-31 22:23:08] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:08] game_server: send get_chunk_response
+[2015-08-31 22:23:08] connection 10: sent 20 B
+[2015-08-31 22:23:08] connection 10: recieved 18 B
+[2015-08-31 22:23:08] connection 10: expected 17 B
+[2015-08-31 22:23:08] connection 10: recieved full msg
+[2015-08-31 22:23:08] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:08] game_server: send get_chunk_response
+[2015-08-31 22:23:08] connection 10: sent 66 B
+[2015-08-31 22:23:08] server: connection was removed
+[2015-08-31 22:23:08] world_manager: finished tick with id = 770 successfully
+[2015-08-31 22:23:09] world_manager: finished tick with id = 780 successfully
+[2015-08-31 22:23:09] world_manager: finished tick with id = 790 successfully
+[2015-08-31 22:23:09] world_manager: finished tick with id = 800 successfully
+[2015-08-31 22:23:09] server: accepted next connection from 127.0.0.1:40110
+[2015-08-31 22:23:09] server: start listening
+[2015-08-31 22:23:09] connection 11: recieved 18 B
+[2015-08-31 22:23:09] connection 11: expected 17 B
+[2015-08-31 22:23:09] connection 11: recieved full msg
+[2015-08-31 22:23:09] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:09] game_server: send get_chunk_response
+[2015-08-31 22:23:09] connection 11: sent 10 B
+[2015-08-31 22:23:09] connection 11: recieved 18 B
+[2015-08-31 22:23:09] connection 11: expected 17 B
+[2015-08-31 22:23:09] connection 11: recieved full msg
+[2015-08-31 22:23:09] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:09] game_server: send get_chunk_response
+[2015-08-31 22:23:09] connection 11: sent 20 B
+[2015-08-31 22:23:09] connection 11: recieved 18 B
+[2015-08-31 22:23:09] connection 11: expected 17 B
+[2015-08-31 22:23:09] connection 11: recieved full msg
+[2015-08-31 22:23:09] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:09] game_server: send get_chunk_response
+[2015-08-31 22:23:09] connection 11: sent 66 B
+[2015-08-31 22:23:09] server: connection was removed
+[2015-08-31 22:23:10] world_manager: finished tick with id = 810 successfully
+[2015-08-31 22:23:10] world_manager: finished tick with id = 820 successfully
+[2015-08-31 22:23:10] world_manager: finished tick with id = 830 successfully
+[2015-08-31 22:23:10] server: accepted next connection from 127.0.0.1:40111
+[2015-08-31 22:23:10] server: start listening
+[2015-08-31 22:23:10] connection 10: recieved 18 B
+[2015-08-31 22:23:10] connection 10: expected 17 B
+[2015-08-31 22:23:10] connection 10: recieved full msg
+[2015-08-31 22:23:10] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:10] game_server: send get_chunk_response
+[2015-08-31 22:23:10] connection 10: sent 10 B
+[2015-08-31 22:23:10] connection 10: recieved 18 B
+[2015-08-31 22:23:10] connection 10: expected 17 B
+[2015-08-31 22:23:10] connection 10: recieved full msg
+[2015-08-31 22:23:10] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:10] game_server: send get_chunk_response
+[2015-08-31 22:23:10] connection 10: sent 20 B
+[2015-08-31 22:23:10] connection 10: recieved 18 B
+[2015-08-31 22:23:10] connection 10: expected 17 B
+[2015-08-31 22:23:10] connection 10: recieved full msg
+[2015-08-31 22:23:10] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:10] game_server: send get_chunk_response
+[2015-08-31 22:23:10] connection 10: sent 66 B
+[2015-08-31 22:23:10] server: connection was removed
+[2015-08-31 22:23:11] world_manager: finished tick with id = 840 successfully
+[2015-08-31 22:23:11] world_manager: finished tick with id = 850 successfully
+[2015-08-31 22:23:11] world_manager: finished tick with id = 860 successfully
+[2015-08-31 22:23:11] world_manager: finished tick with id = 870 successfully
+[2015-08-31 22:23:12] world_manager: finished tick with id = 880 successfully
+[2015-08-31 22:23:12] world_manager: finished tick with id = 890 successfully
+[2015-08-31 22:23:12] world_manager: finished tick with id = 900 successfully
+[2015-08-31 22:23:13] world_manager: finished tick with id = 910 successfully
+[2015-08-31 22:23:13] world_manager: finished tick with id = 920 successfully
+[2015-08-31 22:23:13] world_manager: finished tick with id = 930 successfully
+[2015-08-31 22:23:13] server: accepted next connection from 127.0.0.1:40112
+[2015-08-31 22:23:13] server: start listening
+[2015-08-31 22:23:13] connection 11: recieved 18 B
+[2015-08-31 22:23:13] connection 11: expected 17 B
+[2015-08-31 22:23:13] connection 11: recieved full msg
+[2015-08-31 22:23:13] game_server: recieved get_chunk for [0,1] [1,0]
+[2015-08-31 22:23:13] game_server: send get_chunk_response
+[2015-08-31 22:23:13] connection 11: sent 10 B
+[2015-08-31 22:23:13] connection 11: recieved 18 B
+[2015-08-31 22:23:13] connection 11: expected 17 B
+[2015-08-31 22:23:13] connection 11: recieved full msg
+[2015-08-31 22:23:13] game_server: recieved get_chunk for [0,1] [6,0]
+[2015-08-31 22:23:13] game_server: send get_chunk_response
+[2015-08-31 22:23:13] connection 11: sent 20 B
+[2015-08-31 22:23:13] connection 11: recieved 18 B
+[2015-08-31 22:23:13] connection 11: expected 17 B
+[2015-08-31 22:23:13] connection 11: recieved full msg
+[2015-08-31 22:23:13] game_server: recieved get_chunk for [0,13] [19,11]
+[2015-08-31 22:23:13] game_server: send get_chunk_response
+[2015-08-31 22:23:13] connection 11: sent 66 B
+[2015-08-31 22:23:14] server: connection was removed
+[2015-08-31 22:23:14] world_manager: finished tick with id = 940 successfully
+[2015-08-31 22:23:14] world_manager: finished tick with id = 950 successfully
+[2015-08-31 22:23:14] world_manager: finished tick with id = 960 successfully
+[2015-08-31 22:23:14] world_manager: finished tick with id = 970 successfully
+[2015-08-31 22:23:15] world_manager: finished tick with id = 980 successfully
+[2015-08-31 22:23:15] world_manager: finished tick with id = 990 successfully
+[2015-08-31 22:23:15] world_manager: finished tick with id = 1000 successfully
+[2015-08-31 22:23:16] world_manager: finished tick with id = 1010 successfully
+[2015-08-31 22:23:16] server: accepted next connection from 127.0.0.1:40113
+[2015-08-31 22:23:16] server: st

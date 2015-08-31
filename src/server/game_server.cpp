@@ -1,6 +1,6 @@
 #include "game_server.hpp"
-#include "message_dispatcher.hpp"
-#include "byte_buffer.hpp"
+#include "../common/message_dispatcher.hpp"
+#include "../common/byte_buffer.hpp"
 
 namespace networking
 {

@@ -66,7 +66,7 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
+        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller, nullptr);
 
         world_manager->add_maze(std::make_shared<core::file_maze_loader>());
         world_manager->load_all();
@@ -157,7 +157,7 @@ private:
     boost::posix_time::milliseconds interval {30};
     deadline_timer timer {server.main_server.m_io_service, interval};
     std::shared_ptr<core::world_manager> world_manager
-            {std::make_shared<core::world_manager>(nullptr, nullptr)};
+            {std::make_shared<core::world_manager>(nullptr, nullptr, nullptr)};
 };
 
 using namespace networking::messages;

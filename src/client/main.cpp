@@ -71,8 +71,9 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
         auto client =  std::make_shared<networking::client>();
+        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller, client);
+
 
         world_manager->add_maze(std::make_shared<networking::network_maze_loader>(client));
         world_manager->load_all();

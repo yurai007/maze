@@ -13,9 +13,11 @@ namespace core
 
 world_manager::world_manager(
         std::shared_ptr<presentation::renderer> renderer_,
-        std::shared_ptr<control::controller> controller_)
+        std::shared_ptr<control::controller> controller_,
+        std::shared_ptr<networking::client> client_)
     : renderer(renderer_),
-      controller(controller_)
+      controller(controller_),
+      client(client_)
 {
     logger_.log("world_manager: started");
 }
@@ -29,7 +31,7 @@ void world_manager::add_maze(std::shared_ptr<maze_loader> loader)
 void world_manager::add_remote_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
-    game_objects.push_back(std::make_shared<remote_player>(renderer, controller, maze_, posx, posy));
+    game_objects.push_back(std::make_shared<remote_player>(renderer, controller, maze_, client, posx, posy));
     logger_.log("world_manager: added player on position = {%d, %d}", posx, posy);
 }
 

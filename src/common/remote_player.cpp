@@ -2,18 +2,22 @@
 #include "renderer.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
+#include "messages.hpp"
 
 namespace core
 {
 
 remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
-               std::shared_ptr<control::controller> controller_,
-               std::shared_ptr<core::maze> maze_, int posx_, int posy_)
-: renderer(renderer_),
-  controller(controller_),
-  maze(maze_),
-  posx(posx_),
-  posy(posy_)
+                             std::shared_ptr<control::controller> controller_,
+                             std::shared_ptr<core::maze> maze_,
+                             std::shared_ptr<networking::client> client_,
+                             int posx_, int posy_)
+    : renderer(renderer_),
+      controller(controller_),
+      client(client_),
+      maze(maze_),
+      posx(posx_),
+      posy(posy_)
 {
 }
 
@@ -34,7 +38,6 @@ void remote_player::tick(unsigned short)
     posx += (direction == 'L')? -1 : (direction == 'R')? 1 :0;
     posy += (direction == 'U')? -1 : (direction == 'D')? 1 :0;
 
-    // client: get_chunk request to server
     if (maze->is_field_filled(posx, posy))
     {
         posx = oldx;
@@ -48,6 +51,18 @@ void remote_player::tick(unsigned short)
         perform_rotation = false;
     controller->reset_direction();
     old_direction = direction;
+
+    // ugly spagetti. Refactor that!!
+    // client: get_chunk request to server
+    // Also core shouldn't has idea about networking existence
+    // Refactor too!!
+    if (client != nullptr && perform_rotation)
+    {
+        networking::messages::position_changed request = {oldx, oldy, posx, posy};
+        client->send_request(request);
+        auto response = client->read_position_changed_response();
+        assert(response.content == "OK");
+    }
 }
 
 void remote_player::draw()

@@ -15,7 +15,7 @@ resource::resource(const std::string &name_,
 
 void resource::load()
 {
-    renderer->load_image_and_register("gold", "../../data/gold.bmp");
+    renderer->load_image_and_register("gold", "../../../data/gold.bmp");
 }
 
 void resource::tick(unsigned short)

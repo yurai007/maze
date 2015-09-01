@@ -8,6 +8,8 @@
 #include "controller.hpp"
 #include "maze.hpp"
 #include "logger.hpp"
+#include "maze_loader.hpp"
+#include "../client/client.hpp"
 
 namespace presentation
 {
@@ -26,9 +28,10 @@ class world_manager
 {
 public:
     world_manager(std::shared_ptr<presentation::renderer> renderer_,
-                  std::shared_ptr<control::controller> controller_);
-    void add_maze();
-    void add_player(int posx, int posy);
+                  std::shared_ptr<control::controller> controller_,
+                  std::shared_ptr<networking::client> client_);
+    void add_maze(std::shared_ptr<maze_loader> loader);
+    void add_remote_player(int posx, int posy);
     void add_enemy(int posx, int posy);
     void add_resource(const std::string &name, int posx, int posy);
     void load_all();
@@ -42,6 +45,7 @@ private:
 
     std::shared_ptr<presentation::renderer> renderer;
     std::shared_ptr<control::controller> controller;
+    std::shared_ptr<networking::client> client;
 };
 
 }

@@ -2,33 +2,36 @@
 #include <climits>
 
 #include "world_manager.hpp"
-#include "player.hpp"
+#include "remote_player.hpp"
 #include "enemy.hpp"
 #include "resource.hpp"
 #include "renderer.hpp"
+
 
 namespace core
 {
 
 world_manager::world_manager(
         std::shared_ptr<presentation::renderer> renderer_,
-        std::shared_ptr<control::controller> controller_)
+        std::shared_ptr<control::controller> controller_,
+        std::shared_ptr<networking::client> client_)
     : renderer(renderer_),
-      controller(controller_)
+      controller(controller_),
+      client(client_)
 {
     logger_.log("world_manager: started");
 }
 
-void world_manager::add_maze()
+void world_manager::add_maze(std::shared_ptr<maze_loader> loader)
 {
-    maze_ = std::make_shared<maze>(renderer);
+    maze_ = std::make_shared<maze>(renderer, loader);
     logger_.log("world_manager: added maze");
 }
 
-void world_manager::add_player(int posx, int posy)
+void world_manager::add_remote_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
-    game_objects.push_back(std::make_shared<player>(renderer, controller, maze_, posx, posy));
+    game_objects.push_back(std::make_shared<remote_player>(renderer, controller, maze_, client, posx, posy));
     logger_.log("world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
@@ -54,7 +57,7 @@ void world_manager::load_all()
         {
             char field = maze_->get_field(column, row);
             if (field == 'P')
-                add_player(column, row);
+                add_remote_player(column, row);
             else
                 if (field == 'E')
                     add_enemy(column, row);
@@ -62,6 +65,9 @@ void world_manager::load_all()
                     if (field == 'G')
                         add_resource("gold", column, row);
         }
+
+    if (renderer == nullptr)
+        return;
 
     for (auto &object : game_objects)
         object->load();
@@ -98,6 +104,7 @@ void world_manager::tick_all()
             {
                 // dirty hack, downcasting for zombie
                 if (std::dynamic_pointer_cast<resource>(object) != nullptr)
+                    // for resource client: get_chunk
                     if (maze_->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
                     {
                         object.reset();
@@ -113,6 +120,9 @@ void world_manager::tick_all()
 
 void world_manager::draw_all()
 {
+    if (renderer == nullptr)
+        return;
+
     maze_->draw();
     for (auto &object : game_objects)
         if (object != nullptr)

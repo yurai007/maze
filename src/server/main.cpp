@@ -1,11 +1,17 @@
-#include "maze_generator.hpp"
-#include "logger.hpp"
-#include "world_manager.hpp"
-#include "renderer.hpp"
-#include "controller.hpp"
-#include "message_dispatcher.hpp"
+#include "../common/maze_generator.hpp"
+#include "../common/logger.hpp"
+#include "../common/world_manager.hpp"
+#include "../common/renderer.hpp"
+#include "../common/controller.hpp"
+#include "../common/message_dispatcher.hpp"
 #include "game_server.hpp"
+#include "../common/file_maze_loader.hpp"
+
 #include <thread>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+
+using namespace boost::asio;
 
 /*
  * Great makefile tutorial:
@@ -37,8 +43,11 @@
  * WTF?? Emplace_back problem in world_manager::add_enemy and enemy::id.
    I had to replace emplace_back to push_back.
 
+ * I must cheat gtkmm/gui_driver that I haven't any arguments. Otherwise error from gtkmm:
+    GLib-GIO-CRITICAL **: This application can not open files.
+
  TO DO:
-    2. Maze must be multithreaded.
+    Disable gui in server
 
 */
 
@@ -57,9 +66,9 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
+        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller, nullptr);
 
-        world_manager->add_maze();
+        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
         world_manager->load_all();
         qt_renderer->set_world(world_manager);
 
@@ -103,31 +112,55 @@ private:
     char **argv;
 };
 
+// Only one thread
+class cmd_driver
+{
+public:
+    cmd_driver(int argc_, char** argv_)
+        : argc(argc_),
+          argv(argv_)
+    {
+    }
+
+    void tick(const boost::system::error_code&)
+    {
+        if (world_manager != nullptr)
+              world_manager->tick_all();
+
+        timer.expires_at(timer.expires_at() + interval);
+        timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
+    }
+
+    int run()
+    {
+        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
+        world_manager->load_all();
+
+        try
+        {
+            timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
+            server.init(world_manager->maze_);
+            server.run();
+        }
+        catch (std::exception& e)
+        {
+            logger_.log("exception: %s", e.what());
+        }
+        return 0;
+    }
+
+private:
+    int argc;
+    char **argv;
+
+    networking::game_server server;
+    boost::posix_time::milliseconds interval {30};
+    deadline_timer timer {server.main_server.m_io_service, interval};
+    std::shared_ptr<core::world_manager> world_manager
+            {std::make_shared<core::world_manager>(nullptr, nullptr, nullptr)};
+};
+
 using namespace networking::messages;
-
-//void message_dispatcher_test_case()
-//{
-//    int foo = 0;
-//    networking::message_dispatcher dispatcher;
-
-//    dispatcher.add_handler( [&] (const get_chunk_response &msg1)
-//    {
-//        logger_.log("Got a get_chunk_response: %s and %d", msg1.content.c_str(), foo);
-//    });
-
-//    dispatcher.add_handler( [&] (const position_changed_response &msg2)
-//    {
-//        logger_.log("Got a position_changed_response: %s", msg2.content.c_str());
-//    });
-
-
-
-//    dispatcher.dispatch(1);
-//    dispatcher.dispatch(3);
-//    foo = 666;
-//    dispatcher.dispatch(0);
-//    dispatcher.dispatch(1);
-//}
 
 void generator_test_case()
 {
@@ -138,8 +171,10 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
-    //message_dispatcher_test_case();
-    gui_driver qt_driver(argc, argv);
-    return qt_driver.run();
+    if (argc > 1)
+        logger_.log("Arg: %s", argv[1]);
+
+    cmd_driver driver(0, NULL);
+    return driver.run();
 }
 

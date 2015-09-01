@@ -1,29 +1,36 @@
-#include "player.hpp"
+#include "remote_player.hpp"
 #include "renderer.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
+#include "messages.hpp"
 
 namespace core
 {
 
-player::player(std::shared_ptr<presentation::renderer> renderer_,
-               std::shared_ptr<control::controller> controller_,
-               std::shared_ptr<core::maze> maze_, int posx_, int posy_)
-: renderer(renderer_),
-  controller(controller_),
-  maze(maze_),
-  posx(posx_),
-  posy(posy_)
+remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
+                             std::shared_ptr<control::controller> controller_,
+                             std::shared_ptr<core::maze> maze_,
+                             std::shared_ptr<networking::client> client_,
+                             int posx_, int posy_)
+    : renderer(renderer_),
+      controller(controller_),
+      client(client_),
+      maze(maze_),
+      posx(posx_),
+      posy(posy_)
 {
 }
 
-void player::load()
+void remote_player::load()
 {
-     renderer->load_image_and_register("player", "../../data/player.bmp");
+     renderer->load_image_and_register("player", "../../../data/player.bmp");
 }
 
-void player::tick(unsigned short)
+void remote_player::tick(unsigned short)
 {
+    if (controller == nullptr)
+        return;
+
     static char old_direction = 0;
     int oldx = posx, oldy = posy;
 
@@ -44,9 +51,21 @@ void player::tick(unsigned short)
         perform_rotation = false;
     controller->reset_direction();
     old_direction = direction;
+
+    // ugly spagetti. Refactor that!!
+    // client: get_chunk request to server
+    // Also core shouldn't has idea about networking existence
+    // Refactor too!!
+    if (client != nullptr && perform_rotation)
+    {
+        networking::messages::position_changed request = {oldx, oldy, posx, posy};
+        client->send_request(request);
+        auto response = client->read_position_changed_response();
+        assert(response.content == "OK");
+    }
 }
 
-void player::draw()
+void remote_player::draw()
 {
     if (perform_rotation)
     {
@@ -62,7 +81,7 @@ void player::draw()
     renderer->draw_image("player", 30*posx, 30*posy);
 }
 
-std::tuple<int, int> player::get_position() const
+std::tuple<int, int> remote_player::get_position() const
 {
     return std::make_tuple(posx, posy);
 }

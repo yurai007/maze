@@ -25,7 +25,7 @@ enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
 
 void enemy::load()
 {
-    renderer->load_image_and_register("enemy" + std::to_string(id), "../../data/enemy.bmp");
+    renderer->load_image_and_register("enemy" + std::to_string(id), "../../../data/enemy.bmp");
 }
 
 void enemy::tick(unsigned short tick_counter)

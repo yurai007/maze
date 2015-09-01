@@ -49,10 +49,12 @@ private:
     void send(Msg &msg)
     {
         serialization::byte_buffer serialized_msg;
-        char msg_size = sizeof(msg) + 1;
-        serialized_msg.put_char(msg_size);
+        serialized_msg.put_char(0);
         serialized_msg.put_char(msg.message_id());
         msg.serialize_to_buffer(serialized_msg);
+        unsigned char size = (unsigned char)(serialized_msg.get_size() - 1);
+        serialized_msg.m_byte_buffer[0] = size;
+
         boost::system::error_code error;
 
         size_t send_bytes = socket.write_some(boost::asio::buffer(serialized_msg.m_byte_buffer,
@@ -78,6 +80,7 @@ private:
             logger_.log("Recieved message with wrong type. Expected message_id = %d", msg_type);
 
         msg.deserialize_from_buffer(deserialized_msg);
+        return msg;
     }
 
     boost::asio::io_service io_service;

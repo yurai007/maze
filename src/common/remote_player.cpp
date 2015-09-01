@@ -19,7 +19,7 @@ remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
 
 void remote_player::load()
 {
-     renderer->load_image_and_register("player", "../../data/player.bmp");
+     renderer->load_image_and_register("player", "../../../data/player.bmp");
 }
 
 void remote_player::tick(unsigned short)

@@ -23,10 +23,11 @@ public:
     void send(Msg &msg)
     {
         serialization::byte_buffer data;
-        char size = char(sizeof(msg) + 1);
-        data.put_char(size);
+        data.put_char(0);
         data.put_char(msg.message_id());
         msg.serialize_to_buffer(data);
+        unsigned char size = (unsigned char)(data.get_size() - 1);
+        data.m_byte_buffer[0] = size;
         m_server.send_on_current_connection(data);
     }
 private:

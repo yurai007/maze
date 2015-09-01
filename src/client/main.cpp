@@ -4,6 +4,8 @@
 #include "../common/renderer.hpp"
 #include "../common/controller.hpp"
 #include "../common/message_dispatcher.hpp"
+#include "../common/network_maze_loader.hpp"
+#include "client.hpp"
 
 #include <thread>
 #include <boost/bind.hpp>
@@ -70,8 +72,9 @@ public:
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
         auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
+        auto client =  std::make_shared<networking::client>();
 
-        world_manager->add_maze();
+        world_manager->add_maze(std::make_shared<networking::network_maze_loader>(client));
         world_manager->load_all();
         qt_renderer->set_world(world_manager);
 

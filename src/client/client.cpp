@@ -16,6 +16,7 @@ client::client()
         socket.close();
         socket.connect(*endpoint_iterator++, error);
     }
+    assert(!error);
 
 //    if (error)
 //        throw boost::system::system_error(error);

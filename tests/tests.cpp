@@ -11,6 +11,9 @@
  *
  *  TO DO: pause/resume for server, fix test_get_chunk_response3 and add tests for position_changed
 */
+
+// TO DO: Remove those fucking sizeof-s!!!!!!!!!!!
+
 using boost::asio::ip::tcp;
 using namespace networking;
 
@@ -22,6 +25,19 @@ void test_get_chunk_response1()
 {
     std::cout << "[test_get_chunk_response1]\n";
     messages::get_chunk msg = {0, 1, 1, 0};
+
+    // by 5 rows => 10 requests
+
+
+
+    // [0, 4], [49, 0]
+    // [0, 9], [49, 5]
+
+
+
+
+
+
     serialization::byte_buffer serialized_msg;
     char msg_size = sizeof(msg) + 1;
     serialized_msg.put_char(msg_size);

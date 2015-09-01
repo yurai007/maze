@@ -5,6 +5,7 @@
 #include "../common/controller.hpp"
 #include "../common/message_dispatcher.hpp"
 #include "game_server.hpp"
+#include "../common/file_maze_loader.hpp"
 
 #include <thread>
 #include <boost/bind.hpp>
@@ -67,7 +68,7 @@ public:
         auto qt_renderer = std::make_shared<presentation::renderer>();
         auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller);
 
-        world_manager->add_maze();
+        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
         world_manager->load_all();
         qt_renderer->set_world(world_manager);
 
@@ -132,7 +133,7 @@ public:
 
     int run()
     {
-        world_manager->add_maze();
+        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
         world_manager->load_all();
 
         try

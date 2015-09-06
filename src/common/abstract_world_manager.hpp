@@ -9,16 +9,6 @@
 #include "maze.hpp"
 #include "game_objects_factory.hpp"
 
-//namespace presentation
-//{
-//    class renderer;
-//}
-
-//namespace control
-//{
-//    class controller;
-//}
-
 namespace core
 {
 
@@ -40,7 +30,8 @@ public:
     virtual ~abstract_world_manager() = default;
 
     std::shared_ptr<core::maze> maze_ {nullptr};
-private:
+
+protected:
     std::vector<std::shared_ptr<game_object>> game_objects;
     std::shared_ptr<game_objects_factory> objects_factory {nullptr};
 };

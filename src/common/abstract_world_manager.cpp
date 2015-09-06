@@ -39,9 +39,9 @@ void abstract_world_manager::add_resource(const std::string &name, int posx, int
 
 void abstract_world_manager::load_all()
 {
+    assert(maze_ != nullptr);
     maze_->load();
 
-    // HERE: On client I need extra phase here to obtain id-s
     preprocess_loading();
 
     for (int row = 0; row < maze_->size(); row++)
@@ -58,13 +58,6 @@ void abstract_world_manager::load_all()
                         add_resource("gold", column, row);
         }
 
-    // HERE: On client extra phase to loading game_objects
-
-//    if (renderer == nullptr)
-//        return;
-
-//    for (auto &object : game_objects)
-//        object->load();
     postprocess_loading();
 
     logger_.log("abstract_world_manager: all game objects were loaded successfully");
@@ -73,8 +66,6 @@ void abstract_world_manager::load_all()
 void abstract_world_manager::tick_all()
 {
     static unsigned short tick_counter = 0;
-
-    // on client extra get_chunks and get_enemies
     preprocess_ticking();
 
     maze_->tick(tick_counter);

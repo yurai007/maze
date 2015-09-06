@@ -51,67 +51,6 @@ using namespace boost::asio;
 
 */
 
-class gui_driver
-{
-public:
-    gui_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
-    {
-    }
-
-    int run()
-    {
-        application = Gtk::Application::create(argc, argv, "");
-
-        auto qt_controller = std::make_shared<control::controller>();
-        auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto world_manager = std::make_shared<core::server_world_manager>(qt_renderer, qt_controller, nullptr);
-
-        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
-        world_manager->load_all();
-        qt_renderer->set_world(world_manager);
-
-
-        qt_controller->set_title("The Maze");
-        qt_controller->set_default_size(1024, 768);
-
-        qt_controller->add(*qt_renderer);
-        qt_renderer->show();
-
-        networking::game_server server;
-
-        // thread 2
-        std::thread network_thread([&]()
-        {
-            try
-            {
-                // I have no fucking idea why removing emplaces,
-                // std::move (with unique_ptr) and moving world_manager->maze_ here
-                // fixed lock_guard...
-                server.init(world_manager->maze_);
-                server.run();
-            }
-            catch (std::exception& e)
-            {
-                logger_.log("exception: %s", e.what());
-            }
-
-        });
-        int result = application->run(*qt_controller);
-        server.stop(); // without that network_thread is still working and
-        // cannot be join so join blocks and application hangs.
-        network_thread.join();
-
-        return result;
-    }
-
-private:
-    Glib::RefPtr<Gtk::Application> application;
-    int argc;
-    char **argv;
-};
-
 // Only one thread
 class cmd_driver
 {
@@ -142,9 +81,9 @@ public:
             server.init(world_manager->maze_);
             server.run();
         }
-        catch (std::exception& e)
+        catch (std::exception& exception)
         {
-            logger_.log("exception: %s", e.what());
+            logger_.log("exception: %s", exception.what());
         }
         return 0;
     }
@@ -156,8 +95,13 @@ private:
     networking::game_server server;
     boost::posix_time::milliseconds interval {30};
     deadline_timer timer {server.main_server.m_io_service, interval};
+
+    std::shared_ptr<core::game_objects_factory> game_objects_factory
+        {std::make_shared<core::game_objects_factory>(nullptr, nullptr, nullptr)};
+
     std::shared_ptr<core::server_world_manager> world_manager
-            {std::make_shared<core::server_world_manager>(nullptr, nullptr, nullptr)};
+        {std::make_shared<core::server_world_manager>(game_objects_factory)};
+
 };
 
 using namespace networking::messages;

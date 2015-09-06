@@ -55,6 +55,14 @@ struct byte_buffer
 		offset += size;
 	}
 
+	void put_int_vector(const std::vector<int> &value)
+	{
+		size_t size = value.size()*sizeof(int);
+		put_int(size);
+		memcpy(&m_byte_buffer[offset], &value[0], size);
+		offset += size;
+	}
+
 	void put_string(const std::string &value)
 	{
 		size_t size = value.size()*sizeof(char);
@@ -93,6 +101,14 @@ struct byte_buffer
 		memcpy(&value, &m_byte_buffer[offset], sizeof(long));
 		offset += sizeof(long);
 		return value;
+	}
+
+	void get_int_vector(std::vector<int> &value)
+	{
+		size_t size = get_int();
+		assert(size <= value.size());
+		memcpy(&value[0], &m_byte_buffer[offset], size);
+		offset += size;
 	}
 
 	void get_double_vector(std::vector<double> &value)

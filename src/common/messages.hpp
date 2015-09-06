@@ -112,6 +112,53 @@ struct position_changed_response
 	std::string content {"OK"};
 };
 
+struct get_all_enemies
+{
+	get_all_enemies() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
+	}
+
+	static int message_id()
+	{
+		return 4;
+	}
+	std::string content{"enemies"};
+};
+
+struct get_all_enemies_response
+{
+	get_all_enemies_response() = default;
+
+	get_all_enemies_response(const std::vector<int> &enemies_data)
+		: content(enemies_data)
+	{
+	}
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int_vector(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		buffer.get_int_vector(content);
+	}
+
+	static int message_id()
+	{
+		return 5;
+	}
+	std::vector<int> content; //[id, posx, posy]
+};
+
 }
 
 }

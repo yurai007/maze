@@ -15,7 +15,7 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
+void renderer::set_world(std::shared_ptr<core::server_world_manager> world_manager_)
 {
     world_manager = world_manager_;
 }

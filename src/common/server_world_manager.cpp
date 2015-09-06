@@ -1,7 +1,7 @@
 #include <cassert>
 #include <climits>
 
-#include "world_manager.hpp"
+#include "server_world_manager.hpp"
 #include "remote_player.hpp"
 #include "enemy.hpp"
 #include "resource.hpp"
@@ -11,7 +11,7 @@
 namespace core
 {
 
-world_manager::world_manager(
+server_world_manager::server_world_manager(
         std::shared_ptr<presentation::renderer> renderer_,
         std::shared_ptr<control::controller> controller_,
         std::shared_ptr<networking::client> client_)
@@ -19,38 +19,40 @@ world_manager::world_manager(
       controller(controller_),
       client(client_)
 {
-    logger_.log("world_manager: started");
+    logger_.log("server_world_manager: started");
 }
 
-void world_manager::add_maze(std::shared_ptr<maze_loader> loader)
+void server_world_manager::add_maze(std::shared_ptr<maze_loader> loader)
 {
     maze_ = std::make_shared<maze>(renderer, loader);
-    logger_.log("world_manager: added maze");
+    logger_.log("server_world_manager: added maze");
 }
 
-void world_manager::add_remote_player(int posx, int posy)
+void server_world_manager::add_remote_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
     game_objects.push_back(std::make_shared<remote_player>(renderer, controller, maze_, client, posx, posy));
-    logger_.log("world_manager: added player on position = {%d, %d}", posx, posy);
+    logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
-void world_manager::add_enemy(int posx, int posy)
+void server_world_manager::add_enemy(int posx, int posy)
 {
     assert(maze_ != nullptr); 
     game_objects.push_back(std::make_shared<enemy>(renderer, maze_, posx, posy)); //Wtf ?? emplace_back
-    logger_.log("world_manager: added enemy on position = {%d, %d}", posx, posy);
+    logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
-void world_manager::add_resource(const std::string &name, int posx, int posy)
+void server_world_manager::add_resource(const std::string &name, int posx, int posy)
 {
     game_objects.push_back(std::make_shared<resource>(name, renderer, posx, posy));
-    logger_.log("world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
+    logger_.log("server_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
-void world_manager::load_all()
+void server_world_manager::load_all()
 {
     maze_->load();
+
+    // On client I need extra phase here to obtain id-s
 
     for (int row = 0; row < maze_->size(); row++)
         for (int column = 0; column < maze_->size(); column++)
@@ -72,10 +74,10 @@ void world_manager::load_all()
     for (auto &object : game_objects)
         object->load();
 
-    logger_.log("world_manager: all game objects were loaded successfully");
+    logger_.log("server_world_manager: all game objects were loaded successfully");
 }
 
-void world_manager::tick_all()
+void server_world_manager::tick_all()
 {
     static unsigned short tick_counter = 0;
 
@@ -108,17 +110,28 @@ void world_manager::tick_all()
                     if (maze_->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
                     {
                         object.reset();
-                        logger_.log("world_manager: removed resource from positon = {%d, %d}",
+                        logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
                             std::get<0>(old_position), std::get<1>(old_position));
                     }
             }
     }
     if (tick_counter%10 == 0)
-        logger_.log("world_manager: finished tick with id = %d successfully", tick_counter);
+        logger_.log("server_world_manager: finished tick with id = %d successfully", tick_counter);
     tick_counter++;
 }
 
-void world_manager::draw_all()
+void server_world_manager::tick_all_client()
+{
+    assert(client != nullptr);
+
+    /* for small number of enemies:
+            client: get_enemy(id)_pos??
+       otherwise:
+            client: get_chunk for all visible chunks
+    */
+}
+
+void server_world_manager::draw_all()
 {
     if (renderer == nullptr)
         return;

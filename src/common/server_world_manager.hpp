@@ -1,10 +1,11 @@
-#ifndef WORLD_MANAGER_HPP
-#define WORLD_MANAGER_HPP
+#ifndef SERVER_WORLD_MANAGER_HPP
+#define SERVER_WORLD_MANAGER_HPP
 
 #include <vector>
 #include <memory>
 
 #include "game_object.hpp"
+#include "enemy.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
 #include "logger.hpp"
@@ -24,10 +25,10 @@ namespace control
 namespace core
 {
 
-class world_manager
+class server_world_manager
 {
 public:
-    world_manager(std::shared_ptr<presentation::renderer> renderer_,
+    server_world_manager(std::shared_ptr<presentation::renderer> renderer_,
                   std::shared_ptr<control::controller> controller_,
                   std::shared_ptr<networking::client> client_);
     void add_maze(std::shared_ptr<maze_loader> loader);
@@ -36,6 +37,7 @@ public:
     void add_resource(const std::string &name, int posx, int posy);
     void load_all();
     void tick_all();
+    void tick_all_client();
     void draw_all();
 
     std::shared_ptr<maze> maze_;
@@ -45,9 +47,12 @@ private:
 
     std::shared_ptr<presentation::renderer> renderer;
     std::shared_ptr<control::controller> controller;
+
+    // client data
     std::shared_ptr<networking::client> client;
+    std::vector<core::enemy> enemies;
 };
 
 }
 
-#endif // WORLD_MANAGER_HPP
+#endif // SERVER_WORLD_MANAGER_HPP

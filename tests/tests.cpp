@@ -4,15 +4,13 @@
 #include <cassert>
 
 #include "../src/common/messages.hpp"
-//#include "../src/logger.hpp"
 
 /* This is asynchronous client
  * write_some and read_some blocks.
- *
+ * sizeof is OK for messages which are POD-s (get_chunk) but for
+   other is NOT OK.
  *  TO DO: pause/resume for server, fix test_get_chunk_response3 and add tests for position_changed
 */
-
-// TO DO: Remove those fucking sizeof-s!!!!!!!!!!!
 
 using boost::asio::ip::tcp;
 using namespace networking;
@@ -25,18 +23,6 @@ void test_get_chunk_response1()
 {
     std::cout << "[test_get_chunk_response1]\n";
     messages::get_chunk msg = {0, 1, 1, 0};
-
-    // by 5 rows => 10 requests
-
-
-
-    // [0, 4], [49, 0]
-    // [0, 9], [49, 5]
-
-
-
-
-
 
     serialization::byte_buffer serialized_msg;
     char msg_size = sizeof(msg) + 1;
@@ -52,7 +38,8 @@ void test_get_chunk_response1()
     std::cout << "Send get_chunk to server\n";
 
     serialized_msg.clear();
-    size_t recieved_bytes = m_socket.read_some(boost::asio::buffer(serialized_msg.m_byte_buffer), error);
+    size_t recieved_bytes = m_socket.read_some(boost::asio::buffer(serialized_msg.m_byte_buffer),
+                                               error);
     assert(!error);
     assert(recieved_bytes == 10);
 
@@ -84,7 +71,8 @@ void test_get_chunk_response2()
     std::cout << "Send get_chunk to server\n";
 
     serialized_msg.clear();
-    size_t recieved_bytes = m_socket.read_some(boost::asio::buffer(serialized_msg.m_byte_buffer), error);
+    size_t recieved_bytes = m_socket.read_some(boost::asio::buffer(serialized_msg.m_byte_buffer),
+                                               error);
     assert(!error);
     assert(recieved_bytes == 20);
 
@@ -98,7 +86,7 @@ void test_get_chunk_response2()
     std::cout << "Recieved get_chunk_response from server\n";
 }
 
-// sometimes fail because of enemies
+// sometimes fail because of enemies movement
 void test_get_chunk_response3()
 {
     std::cout << "[test_get_chunk_response3]\n";

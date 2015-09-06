@@ -62,6 +62,8 @@ void remote_player::tick(unsigned short)
         client->send_request(request);
         auto response = client->read_position_changed_response();
         assert(response.content == "OK");
+        logger_.log("remote_player: send position_changed request = {%d, %d} -> {%d, %d} "
+                    "and got response", oldx, oldy, posx, posy);
     }
 }
 

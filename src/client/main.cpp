@@ -1,6 +1,6 @@
 #include "../common/maze_generator.hpp"
 #include "../common/logger.hpp"
-#include "../common/world_manager.hpp"
+#include "../common/server_world_manager.hpp"
 #include "../common/renderer.hpp"
 #include "../common/controller.hpp"
 #include "../common/message_dispatcher.hpp"
@@ -71,8 +71,13 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto client =  std::make_shared<networking::client>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller, client);
+
+        //auto client =  std::make_shared<networking::client>(); // WTF?? Buggy make_shared???
+
+        std::shared_ptr<networking::client> client(new networking::client());
+
+        auto world_manager = std::make_shared<core::server_world_manager>(qt_renderer, qt_controller,
+                                                                   client);
 
 
         world_manager->add_maze(std::make_shared<networking::network_maze_loader>(client));

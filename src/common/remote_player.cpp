@@ -14,8 +14,8 @@ remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
                              int posx_, int posy_)
     : renderer(renderer_),
       controller(controller_),
-      client(client_),
       maze(maze_),
+      client(client_),
       posx(posx_),
       posy(posy_)
 {

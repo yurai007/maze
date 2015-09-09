@@ -31,6 +31,13 @@ void abstract_world_manager::add_enemy(int posx, int posy)
     logger_.log("abstract_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
+void abstract_world_manager::add_client_enemy(int posx, int posy, int id)
+{
+    assert(maze_ != nullptr);
+    game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
+    logger_.log("abstract_world_manager: added client_enemy on position = {%d, %d}", posx, posy);
+}
+
 void abstract_world_manager::add_resource(const std::string &name, int posx, int posy)
 {
     game_objects.push_back(objects_factory->create_resource(name, posx, posy));
@@ -52,7 +59,7 @@ void abstract_world_manager::load_all()
                 add_remote_player(column, row);
             else
                 if (field == 'E')
-                    add_enemy(column, row);
+                    make_enemy(column, row);
                 else
                     if (field == 'G')
                         add_resource("gold", column, row);
@@ -63,7 +70,7 @@ void abstract_world_manager::load_all()
     logger_.log("abstract_world_manager: all game objects were loaded successfully");
 }
 
-void abstract_world_manager::tick_all()
+void abstract_world_manager::tick_all(bool omit_moving_fields)
 {
     static unsigned short tick_counter = 0;
     preprocess_ticking();
@@ -78,6 +85,9 @@ void abstract_world_manager::tick_all()
 
             if (new_position != old_position)
             {
+                if (omit_moving_fields)
+                    continue;
+
                 int new_pos_x = std::get<0>(new_position);
                 int new_pos_y = std::get<1>(new_position);
 

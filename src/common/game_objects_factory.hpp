@@ -7,6 +7,8 @@
 #include "remote_player.hpp"
 #include "enemy.hpp"
 #include "resource.hpp"
+#include "client_enemy.hpp"
+#include "abstract_world_manager.hpp"
 
 namespace presentation
 {
@@ -35,6 +37,8 @@ public:
     std::shared_ptr<maze> create_maze(std::shared_ptr<maze_loader> loader);
     std::shared_ptr<remote_player> create_remote_player(int posx, int posy);
     std::shared_ptr<enemy> create_enemy(int posx, int posy);
+    std::shared_ptr<client_enemy> create_client_enemy(std::shared_ptr<core::abstract_world_manager> manager,
+                                                      int posx, int posy, int id);
     std::shared_ptr<resource> create_resource(const std::string &name, int posx, int posy);
 private:
     std::shared_ptr<presentation::renderer> renderer_;

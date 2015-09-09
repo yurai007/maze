@@ -10,7 +10,8 @@ namespace core
 {
 
 enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
-             std::shared_ptr<core::maze> maze_, int posx_, int posy_)
+             std::shared_ptr<core::maze> maze_,
+             int posx_, int posy_)
     : renderer(renderer_),
       maze(maze_),
       posx(posx_),
@@ -21,6 +22,11 @@ enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
     id_generator++;
     id = id_generator;
     srand(time(NULL));
+}
+
+int enemy::get_id() const
+{
+    return id;
 }
 
 void enemy::load()

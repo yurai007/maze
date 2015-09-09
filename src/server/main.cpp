@@ -64,7 +64,7 @@ public:
     void tick(const boost::system::error_code&)
     {
         if (world_manager != nullptr)
-              world_manager->tick_all();
+              world_manager->tick_all(false);
 
         timer.expires_at(timer.expires_at() + interval);
         timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
@@ -78,7 +78,7 @@ public:
         try
         {
             timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-            server.init(world_manager->maze_);
+            server.init(world_manager->maze_, world_manager);
             server.run();
         }
         catch (std::exception& exception)

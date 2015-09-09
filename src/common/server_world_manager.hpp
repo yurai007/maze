@@ -17,8 +17,10 @@ public:
     void preprocess_loading() override;
     void postprocess_loading() override;
     void preprocess_ticking() override;
+    void make_enemy(int posx, int posy) override;
 
     void draw_all();
+    std::vector<int> get_enemies_data() const;
 };
 
 }

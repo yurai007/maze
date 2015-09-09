@@ -11,7 +11,8 @@ game_server::game_server()
 
 }
 
-void game_server::init(std::shared_ptr<core::maze> maze)
+void game_server::init(std::shared_ptr<core::maze> maze,
+					   std::shared_ptr<core::server_world_manager> manager)
 {
 	auto dispatcher = std::make_shared<networking::message_dispatcher>();
 
@@ -36,6 +37,17 @@ void game_server::init(std::shared_ptr<core::maze> maze)
 
 		sender.send(response);
 		logger_.log("game_server: send position_changed_response");
+	});
+
+	dispatcher->add_handler(
+				[&](messages::get_enemies_data &msg)
+	{
+		logger_.log("game_server: recieved get_enemies_data");
+
+		messages::get_enemies_data_response response(manager->get_enemies_data());
+
+		sender.send(response);
+		logger_.log("game_server: send get_enemies_data_response");
 	});
 
 	main_server.add_dispatcher(dispatcher);

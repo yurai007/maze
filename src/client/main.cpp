@@ -75,11 +75,12 @@ public:
 
         //auto client =  std::make_shared<networking::client>(); // WTF?? Buggy make_shared???
         std::shared_ptr<networking::client> client(new networking::client());
-        auto game_objects_factory = std::make_shared<core::game_objects_factory>(qt_renderer,
+        std::shared_ptr<core::game_objects_factory> game_objects_factory(new core::game_objects_factory(qt_renderer,
                                                                                  qt_controller,
-                                                                                 client);
+                                                                                 client));
 
-        auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory);
+        auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
+                                                                          client);
 
         world_manager->add_maze(std::make_shared<networking::network_maze_loader>(client));
         world_manager->load_all();

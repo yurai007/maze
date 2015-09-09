@@ -12,7 +12,7 @@
 namespace core
 {
 
-class abstract_world_manager
+class abstract_world_manager : public std::enable_shared_from_this<abstract_world_manager>
 {
 public:
     abstract_world_manager(std::shared_ptr<game_objects_factory> objects_factory_);
@@ -20,12 +20,14 @@ public:
     virtual void preprocess_loading() = 0;
     virtual void postprocess_loading() = 0;
     virtual void preprocess_ticking() = 0;
+    virtual void make_enemy(int posx, int posy) = 0;
 
     void add_maze(std::shared_ptr<maze_loader> loader);
     void add_remote_player(int posx, int posy);
     void add_enemy(int posx, int posy);
+    void add_client_enemy(int posx, int posy, int id);
     void add_resource(const std::string &name, int posx, int posy);
-    void tick_all();
+    void tick_all(bool omit_moving_fields);
     void load_all();
     virtual ~abstract_world_manager() = default;
 

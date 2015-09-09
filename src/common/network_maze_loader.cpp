@@ -27,11 +27,11 @@ std::vector<std::string> network_maze_loader::load()
         messages::get_chunk request = {ld_x, ld_y, ru_x, ru_y};
         m_maze_client->send_request(request);
 
-        auto response = m_maze_client->read_get_chunk_response();
+        const auto response = m_maze_client->read_get_chunk_response();
 
         for (int j = 0; j < rows_number; j++)
         {
-            auto row = response.content.substr(j*maze_size, maze_size);
+            const auto row = response.content.substr(j*maze_size, maze_size);
             assert(row.size() == maze_size);
             result.push_back(row);
         }

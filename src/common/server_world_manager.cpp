@@ -2,7 +2,7 @@
 #include <climits>
 
 #include "server_world_manager.hpp"
-#include "remote_player.hpp"
+#include "client_player.hpp"
 #include "enemy.hpp"
 #include "resource.hpp"
 #include "renderer.hpp"
@@ -38,7 +38,7 @@ void server_world_manager::draw_all()
 {
 }
 
-std::vector<int> server_world_manager::get_enemies_data() const
+std::vector<int> server_world_manager::get_enemies_data(bool verify) const
 {
     std::vector<int> result;
     for (auto &object : game_objects)
@@ -47,6 +47,13 @@ std::vector<int> server_world_manager::get_enemies_data() const
         if (enemy_ != nullptr)
         {
             auto position = enemy_->get_position();
+
+            if (verify)
+            {
+                char field = maze_->get_field(std::get<0>(position), std::get<1>(position));
+                assert(field == 'E');
+            }
+
             result.push_back(enemy_->get_id());
             result.push_back(std::get<0>(position));
             result.push_back(std::get<1>(position));

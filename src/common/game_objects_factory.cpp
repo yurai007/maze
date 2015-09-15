@@ -21,9 +21,9 @@ std::shared_ptr<maze> game_objects_factory::create_maze(std::shared_ptr<maze_loa
     return maze_;
 }
 
-std::shared_ptr<remote_player> game_objects_factory::create_remote_player(int posx, int posy)
+std::shared_ptr<client_player> game_objects_factory::create_client_player(int posx, int posy)
 {
-    return std::make_shared<remote_player>(renderer_, controller_, maze_, client_, posx, posy);
+    return std::make_shared<client_player>(renderer_, controller_, maze_, client_, posx, posy);
 }
 
 std::shared_ptr<enemy> game_objects_factory::create_enemy(int posx, int posy)

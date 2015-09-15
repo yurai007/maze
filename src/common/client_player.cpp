@@ -1,4 +1,4 @@
-#include "remote_player.hpp"
+#include "client_player.hpp"
 #include "renderer.hpp"
 #include "controller.hpp"
 #include "maze.hpp"
@@ -7,7 +7,7 @@
 namespace core
 {
 
-remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
+client_player::client_player(std::shared_ptr<presentation::renderer> renderer_,
                              std::shared_ptr<control::controller> controller_,
                              std::shared_ptr<core::maze> maze_,
                              std::shared_ptr<networking::client> client_,
@@ -21,12 +21,12 @@ remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
 {
 }
 
-void remote_player::load()
+void client_player::load()
 {
      renderer->load_image_and_register("player", "../../../data/player.bmp");
 }
 
-void remote_player::tick(unsigned short)
+void client_player::tick(unsigned short)
 {
     if (controller == nullptr)
         return;
@@ -56,18 +56,18 @@ void remote_player::tick(unsigned short)
     // client: get_chunk request to server
     // Also core shouldn't has idea about networking existence
     // Refactor too!!
-    if (client != nullptr && perform_rotation)
+    if (client != nullptr && ((oldx != posx) || (oldy != posy)) )
     {
         networking::messages::position_changed request = {oldx, oldy, posx, posy};
         client->send_request(request);
         auto response = client->read_position_changed_response();
         assert(response.content == "OK");
-        logger_.log("remote_player: send position_changed request = {%d, %d} -> {%d, %d} "
+        logger_.log("client_player: send position_changed request = {%d, %d} -> {%d, %d} "
                     "and got response", oldx, oldy, posx, posy);
     }
 }
 
-void remote_player::draw()
+void client_player::draw()
 {
     if (perform_rotation)
     {
@@ -83,7 +83,7 @@ void remote_player::draw()
     renderer->draw_image("player", 30*posx, 30*posy);
 }
 
-std::tuple<int, int> remote_player::get_position() const
+std::tuple<int, int> client_player::get_position() const
 {
     return std::make_tuple(posx, posy);
 }

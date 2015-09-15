@@ -1,5 +1,5 @@
-#ifndef REMOTE_PLAYER_HPP
-#define REMOTE_PLAYER_HPP
+#ifndef CLIENT_PLAYER_HPP
+#define CLIENT_PLAYER_HPP
 
 #include <memory>
 #include "creature.hpp"
@@ -24,10 +24,10 @@ namespace core
 namespace core
 {
 
-class remote_player : public creature
+class client_player : public creature
 {
 public:
-    remote_player(std::shared_ptr<presentation::renderer> renderer_,
+    client_player(std::shared_ptr<presentation::renderer> renderer_,
            std::shared_ptr<control::controller> controller_,
            std::shared_ptr<core::maze> maze_,
            std::shared_ptr<networking::client> client_,
@@ -49,4 +49,4 @@ private:
 
 }
 
-#endif // REMOTE_PLAYER_HPP
+#endif // CLIENT_PLAYER_HPP

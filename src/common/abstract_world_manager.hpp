@@ -23,7 +23,7 @@ public:
     virtual void make_enemy(int posx, int posy) = 0;
 
     void add_maze(std::shared_ptr<maze_loader> loader);
-    void add_remote_player(int posx, int posy);
+    void add_client_player(int posx, int posy);
     void add_enemy(int posx, int posy);
     void add_client_enemy(int posx, int posy, int id);
     void add_resource(const std::string &name, int posx, int posy);

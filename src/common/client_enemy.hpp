@@ -27,7 +27,7 @@ public:
                  std::shared_ptr<core::maze> maze_,
                  int posx_, int posy_, int id_);
     void load() override;
-    void tick(unsigned short tick_counter) override;
+    void tick(unsigned short) override;
     void draw() override;
     std::tuple<int, int> get_position() const override;
 

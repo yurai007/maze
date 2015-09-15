@@ -36,6 +36,7 @@ std::vector<std::string> network_maze_loader::load()
             result.push_back(row);
         }
     }
+    logger_.log("network_maze_loader: recieved maze from server");
     return result;
 }
 

@@ -1,5 +1,5 @@
-#ifndef PLAYER_HPP
-#define PLAYER_HPP
+#ifndef SERVER_PLAYER_HPP
+#define SERVER_PLAYER_HPP
 
 #include <memory>
 #include "creature.hpp"
@@ -22,10 +22,10 @@ namespace core
 namespace core
 {
 
-class player : public creature
+class server_player : public creature
 {
 public:
-    player(std::shared_ptr<core::maze> maze_,
+    server_player(std::shared_ptr<core::maze> maze_,
            int posx_, int posy_);
     void load() override;
     void tick(unsigned short tick_counter) override;
@@ -39,4 +39,4 @@ private:
 
 }
 
-#endif // PLAYER_HPP
+#endif // SERVER_PLAYER_HPP

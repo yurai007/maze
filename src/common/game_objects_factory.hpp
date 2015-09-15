@@ -4,7 +4,7 @@
 #include <memory>
 #include "maze_loader.hpp"
 #include "maze.hpp"
-#include "remote_player.hpp"
+#include "client_player.hpp"
 #include "enemy.hpp"
 #include "resource.hpp"
 #include "client_enemy.hpp"
@@ -35,7 +35,7 @@ public:
                          std::shared_ptr<control::controller> controller,
                          std::shared_ptr<networking::client> client);
     std::shared_ptr<maze> create_maze(std::shared_ptr<maze_loader> loader);
-    std::shared_ptr<remote_player> create_remote_player(int posx, int posy);
+    std::shared_ptr<client_player> create_client_player(int posx, int posy);
     std::shared_ptr<enemy> create_enemy(int posx, int posy);
     std::shared_ptr<client_enemy> create_client_enemy(std::shared_ptr<core::abstract_world_manager> manager,
                                                       int posx, int posy, int id);

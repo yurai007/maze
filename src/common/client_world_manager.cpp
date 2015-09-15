@@ -18,6 +18,20 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
     client->send_request(request);
 
     auto response = client->read_get_enemies_data_response();
+
+    logger_.log("client_world_manager: get_enemies_data was load. Content dump:");
+    int i = 0;
+    for (; i < response.content.size(); i += 3)
+    {
+        if (i != 0 && (i % 15 == 0) )
+            logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
+                response.content[i+2]);
+        else
+            logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
+                response.content[i+2]);
+    }
+    if ((i-3)%15 != 0)
+        logger_.log_in_place("\n");
     assert(response.content.size() % 3 == 0);
     return response;
 }
@@ -69,7 +83,10 @@ void client_world_manager::preprocess_ticking()
 
 void client_world_manager::make_enemy(int posx, int posy)
 {
-    add_client_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
+    if (position_to_enemy_id.find(std::make_pair(posx, posy)) != position_to_enemy_id.end())
+        add_client_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
+    else
+        assert(false);
 }
 
 void client_world_manager::draw_all()

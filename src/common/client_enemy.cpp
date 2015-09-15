@@ -28,11 +28,8 @@ void client_enemy::load()
     renderer->load_image_and_register("enemy" + std::to_string(id), "../../../data/enemy.bmp");
 }
 
-void client_enemy::tick(unsigned short tick_counter)
+void client_enemy::tick(unsigned short )
 {
-    if (tick_counter % 10 != 0)
-        return;
-
     auto new_position = manager->get_enemy_position(id);
     direction = 0;
     if (get_position() == new_position)
@@ -40,6 +37,8 @@ void client_enemy::tick(unsigned short tick_counter)
 
     int new_x = std::get<0>(new_position);
     int new_y = std::get<1>(new_position);
+
+    logger_.log("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
     // I assume no lags
     assert( (new_x - posx == 0 ) || (new_y - posy == 0) );
 

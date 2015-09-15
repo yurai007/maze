@@ -1,5 +1,5 @@
 #include "abstract_world_manager.hpp"
-#include "remote_player.hpp"
+#include "client_player.hpp"
 #include "resource.hpp"
 
 namespace core
@@ -17,10 +17,10 @@ void abstract_world_manager::add_maze(std::shared_ptr<maze_loader> loader)
     logger_.log("abstract_world_manager: added maze");
 }
 
-void abstract_world_manager::add_remote_player(int posx, int posy)
+void abstract_world_manager::add_client_player(int posx, int posy)
 {
     assert(maze_ != nullptr);
-    game_objects.push_back(objects_factory->create_remote_player(posx, posy));
+    game_objects.push_back(objects_factory->create_client_player(posx, posy));
     logger_.log("abstract_world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
@@ -46,6 +46,7 @@ void abstract_world_manager::add_resource(const std::string &name, int posx, int
 
 void abstract_world_manager::load_all()
 {
+    logger_.log("abstract_world_manager: start loading");
     assert(maze_ != nullptr);
     maze_->load();
 
@@ -56,10 +57,13 @@ void abstract_world_manager::load_all()
         {
             char field = maze_->get_field(column, row);
             if (field == 'P')
-                add_remote_player(column, row);
+                add_client_player(column, row);
             else
                 if (field == 'E')
+                {
+                    //maze_->verify();
                     make_enemy(column, row);
+                }
                 else
                     if (field == 'G')
                         add_resource("gold", column, row);
@@ -73,6 +77,7 @@ void abstract_world_manager::load_all()
 void abstract_world_manager::tick_all(bool omit_moving_fields)
 {
     static unsigned short tick_counter = 0;
+    logger_.log("abstract_world_manager: started tick with id = %d", tick_counter);
     preprocess_ticking();
 
     maze_->tick(tick_counter);
@@ -112,8 +117,8 @@ void abstract_world_manager::tick_all(bool omit_moving_fields)
                     }
             }
     }
-    if (tick_counter%10 == 0)
-        logger_.log("abstract_world_manager: finished tick with id = %d successfully", tick_counter);
+    //if (tick_counter%10 == 0)
+    logger_.log("abstract_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
 }
 

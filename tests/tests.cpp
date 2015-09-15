@@ -2,6 +2,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <cassert>
+#include <type_traits>
 
 #include "../src/common/messages.hpp"
 
@@ -21,6 +22,8 @@ tcp::socket m_socket(io_service);
 
 void test_get_chunk_response1()
 {
+    static_assert(std::is_pod<messages::get_chunk>::value, "Sizeof on non-POD is not msg size");
+
     std::cout << "[test_get_chunk_response1]\n";
     messages::get_chunk msg = {0, 1, 1, 0};
 
@@ -55,6 +58,8 @@ void test_get_chunk_response1()
 
 void test_get_chunk_response2()
 {
+    static_assert(std::is_pod<messages::get_chunk>::value, "Sizeof on non-POD is not msg size");
+
     std::cout << "[test_get_chunk_response2]\n";
     messages::get_chunk msg = {0, 1, 6, 0};
     serialization::byte_buffer serialized_msg;
@@ -89,6 +94,8 @@ void test_get_chunk_response2()
 // sometimes fail because of enemies movement
 void test_get_chunk_response3()
 {
+    static_assert(std::is_pod<messages::get_chunk>::value, "Sizeof on non-POD is not msg size");
+
     std::cout << "[test_get_chunk_response3]\n";
     messages::get_chunk msg = {0, 13, 19, 11};
     serialization::byte_buffer serialized_msg;

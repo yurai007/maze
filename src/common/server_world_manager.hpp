@@ -20,7 +20,8 @@ public:
     void make_enemy(int posx, int posy) override;
 
     void draw_all();
-    std::vector<int> get_enemies_data() const;
+    std::vector<int> get_enemies_data(bool verify) const;
+    void verify_maze_with_game_objects();
 };
 
 }

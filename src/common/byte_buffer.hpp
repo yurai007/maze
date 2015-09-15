@@ -118,8 +118,7 @@ struct byte_buffer
 	std::vector<int> get_int_vector()
 	{
 		size_t size = get_int();
-		std::vector<int> value(size, 0);
-		assert(size <= value.size());
+		std::vector<int> value(size / sizeof(int), 0);
 
 		memcpy(&value[0], &m_byte_buffer[offset], size);
 		offset += size;

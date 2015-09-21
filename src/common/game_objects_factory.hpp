@@ -4,11 +4,14 @@
 #include <memory>
 #include "maze_loader.hpp"
 #include "maze.hpp"
-#include "client_player.hpp"
-#include "enemy.hpp"
-#include "resource.hpp"
-#include "client_enemy.hpp"
-#include "abstract_world_manager.hpp"
+//#include "../client/client_world_manager.hpp"
+#include "../client/client_player.hpp"
+#include "../client/client_resource.hpp"
+#include "../client/client_enemy.hpp"
+
+#include "../server/server_player.hpp"
+#include "../server/server_resource.hpp"
+#include "../server/server_enemy.hpp"
 
 namespace presentation
 {
@@ -28,6 +31,9 @@ namespace networking
 namespace core
 {
 
+class client_player;
+class client_world_manager;
+
 class game_objects_factory
 {
 public:
@@ -35,11 +41,17 @@ public:
                          std::shared_ptr<control::controller> controller,
                          std::shared_ptr<networking::client> client);
     std::shared_ptr<maze> create_maze(std::shared_ptr<maze_loader> loader);
+
     std::shared_ptr<client_player> create_client_player(int posx, int posy);
-    std::shared_ptr<enemy> create_enemy(int posx, int posy);
-    std::shared_ptr<client_enemy> create_client_enemy(std::shared_ptr<core::abstract_world_manager> manager,
-                                                      int posx, int posy, int id);
-    std::shared_ptr<resource> create_resource(const std::string &name, int posx, int posy);
+    std::shared_ptr<server_player> create_server_player(int posx, int posy);
+
+    std::shared_ptr<client_enemy> create_client_enemy(
+            std::shared_ptr<core::client_world_manager> manager,
+            int posx, int posy, int id);
+    std::shared_ptr<server_enemy> create_server_enemy(int posx, int posy);
+
+    std::shared_ptr<client_resource> create_client_resource(const std::string &name, int posx, int posy);
+    std::shared_ptr<server_resource> create_server_resource(const std::string &name, int posx, int posy);
 private:
     std::shared_ptr<presentation::renderer> renderer_;
     std::shared_ptr<control::controller> controller_;

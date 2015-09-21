@@ -3,10 +3,10 @@
 
 #include <memory>
 #include "../common/maze.hpp"
+#include "../common/messages.hpp"
 #include "server.h"
 #include "remote_transport.hpp"
-#include "../common/messages.hpp"
-#include "../common/server_world_manager.hpp"
+#include "server_world_manager.hpp"
 
 namespace networking
 {

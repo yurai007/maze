@@ -18,7 +18,6 @@
 #include <glibmm/main.h>
 
 #include "client_world_manager.hpp"
-#include "controller.hpp"
 
 namespace core
 {

@@ -1,9 +1,10 @@
-#include "logger.hpp"
 #include <chrono>
 #include <cassert>
 #include <cstdarg>
 #include <thread>
 #include <ctime>
+
+#include "logger.hpp"
 
 namespace framework
 {
@@ -88,7 +89,6 @@ logger::~logger()
         fclose (file_proxy);
     }
 }
-
 
 char *logger::put_time_in_buffer()
 {

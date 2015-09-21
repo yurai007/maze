@@ -1,21 +1,18 @@
-#include "enemy.hpp"
-#include "renderer.hpp"
-#include "maze.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <array>
 #include <iostream>
+#include "server_enemy.hpp"
+#include "../common/maze.hpp"
 
 namespace core
 {
 
-enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
-             std::shared_ptr<core::maze> maze_,
+server_enemy::server_enemy(std::shared_ptr<core::maze> maze_,
              int posx_, int posy_)
-    : renderer(renderer_),
+    : game_object(posx_, posy_),
       maze(maze_),
-      posx(posx_),
-      posy(posy_),
       id(0)
 {
     static int id_generator = 0;
@@ -24,23 +21,18 @@ enemy::enemy(std::shared_ptr<presentation::renderer> renderer_,
     srand(time(NULL));
 }
 
-int enemy::get_id() const
+int server_enemy::get_id() const
 {
     return id;
 }
 
-void enemy::load()
-{
-    renderer->load_image_and_register("enemy" + std::to_string(id), "../../../data/enemy.bmp");
-}
-
-void enemy::tick(unsigned short tick_counter)
+void server_enemy::tick(unsigned short tick_counter)
 {
     if (tick_counter % 10 != 0)
         return;
 
     direction = 0;
-    std::vector<char> is_proper = {0, 0, 0, 0};
+    std::array<char, 4> is_proper = {0, 0, 0, 0};
     is_proper[0] += (int)!maze->is_field_filled(posx-1, posy);
     is_proper[1] += (int)!maze->is_field_filled(posx+1, posy);
     is_proper[2] += (int)!maze->is_field_filled(posx, posy-1);
@@ -77,28 +69,6 @@ void enemy::tick(unsigned short tick_counter)
         direction = 'D';
         posy++;
     }
-}
-
-void enemy::draw()
-{
-    std::string image_name = "enemy" + std::to_string(id);
-    if (perform_rotation)
-    {
-        if (direction == 'L')
-            renderer->rotate_image(image_name, presentation::clockwise_rotation::d270);
-        if (direction == 'R')
-            renderer->rotate_image(image_name, presentation::clockwise_rotation::d90);
-        if (direction == 'D')
-            renderer->rotate_image(image_name, presentation::clockwise_rotation::d180);
-        if (direction == 'U')
-            renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
-    }
-    renderer->draw_image(image_name, 30*posx, 30*posy);
-}
-
-std::tuple<int, int> enemy::get_position() const
-{
-    return std::make_tuple(posx, posy);
 }
 
 }

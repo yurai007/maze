@@ -2,7 +2,6 @@
 #define CONTROLLER_HPP
 
 #include <gtkmm/window.h>
-#include "renderer.hpp"
 
 namespace control
 {

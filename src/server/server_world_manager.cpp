@@ -2,11 +2,7 @@
 #include <climits>
 
 #include "server_world_manager.hpp"
-#include "client_player.hpp"
-#include "enemy.hpp"
-#include "resource.hpp"
-#include "renderer.hpp"
-
+#include "../common/logger.hpp"
 
 namespace core
 {
@@ -31,11 +27,21 @@ void server_world_manager::preprocess_ticking()
 
 void server_world_manager::make_enemy(int posx, int posy)
 {
-    add_enemy(posx, posy);
+    assert(maze_ != nullptr);
+    game_objects.push_back(objects_factory->create_server_enemy(posx, posy));
+    logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
-void server_world_manager::draw_all()
+void server_world_manager::make_player(int posx, int posy)
 {
+    game_objects.push_back(objects_factory->create_server_player(posx, posy));
+    logger_.log("client_world_manager: added player on position = {%d, %d}", posx, posy);
+}
+
+void server_world_manager::make_resource(const std::string &name, int posx, int posy)
+{
+    game_objects.push_back(objects_factory->create_server_resource(name, posx, posy));
+    logger_.log("client_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
 std::vector<int> server_world_manager::get_enemies_data(bool verify) const
@@ -43,7 +49,7 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
     std::vector<int> result;
     for (auto &object : game_objects)
     {
-        auto enemy_ = std::dynamic_pointer_cast<enemy>(object);
+        auto enemy_ = std::dynamic_pointer_cast<server_enemy>(object);
         if (enemy_ != nullptr)
         {
             auto position = enemy_->get_position();

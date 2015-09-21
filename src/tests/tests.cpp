@@ -4,7 +4,7 @@
 #include <cassert>
 #include <type_traits>
 
-#include "../src/common/messages.hpp"
+#include "../common/messages.hpp"
 
 /* This is asynchronous client
  * write_some and read_some blocks.
@@ -123,7 +123,6 @@ void test_get_chunk_response3()
     msg2.deserialize_from_buffer(serialized_msg);
 
     assert((int)msg_type == 1);
-    std::cout << msg2.content << "\n";
     assert(msg2.content == "      X  X          XX              X    X XXXXXXXXXXXXX   X");
     std::cout << "Recieved get_chunk_response from server\n";
 }

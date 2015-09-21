@@ -3,8 +3,8 @@
 
 #include <unordered_map>
 #include <utility>
-#include "abstract_world_manager.hpp"
-#include "../client/client.hpp"
+#include "../common/abstract_world_manager.hpp"
+#include "client.hpp"
 
 namespace core
 {
@@ -30,8 +30,11 @@ public:
     void postprocess_loading() override;
     void preprocess_ticking() override;
     void make_enemy(int posx, int posy) override;
+    void make_player(int posx, int posy) override;
+    void make_resource(const std::string &name, int posx, int posy) override;
 
     void draw_all();
+    void add_enemy(int posx, int posy, int id);
     std::tuple<int, int> get_enemy_position(int id);
 
 private:

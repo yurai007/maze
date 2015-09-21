@@ -5,10 +5,10 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
-using boost::asio::ip::tcp;
-
 #include "../common/messages.hpp"
 #include "../common/logger.hpp"
+
+using boost::asio::ip::tcp;
 
 namespace networking
 {
@@ -69,6 +69,7 @@ private:
 
         size_t send_bytes = socket.write_some(boost::asio::buffer(serialized_msg.m_byte_buffer,
                                                              serialized_msg.offset), error);
+        assert(send_bytes > 0);
         assert(!error);
     }
 
@@ -79,6 +80,7 @@ private:
         serialization::byte_buffer deserialized_msg;
         size_t recieved_bytes = socket.read_some(boost::asio::buffer(
                                                        deserialized_msg.m_byte_buffer), error);
+        assert(recieved_bytes > 0);
         assert(!error);
 
         Msg msg;

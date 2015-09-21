@@ -47,7 +47,7 @@ void game_server::init(std::shared_ptr<core::maze> maze,
 		messages::get_enemies_data_response response(manager->get_enemies_data(true));
 
 		logger_.log("game_server: get_enemies_data before sending. Content dump:");
-		int i = 0;
+		size_t i = 0;
 		for (; i < response.content.size(); i += 3)
 		{
 			if (i != 0 && (i % 30 == 0))

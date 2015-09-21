@@ -1,21 +1,20 @@
-#include "client_enemy.hpp"
-#include "renderer.hpp"
-#include "maze.hpp"
 #include <algorithm>
 #include <iostream>
+#include "client_enemy.hpp"
+#include "renderer.hpp"
+#include "../common/maze.hpp"
 
 namespace core
 {
 
 client_enemy::client_enemy(std::shared_ptr<abstract_world_manager> manager_,
-        std::shared_ptr<presentation::renderer> renderer_,
-             std::shared_ptr<core::maze> maze_,
-             int posx_, int posy_, int id_)
-    : manager(nullptr),
-      renderer(renderer_),
+                           std::shared_ptr<presentation::renderer> renderer_,
+                           std::shared_ptr<core::maze> maze_,
+                           int posx_, int posy_, int id_)
+    : game_object(posx_, posy_),
+      drawable(renderer_),
+      manager(nullptr),
       maze(maze_),
-      posx(posx_),
-      posy(posy_),
       id(id_)
 {
     // hacky downcasting, remove it in the future
@@ -23,7 +22,7 @@ client_enemy::client_enemy(std::shared_ptr<abstract_world_manager> manager_,
     assert(manager != nullptr);
 }
 
-void client_enemy::load()
+void client_enemy::load_image()
 {
     renderer->load_image_and_register("enemy" + std::to_string(id), "../../../data/enemy.bmp");
 }
@@ -77,11 +76,6 @@ void client_enemy::draw()
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
     }
     renderer->draw_image(image_name, 30*posx, 30*posy);
-}
-
-std::tuple<int, int> client_enemy::get_position() const
-{
-    return std::make_tuple(posx, posy);
 }
 
 }

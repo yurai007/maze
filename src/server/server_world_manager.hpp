@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <memory>
-#include "abstract_world_manager.hpp"
+#include "../common/abstract_world_manager.hpp"
 
 namespace core
 {
@@ -18,8 +18,9 @@ public:
     void postprocess_loading() override;
     void preprocess_ticking() override;
     void make_enemy(int posx, int posy) override;
+    void make_player(int posx, int posy) override;
+    void make_resource(const std::string &name, int posx, int posy) override;
 
-    void draw_all();
     std::vector<int> get_enemies_data(bool verify) const;
     void verify_maze_with_game_objects();
 };

@@ -1,5 +1,5 @@
 #include "client_world_manager.hpp"
-#include "messages.hpp"
+#include "../common/messages.hpp"
 
 namespace core
 {
@@ -20,7 +20,7 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
     auto response = client->read_get_enemies_data_response();
 
     logger_.log("client_world_manager: get_enemies_data was load. Content dump:");
-    int i = 0;
+    size_t i = 0;
     for (; i < response.content.size(); i += 3)
     {
         if (i != 0 && (i % 15 == 0) )
@@ -40,7 +40,7 @@ void client_world_manager::preprocess_loading()
 {
     auto enemies_data = get_enemies_data_from_network();
 
-    for (int i = 0; i < enemies_data.content.size(); i += 3)
+    for (size_t i = 0; i < enemies_data.content.size(); i += 3)
     {
         int id = enemies_data.content[i];
         int x = enemies_data.content[i+1];
@@ -53,7 +53,11 @@ void client_world_manager::preprocess_loading()
 void client_world_manager::postprocess_loading()
 {
     for (auto &object : game_objects)
-        object->load();
+    {
+        auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
+            if (drawable_object != nullptr)
+                drawable_object->load_image();
+    }
 
     position_to_enemy_id.clear();
 }
@@ -71,7 +75,7 @@ void client_world_manager::preprocess_ticking()
 
     auto enemies_data = get_enemies_data_from_network();
 
-    for (int i = 0; i < enemies_data.content.size(); i += 3)
+    for (size_t i = 0; i < enemies_data.content.size(); i += 3)
     {
         int id = enemies_data.content[i];
         int x = enemies_data.content[i+1];
@@ -81,12 +85,32 @@ void client_world_manager::preprocess_ticking()
     logger_.log("client_world_manager: updated maze content and enemy_id_to_position map");
 }
 
+
+void client_world_manager::add_enemy(int posx, int posy, int id)
+{
+    assert(maze_ != nullptr);
+    game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
+    logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
+}
+
 void client_world_manager::make_enemy(int posx, int posy)
 {
     if (position_to_enemy_id.find(std::make_pair(posx, posy)) != position_to_enemy_id.end())
-        add_client_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
+        add_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
     else
         assert(false);
+}
+
+void client_world_manager::make_player(int posx, int posy)
+{
+    game_objects.push_back(objects_factory->create_client_player(posx, posy));
+    logger_.log("client_world_manager: added player on position = {%d, %d}", posx, posy);
+}
+
+void client_world_manager::make_resource(const std::string &name, int posx, int posy)
+{
+    game_objects.push_back(objects_factory->create_client_resource(name, posx, posy));
+    logger_.log("client_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
 void client_world_manager::draw_all()
@@ -96,7 +120,11 @@ void client_world_manager::draw_all()
 
     for (auto &object : game_objects)
         if (object != nullptr)
-            object->draw();
+        {
+            auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
+                if (drawable_object != nullptr)
+                    drawable_object->draw();
+        }
 }
 
 std::tuple<int, int> client_world_manager::get_enemy_position(int id)

@@ -1,15 +1,13 @@
-#include "../common/maze_generator.hpp"
-#include "../common/logger.hpp"
-#include "../common/server_world_manager.hpp"
-#include "../common/renderer.hpp"
-#include "../common/controller.hpp"
-#include "../common/message_dispatcher.hpp"
-#include "game_server.hpp"
-#include "../common/file_maze_loader.hpp"
-
 #include <thread>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+
+#include "../common/maze_generator.hpp"
+#include "../common/logger.hpp"
+#include "../common/message_dispatcher.hpp"
+#include "../common/file_maze_loader.hpp"
+#include "server_world_manager.hpp"
+#include "game_server.hpp"
 
 using namespace boost::asio;
 

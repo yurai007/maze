@@ -1,8 +1,9 @@
 #include "client_player.hpp"
+#include "client.hpp"
 #include "renderer.hpp"
-#include "controller.hpp"
-#include "maze.hpp"
-#include "messages.hpp"
+#include "../common/controller.hpp"
+#include "../common/maze.hpp"
+#include "../common/messages.hpp"
 
 namespace core
 {
@@ -12,16 +13,15 @@ client_player::client_player(std::shared_ptr<presentation::renderer> renderer_,
                              std::shared_ptr<core::maze> maze_,
                              std::shared_ptr<networking::client> client_,
                              int posx_, int posy_)
-    : renderer(renderer_),
+    : game_object(posx_, posy_),
+      drawable(renderer_),
       controller(controller_),
       maze(maze_),
-      client(client_),
-      posx(posx_),
-      posy(posy_)
+      client(client_)
 {
 }
 
-void client_player::load()
+void client_player::load_image()
 {
      renderer->load_image_and_register("player", "../../../data/player.bmp");
 }
@@ -56,6 +56,9 @@ void client_player::tick(unsigned short)
     // client: get_chunk request to server
     // Also core shouldn't has idea about networking existence
     // Refactor too!!
+
+    // networking::network_notifier notifier; notifier.send_position_changed_info();
+
     if (client != nullptr && ((oldx != posx) || (oldy != posy)) )
     {
         networking::messages::position_changed request = {oldx, oldy, posx, posy};
@@ -81,11 +84,6 @@ void client_player::draw()
             renderer->rotate_image("player", presentation::clockwise_rotation::d360);
     }
     renderer->draw_image("player", 30*posx, 30*posy);
-}
-
-std::tuple<int, int> client_player::get_position() const
-{
-    return std::make_tuple(posx, posy);
 }
 
 }

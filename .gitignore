@@ -27,4 +27,9 @@
 *.out
 *.app
 
-maze.*
+*.config
+*.creator*
+*.files
+*.includes
+*.txt
+

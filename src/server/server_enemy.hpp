@@ -6,7 +6,7 @@
 
 namespace core
 {
-    class maze;
+    class server_maze;
 }
 
 namespace core
@@ -15,12 +15,12 @@ namespace core
 class server_enemy : public game_object
 {
 public:
-    server_enemy(std::shared_ptr<core::maze> maze_, int posx_, int posy_);
+    server_enemy(std::shared_ptr<core::server_maze> maze_, int posx_, int posy_);
     int get_id() const;
     void tick(unsigned short tick_counter) override;
 
 private:
-    std::shared_ptr<core::maze> maze;
+    std::shared_ptr<core::server_maze> maze;
     char direction;
     bool perform_rotation {false};
     int id;

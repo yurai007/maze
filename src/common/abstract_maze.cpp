@@ -1,11 +1,10 @@
-#include "maze.hpp"
 #include <fstream>
 #include <iterator>
 #include <cassert>
 #include <climits>
 
-#include "../client/renderer.hpp"
-#include "maze_loader.hpp"
+#include "abstract_maze.hpp"
+#include "logger.hpp"
 
 /*
  * In maze::load_from_file std::copy + std::istream_iterator + back_inserter can't be used
@@ -16,15 +15,13 @@
 namespace core
 {
 
-maze::maze(std::shared_ptr<presentation::renderer> renderer_,
-           std::shared_ptr<maze_loader> loader)
+abstract_maze::abstract_maze(std::shared_ptr<maze_loader> loader)
  : game_object(INT_MAX, INT_MAX),
-   drawable(renderer_),
    m_loader(loader)
 {
 }
 
-bool maze::is_field_filled(int column, int row) const
+bool abstract_maze::is_field_filled(int column, int row) const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
@@ -37,7 +34,7 @@ bool maze::is_field_filled(int column, int row) const
     return content[column][row] != ' ';
 }
 
-char maze::get_field(int column, int row) const
+char abstract_maze::get_field(int column, int row) const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
@@ -46,7 +43,7 @@ char maze::get_field(int column, int row) const
     return content[column][row];
 }
 
-std::string maze::get_chunk(int leftdown_x, int leftdown_y,
+std::string abstract_maze::get_chunk(int leftdown_x, int leftdown_y,
                                          int rightupper_x, int rightupper_y) const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
@@ -61,7 +58,7 @@ std::string maze::get_chunk(int leftdown_x, int leftdown_y,
     return result;
 }
 
-void maze::move_field(int column, int row, int new_column, int new_row)
+void abstract_maze::move_field(int column, int row, int new_column, int new_row)
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
@@ -74,7 +71,7 @@ void maze::move_field(int column, int row, int new_column, int new_row)
     content[column][row] = ' ';
 }
 
-void maze::reset_field(int column, int row)
+void abstract_maze::reset_field(int column, int row)
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
@@ -84,18 +81,18 @@ void maze::reset_field(int column, int row)
     content[column][row] = ' ';
 }
 
-int maze::size()
+int abstract_maze::size()
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
     return content.size();
 }
 
-void maze::update_content()
+void abstract_maze::update_content()
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     auto temporary_content = m_loader->load();
-    logger_.log("maze: content was load. Content dump diff:");
+    logger_.log("abstract_maze: content was load. Content dump diff:");
     for (size_t i = 0; i < temporary_content.size(); i++)
     {
         if (temporary_content[i] != content[i])
@@ -105,7 +102,7 @@ void maze::update_content()
     content = temporary_content;
 }
 
-void maze::verify()
+void abstract_maze::verify()
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
@@ -115,52 +112,8 @@ void maze::verify()
     }
 }
 
-void maze::load()
+void abstract_maze::tick(unsigned short)
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
-    content = m_loader->load();
-    logger_.log("maze: content was load. Content dump:");
-
-    for (size_t i = 0; i < content.size(); i++)
-        logger_.log("row %d: %s", i, content[i].c_str());
-
-    if (renderer != nullptr)
-        renderer->load_image_and_register("brick", "../../../data/brick.bmp");
-}
-
-void maze::tick(unsigned short)
-{
-}
-
-void maze::load_image()
-{
-    assert(false); // use load to load all stuff including images
-//    std::lock_guard<std::mutex> lock(maze_mutex);
-
-//    renderer->load_image_and_register("brick", "../../../data/brick.bmp");
-}
-
-void maze::draw()
-{
-    const int brick_size = 30;
-    for (int row = 0; row < size(); row++)
-        for (int column = 0; column < size(); column++)
-        {
-            if (is_field_filled(column, row))
-            {
-                int posx = column * brick_size;
-                int posy = row * brick_size;
-
-                std::lock_guard<std::mutex> lock(maze_mutex);
-                renderer->draw_image("brick", posx, posy);
-            }
-        }
-}
-
-std::shared_ptr<presentation::renderer> maze::get_renderer() const
-{
-    return renderer;
 }
 
 }

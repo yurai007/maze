@@ -8,43 +8,9 @@
 namespace core
 {
 
-abstract_world_manager::abstract_world_manager(std::shared_ptr<game_objects_factory>
-                                               objects_factory_)
-    : objects_factory(objects_factory_)
-{
-}
-
-void abstract_world_manager::add_maze(std::shared_ptr<maze_loader> loader)
-{
-    maze_ = objects_factory->create_maze(loader);
-    logger_.log("abstract_world_manager: added maze");
-}
-
-//void abstract_world_manager::add_client_player(int posx, int posy)
+//abstract_world_manager::abstract_world_manager(std::shared_ptr<core::abstract_maze> maze)
+//    : maze_(maze)
 //{
-//    assert(maze_ != nullptr);
-//    game_objects.push_back(objects_factory->create_client_player(posx, posy));
-//    logger_.log("abstract_world_manager: added player on position = {%d, %d}", posx, posy);
-//}
-
-//void abstract_world_manager::add_enemy(int posx, int posy)
-//{
-//    assert(maze_ != nullptr);
-//    game_objects.push_back(objects_factory->create_enemy(posx, posy));
-//    logger_.log("abstract_world_manager: added enemy on position = {%d, %d}", posx, posy);
-//}
-
-//void abstract_world_manager::add_client_enemy(int posx, int posy, int id)
-//{
-//    assert(maze_ != nullptr);
-//    game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
-//    logger_.log("abstract_world_manager: added client_enemy on position = {%d, %d}", posx, posy);
-//}
-
-//void abstract_world_manager::add_resource(const std::string &name, int posx, int posy)
-//{
-//    game_objects.push_back(objects_factory->create_resource(name, posx, posy));
-//    logger_.log("abstract_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 //}
 
 void abstract_world_manager::load_all()
@@ -107,8 +73,7 @@ void abstract_world_manager::tick_all(bool omit_moving_fields)
             else
             {
                 // dirty hack, downcasting for zombie
-                if ( (std::dynamic_pointer_cast<server_resource>(object) != nullptr)
-                        || (std::dynamic_pointer_cast<client_resource>(object) != nullptr) )
+                if (check_if_resource(object))
                     // for resource client: get_chunk
                     if (maze_->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
                     {

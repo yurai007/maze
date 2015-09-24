@@ -1,8 +1,8 @@
 #include "client_player.hpp"
 #include "client.hpp"
 #include "renderer.hpp"
+#include "client_maze.hpp"
 #include "../common/controller.hpp"
-#include "../common/maze.hpp"
 #include "../common/messages.hpp"
 
 namespace core
@@ -10,7 +10,7 @@ namespace core
 
 client_player::client_player(std::shared_ptr<presentation::renderer> renderer_,
                              std::shared_ptr<control::controller> controller_,
-                             std::shared_ptr<core::maze> maze_,
+                             std::shared_ptr<core::client_maze> maze_,
                              std::shared_ptr<networking::client> client_,
                              int posx_, int posy_)
     : game_object(posx_, posy_),
@@ -28,8 +28,7 @@ void client_player::load_image()
 
 void client_player::tick(unsigned short)
 {
-    if (controller == nullptr)
-        return;
+    assert(controller != nullptr);
 
     static char old_direction = 0;
     int oldx = posx, oldy = posy;
@@ -57,7 +56,7 @@ void client_player::tick(unsigned short)
     // Also core shouldn't has idea about networking existence
     // Refactor too!!
 
-    // networking::network_notifier notifier; notifier.send_position_changed_info();
+    // networking::network_notifier/proxy notifier/proxy; notifier.send_position_changed_info();
 
     if (client != nullptr && ((oldx != posx) || (oldy != posy)) )
     {

@@ -7,9 +7,11 @@
 namespace core
 {
 
-server_world_manager::server_world_manager(std::shared_ptr<game_objects_factory> objects_factory_)
-    : abstract_world_manager(objects_factory_)
+server_world_manager::server_world_manager(std::shared_ptr<server_game_objects_factory> objects_factory_)
+    : abstract_world_manager(),
+      objects_factory(objects_factory_)
 {
+    assert(objects_factory != nullptr);
     logger_.log("server_world_manager: started");
 }
 
@@ -25,23 +27,34 @@ void server_world_manager::preprocess_ticking()
 {
 }
 
+void server_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
+{
+    maze_ = objects_factory->create_server_maze(loader);
+    logger_.log("server_world_manager: added maze");
+}
+
 void server_world_manager::make_enemy(int posx, int posy)
 {
     assert(maze_ != nullptr);
     game_objects.push_back(objects_factory->create_server_enemy(posx, posy));
-    logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
+    logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
 void server_world_manager::make_player(int posx, int posy)
 {
     game_objects.push_back(objects_factory->create_server_player(posx, posy));
-    logger_.log("client_world_manager: added player on position = {%d, %d}", posx, posy);
+    logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
 }
 
 void server_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
     game_objects.push_back(objects_factory->create_server_resource(name, posx, posy));
-    logger_.log("client_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
+    logger_.log("server_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
+}
+
+bool server_world_manager::check_if_resource(std::shared_ptr<game_object> object)
+{
+    return std::dynamic_pointer_cast<server_resource>(object) != nullptr;
 }
 
 std::vector<int> server_world_manager::get_enemies_data(bool verify) const
@@ -66,6 +79,22 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
         }
     }
     return result;
+}
+
+std::shared_ptr<server_maze> server_world_manager::get_maze() const
+{
+    auto maze = std::dynamic_pointer_cast<server_maze>(maze_);
+    assert(maze != nullptr);
+    return maze;
+}
+
+void server_world_manager::update_player_position(int player_id, int oldx, int oldy,
+                                                  int newx, int newy)
+{
+    // no lags again
+   assert( (newx - oldx == 0 ) || (newy - oldy == 0) );
+   player_id_to_position[player_id] = std::make_pair(newx, newy);
+
 }
 
 }

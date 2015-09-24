@@ -4,12 +4,12 @@
 #include <array>
 #include <iostream>
 #include "server_enemy.hpp"
-#include "../common/maze.hpp"
+#include "server_maze.hpp"
 
 namespace core
 {
 
-server_enemy::server_enemy(std::shared_ptr<core::maze> maze_,
+server_enemy::server_enemy(std::shared_ptr<core::server_maze> maze_,
              int posx_, int posy_)
     : game_object(posx_, posy_),
       maze(maze_),

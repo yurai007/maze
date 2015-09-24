@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "../common/game_object.hpp"
+#include "client_maze.hpp"
 
 namespace presentation
 {
@@ -11,8 +12,6 @@ namespace presentation
 
 namespace core
 {
-    class maze;
-    class abstract_world_manager;
     class client_world_manager;
 }
 
@@ -22,9 +21,9 @@ namespace core
 class client_enemy : public game_object, public drawable
 {
 public:
-    client_enemy(std::shared_ptr<core::abstract_world_manager> manager_,
+    client_enemy(std::shared_ptr<core::client_world_manager> manager_,
                  std::shared_ptr<presentation::renderer> renderer_,
-                 std::shared_ptr<core::maze> maze_,
+                 std::shared_ptr<core::client_maze> maze_,
                  int posx_, int posy_, int id_);
     void tick(unsigned short) override;
 
@@ -32,7 +31,7 @@ public:
     void draw() override;
 private:
     std::shared_ptr<core::client_world_manager> manager;
-    std::shared_ptr<core::maze> maze;
+    std::shared_ptr<core::client_maze> maze;
     char direction;
     bool perform_rotation {false};
     int id;

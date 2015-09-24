@@ -4,9 +4,10 @@
 namespace core
 {
 
-client_world_manager::client_world_manager(std::shared_ptr<game_objects_factory> objects_factory_,
+client_world_manager::client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
                                            std::shared_ptr<networking::client> client_)
-    : abstract_world_manager(objects_factory_),
+    : abstract_world_manager(),
+      objects_factory(objects_factory_),
       client(client_)
 {
     logger_.log("client_world_manager: started");
@@ -71,8 +72,6 @@ void client_world_manager::preprocess_ticking()
     //    new_positions: id -> (x, y)
     // 2. enemy->tick updates position from new_positions
 
-    // TO DO: I need second enemy type with different tick impl: server_enemy/client_enemy
-
     auto enemies_data = get_enemies_data_from_network();
 
     for (size_t i = 0; i < enemies_data.content.size(); i += 3)
@@ -85,6 +84,11 @@ void client_world_manager::preprocess_ticking()
     logger_.log("client_world_manager: updated maze content and enemy_id_to_position map");
 }
 
+void client_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
+{
+    maze_ = objects_factory->create_client_maze(loader);
+    logger_.log("client_world_manager: added maze");
+}
 
 void client_world_manager::add_enemy(int posx, int posy, int id)
 {
@@ -113,10 +117,17 @@ void client_world_manager::make_resource(const std::string &name, int posx, int 
     logger_.log("client_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
+bool client_world_manager::check_if_resource(std::shared_ptr<game_object> object)
+{
+    return std::dynamic_pointer_cast<client_resource>(object) != nullptr;
+}
+
 void client_world_manager::draw_all()
 {
     assert(maze_ != nullptr);
-    maze_->draw();
+    auto client_maze = std::dynamic_pointer_cast<core::client_maze>(maze_);
+    assert(client_maze != nullptr);
+    client_maze->draw();
 
     for (auto &object : game_objects)
         if (object != nullptr)

@@ -70,13 +70,13 @@ public:
 
     int run()
     {
-        world_manager->add_maze(std::make_shared<core::file_maze_loader>());
+        world_manager->make_maze(std::make_shared<core::file_maze_loader>());
         world_manager->load_all();
 
         try
         {
             timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-            server.init(world_manager->maze_, world_manager);
+            server.init(world_manager->get_maze(), world_manager);
             server.run();
         }
         catch (std::exception& exception)
@@ -94,8 +94,8 @@ private:
     boost::posix_time::milliseconds interval {30};
     deadline_timer timer {server.main_server.m_io_service, interval};
 
-    std::shared_ptr<core::game_objects_factory> game_objects_factory
-        {std::make_shared<core::game_objects_factory>(nullptr, nullptr, nullptr)};
+    std::shared_ptr<core::server_game_objects_factory> game_objects_factory
+        {std::make_shared<core::server_game_objects_factory>(nullptr)};
 
     std::shared_ptr<core::server_world_manager> world_manager
         {std::make_shared<core::server_world_manager>(game_objects_factory)};

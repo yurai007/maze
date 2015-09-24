@@ -1,5 +1,5 @@
-#ifndef MAZE_HPP
-#define MAZE_HPP
+#ifndef ABSTRACT_MAZE_HPP
+#define ABSTRACT_MAZE_HPP
 
 #include <string>
 #include <vector>
@@ -11,11 +11,10 @@
 namespace core
 {
 
-class maze : public game_object, public drawable
+class abstract_maze : public game_object
 {
 public:
-    maze(std::shared_ptr<presentation::renderer> renderer_,
-         std::shared_ptr<core::maze_loader> loader);
+    abstract_maze(std::shared_ptr<core::maze_loader> loader);
 
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
@@ -28,15 +27,12 @@ public:
     int size();
     void update_content();
     void verify();
-    void load();
-    std::shared_ptr<presentation::renderer> get_renderer() const;
+    virtual void load() = 0;
+    virtual ~abstract_maze() = default;
 
     void tick(unsigned short) override;
 
-    void load_image() override;
-    void draw() override;
-
-private:
+protected:
     std::vector<std::string> content;
     mutable std::mutex maze_mutex;
     std::shared_ptr<core::maze_loader> m_loader;
@@ -44,4 +40,4 @@ private:
 
 }
 
-#endif // MAZE_HPP
+#endif // ABSTRACT_MAZE_HPP

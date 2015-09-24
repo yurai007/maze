@@ -2,23 +2,21 @@
 #include <iostream>
 #include "client_enemy.hpp"
 #include "renderer.hpp"
-#include "../common/maze.hpp"
+#include "client_maze.hpp"
 
 namespace core
 {
 
-client_enemy::client_enemy(std::shared_ptr<abstract_world_manager> manager_,
+client_enemy::client_enemy(std::shared_ptr<client_world_manager> manager_,
                            std::shared_ptr<presentation::renderer> renderer_,
-                           std::shared_ptr<core::maze> maze_,
+                           std::shared_ptr<core::client_maze> maze_,
                            int posx_, int posy_, int id_)
     : game_object(posx_, posy_),
       drawable(renderer_),
-      manager(nullptr),
+      manager(manager_),
       maze(maze_),
       id(id_)
 {
-    // hacky downcasting, remove it in the future
-    manager = std::dynamic_pointer_cast<client_world_manager>(manager_);
     assert(manager != nullptr);
 }
 

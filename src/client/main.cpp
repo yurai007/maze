@@ -1,15 +1,16 @@
-#include "../common/maze_generator.hpp"
-#include "../common/logger.hpp"
-#include "../common/world_manager.hpp"
-#include "../common/renderer.hpp"
-#include "../common/controller.hpp"
-#include "../common/message_dispatcher.hpp"
-#include "../common/network_maze_loader.hpp"
-#include "client.hpp"
-
 #include <thread>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+
+#include "../common/maze_generator.hpp"
+#include "../common/logger.hpp"
+#include "../common/controller.hpp"
+#include "../common/message_dispatcher.hpp"
+#include "../common/network_maze_loader.hpp"
+#include "client_game_objects_factory.hpp"
+#include "client_world_manager.hpp"
+#include "renderer.hpp"
+#include "client.hpp"
 
 using namespace boost::asio;
 
@@ -46,14 +47,7 @@ using namespace boost::asio;
  * I must cheat gtkmm/gui_driver that I haven't any arguments. Otherwise error from gtkmm:
     GLib-GIO-CRITICAL **: This application can not open files.
 
- TO DO:
-   Add client to makefile:
-   make client
-   make server
-   make tests
-   make all
-
-   improve tests e.g position_changed msg
+ * cyclic reference are paintful and forward declarations are needed to break it
 */
 
 class gui_driver
@@ -71,11 +65,18 @@ public:
 
         auto qt_controller = std::make_shared<control::controller>();
         auto qt_renderer = std::make_shared<presentation::renderer>();
-        auto client =  std::make_shared<networking::client>();
-        auto world_manager = std::make_shared<core::world_manager>(qt_renderer, qt_controller, client);
 
+        //auto client =  std::make_shared<networking::client>(); // WTF?? Buggy make_shared???
+        std::shared_ptr<networking::client> client(new networking::client());
+        std::shared_ptr<core::client_game_objects_factory> game_objects_factory(
+                                new core::client_game_objects_factory(qt_renderer,
+                                qt_controller,
+                                client));
 
-        world_manager->add_maze(std::make_shared<networking::network_maze_loader>(client));
+        auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
+                                                                          client);
+
+        world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
         world_manager->load_all();
         qt_renderer->set_world(world_manager);
 

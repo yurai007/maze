@@ -32,7 +32,6 @@ void connection::stop()
 
 void connection::send(const serialization::byte_buffer &data)
 {
-    // TO DO; set proper offset inside data_buffer
     data_buffer = data;
     async_write(socket,
                 buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
@@ -46,17 +45,17 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
     if (!error)
     {
         m_server.current_connection = shared_from_this();
-
-        logger_.log("connection with id = %d: recieved %d B", socket.native_handle(),
-                                     bytes_transferred);
+        unsigned char msg_length = 0;
+//        logger_.log("connection with id = %d: recieved %d B", socket.native_handle(),
+//                                     bytes_transferred);
 
         if (remaining_bytes == 0)
         {
-            unsigned char msg_length = data_buffer.m_byte_buffer[0]; // type_id + payload
+            msg_length = data_buffer.m_byte_buffer[0]; // type_id + payload
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
-            logger_.log("connection with id = %d: expected %d B",
-                                         socket.native_handle(), msg_length);
+//            logger_.log("connection with id = %d: expected %d B",
+//                                         socket.native_handle(), msg_length + 1);
         }
         else
         {
@@ -66,15 +65,17 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 
         if (remaining_bytes > 0)
         {
-            logger_.log("connection with id = %d: waiting for next %d B",
-                                         socket.native_handle(), remaining_bytes);
+            logger_.log("connection with id = %d: recieved %d B and expected %d B. Waiting for next %d B",
+                                         socket.native_handle(), bytes_transferred,
+                                         msg_length + 1, remaining_bytes);
             socket.async_read_some(buffer(&data_buffer.m_byte_buffer[current], remaining_bytes),
                                    boost::bind(&connection::handle_read, this, placeholders::error,
                                                placeholders::bytes_transferred));
         }
         else
         {
-            logger_.log("connection with id = %d: recieved full msg", socket.native_handle());
+            logger_.log("connection with id = %d: recieved %d B and expected %d B. Got full msg",
+                        socket.native_handle(), bytes_transferred, bytes_transferred);
 
             data_buffer.offset = 1;
             m_server.dispatch_msg_from_buffer(data_buffer);

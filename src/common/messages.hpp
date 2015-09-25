@@ -66,10 +66,11 @@ struct get_chunk_response
 
 struct position_changed
 {
-	int old_x, old_y, new_x, new_y;
+	int player_id, old_x, old_y, new_x, new_y;
 
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
+		buffer.put_int(player_id);
 		buffer.put_int(old_x);
 		buffer.put_int(old_y);
 		buffer.put_int(new_x);
@@ -78,6 +79,7 @@ struct position_changed
 
 	void deserialize_from_buffer(serialization::byte_buffer &buffer)
 	{
+		player_id = buffer.get_int();
 		old_x = buffer.get_int();
 		old_y = buffer.get_int();
 		new_x = buffer.get_int();
@@ -110,6 +112,103 @@ struct position_changed_response
 	}
 
 	std::string content {"OK"};
+};
+
+struct get_enemies_data
+{
+	get_enemies_data() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
+	}
+
+	static int message_id()
+	{
+		return 4;
+	}
+	std::string content{"enemies"};
+};
+
+struct get_enemies_data_response
+{
+	get_enemies_data_response() = default;
+
+	get_enemies_data_response(const std::vector<int> &enemies_data)
+		: content(enemies_data)
+	{
+	}
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int_vector(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_int_vector();
+	}
+
+	static int message_id()
+	{
+		return 5;
+	}
+	std::vector<int> content; //[id, posx, posy]
+};
+
+struct get_players_data
+{
+	get_players_data() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
+	}
+
+	static int message_id()
+	{
+		return 6;
+	}
+	std::string content {"player"};
+};
+
+struct get_players_data_response
+{
+	get_players_data_response() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int(id);
+		buffer.put_int(posx);
+		buffer.put_int(posy);
+		buffer.put_bool(active);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		id = buffer.get_int();
+		posx = buffer.get_int();
+		posy = buffer.get_int();
+		active = buffer.get_bool();
+	}
+
+	static int message_id()
+	{
+		return 7;
+	}
+
+	int id, posx, posy;
+	bool active;
 };
 
 }

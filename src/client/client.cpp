@@ -3,7 +3,6 @@
 namespace networking
 {
 
-// that's temporary constructor implementation to test client
 client::client()
 {
     tcp::resolver::query query(tcp::tcp::v4(), "127.0.0.1", "5555");

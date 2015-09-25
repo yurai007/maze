@@ -15,7 +15,7 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::shared_ptr<core::world_manager> world_manager_)
+void renderer::set_world(std::shared_ptr<core::client_world_manager> world_manager_)
 {
     world_manager = world_manager_;
 }
@@ -92,7 +92,8 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
 {
     if (world_manager != nullptr)
     {
-        world_manager->tick_all();
+        // maze have only newest state so moving fields is unecessary
+        world_manager->tick_all(true);
         world_manager->draw_all();
     }
 

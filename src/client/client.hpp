@@ -5,10 +5,10 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
-using boost::asio::ip::tcp;
-
 #include "../common/messages.hpp"
 #include "../common/logger.hpp"
+
+using boost::asio::ip::tcp;
 
 namespace networking
 {
@@ -33,6 +33,16 @@ public:
         send(msg);
     }
 
+    void send_request(messages::get_enemies_data &msg)
+    {
+        send(msg);
+    }
+
+    void send_request(messages::get_players_data &msg)
+    {
+         send(msg);
+    }
+
     messages::get_chunk_response read_get_chunk_response()
     {
         return read<messages::get_chunk_response>();
@@ -41,6 +51,16 @@ public:
     messages::position_changed_response read_position_changed_response()
     {
         return read<messages::position_changed_response>();
+    }
+
+    messages::get_enemies_data_response read_get_enemies_data_response()
+    {
+        return read<messages::get_enemies_data_response>();
+    }
+
+    messages::get_players_data_response read_get_players_data_response()
+    {
+        return read<messages::get_players_data_response>();
     }
 
 private:
@@ -59,8 +79,8 @@ private:
 
         size_t send_bytes = socket.write_some(boost::asio::buffer(serialized_msg.m_byte_buffer,
                                                              serialized_msg.offset), error);
+        assert(send_bytes > 0);
         assert(!error);
-        logger_.log("Send message with %d B size to server", send_bytes);
     }
 
     template<class Msg>
@@ -70,14 +90,14 @@ private:
         serialization::byte_buffer deserialized_msg;
         size_t recieved_bytes = socket.read_some(boost::asio::buffer(
                                                        deserialized_msg.m_byte_buffer), error);
+        assert(recieved_bytes > 0);
         assert(!error);
-        logger_.log("Recieved message with %d B size from server", recieved_bytes);
 
         Msg msg;
-        deserialized_msg.get_char(); //char msg_size =
+        deserialized_msg.get_char();
         char msg_type = deserialized_msg.get_char();
         if (Msg::message_id() != (int)msg_type)
-            logger_.log("Recieved message with wrong type. Expected message_id = %d", msg_type);
+            logger_.log("client: recieved message with wrong type. Expected message_id = %d", msg_type);
 
         msg.deserialize_from_buffer(deserialized_msg);
         return msg;

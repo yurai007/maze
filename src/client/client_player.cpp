@@ -1,35 +1,36 @@
-#include "remote_player.hpp"
+#include "client_player.hpp"
+#include "client.hpp"
 #include "renderer.hpp"
-#include "controller.hpp"
-#include "maze.hpp"
-#include "messages.hpp"
+#include "client_maze.hpp"
+#include "../common/controller.hpp"
+#include "../common/messages.hpp"
 
 namespace core
 {
 
-remote_player::remote_player(std::shared_ptr<presentation::renderer> renderer_,
+client_player::client_player(std::shared_ptr<presentation::renderer> renderer_,
                              std::shared_ptr<control::controller> controller_,
-                             std::shared_ptr<core::maze> maze_,
-                             std::shared_ptr<networking::client> client_,
-                             int posx_, int posy_)
-    : renderer(renderer_),
+                             std::shared_ptr<core::client_maze> maze_,
+                             std::shared_ptr<networking::client> client_, int id_,
+                             int posx_, int posy_, bool active_)
+    : game_object(posx_, posy_),
+      drawable(renderer_),
       controller(controller_),
-      client(client_),
       maze(maze_),
-      posx(posx_),
-      posy(posy_)
+      client(client_),
+      id(id_),
+      active(active_)
 {
 }
 
-void remote_player::load()
+void client_player::load_image()
 {
      renderer->load_image_and_register("player", "../../../data/player.bmp");
 }
 
-void remote_player::tick(unsigned short)
+void client_player::tick(unsigned short)
 {
-    if (controller == nullptr)
-        return;
+    assert(controller != nullptr);
 
     static char old_direction = 0;
     int oldx = posx, oldy = posy;
@@ -56,16 +57,21 @@ void remote_player::tick(unsigned short)
     // client: get_chunk request to server
     // Also core shouldn't has idea about networking existence
     // Refactor too!!
-    if (client != nullptr && perform_rotation)
+
+    // networking::network_notifier/proxy notifier/proxy; notifier.send_position_changed_info();
+
+    if (client != nullptr && ((oldx != posx) || (oldy != posy)) )
     {
-        networking::messages::position_changed request = {oldx, oldy, posx, posy};
+        networking::messages::position_changed request = {id, oldx, oldy, posx, posy};
         client->send_request(request);
         auto response = client->read_position_changed_response();
         assert(response.content == "OK");
+        logger_.log("client_player: id = %d, send position_changed request = {%d, %d} -> {%d, %d} "
+                    "and got response", id, oldx, oldy, posx, posy);
     }
 }
 
-void remote_player::draw()
+void client_player::draw()
 {
     if (perform_rotation)
     {
@@ -79,11 +85,6 @@ void remote_player::draw()
             renderer->rotate_image("player", presentation::clockwise_rotation::d360);
     }
     renderer->draw_image("player", 30*posx, 30*posy);
-}
-
-std::tuple<int, int> remote_player::get_position() const
-{
-    return std::make_tuple(posx, posy);
 }
 
 }

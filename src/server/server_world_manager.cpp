@@ -62,10 +62,10 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
     std::vector<int> result;
     for (auto &object : game_objects)
     {
-        auto enemy_ = std::dynamic_pointer_cast<server_enemy>(object);
-        if (enemy_ != nullptr)
+        auto enemy = std::dynamic_pointer_cast<server_enemy>(object);
+        if (enemy != nullptr)
         {
-            auto position = enemy_->get_position();
+            auto position = enemy->get_position();
 
             if (verify)
             {
@@ -73,7 +73,7 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
                 assert(field == 'E');
             }
 
-            result.push_back(enemy_->get_id());
+            result.push_back(enemy->get_id());
             result.push_back(std::get<0>(position));
             result.push_back(std::get<1>(position));
         }
@@ -94,7 +94,34 @@ void server_world_manager::update_player_position(int player_id, int oldx, int o
     // no lags again
    assert( (newx - oldx == 0 ) || (newy - oldy == 0) );
    player_id_to_position[player_id] = std::make_pair(newx, newy);
+}
 
+messages::get_players_data_response server_world_manager::allocate_player_for_client()
+{
+    std::shared_ptr<server_player> player;
+    for (auto &object : game_objects)
+    {
+        player = std::dynamic_pointer_cast<server_player>(object);
+        if (player != nullptr)
+        {
+            if (!player->alive)
+                break;
+        }
+    }
+    // enaugh players number for everyone
+    assert(player != nullptr);
+    assert(player->alive == false);
+
+    player->alive = true;
+    auto pos = player->get_position();
+    messages::get_players_data_response data = {player->id, std::get<0>(pos), std::get<1>(pos),
+                                                player->alive};
+    return data;
+}
+
+std::pair<int, int> server_world_manager::get_player_position(int player_id)
+{
+    return player_id_to_position[player_id];
 }
 
 }

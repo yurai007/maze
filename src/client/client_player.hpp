@@ -29,7 +29,9 @@ public:
            std::shared_ptr<control::controller> controller_,
            std::shared_ptr<core::client_maze> maze_,
            std::shared_ptr<networking::client> client_,
-           int posx_, int posy_);
+           int id_,
+           int posx_, int posy_,
+           bool active_);
     void tick(unsigned short tick_counter) override;
 
     void draw() override;
@@ -40,6 +42,8 @@ private:
     std::shared_ptr<networking::client> client;
     bool perform_rotation {false};
     char direction;
+    int id;
+    bool active;
 };
 
 }

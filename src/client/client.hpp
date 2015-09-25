@@ -38,6 +38,11 @@ public:
         send(msg);
     }
 
+    void send_request(messages::get_players_data &msg)
+    {
+         send(msg);
+    }
+
     messages::get_chunk_response read_get_chunk_response()
     {
         return read<messages::get_chunk_response>();
@@ -51,6 +56,11 @@ public:
     messages::get_enemies_data_response read_get_enemies_data_response()
     {
         return read<messages::get_enemies_data_response>();
+    }
+
+    messages::get_players_data_response read_get_players_data_response()
+    {
+        return read<messages::get_players_data_response>();
     }
 
 private:

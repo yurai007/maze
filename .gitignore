@@ -31,5 +31,5 @@
 *.creator*
 *.files
 *.includes
-*.txt
+log.txt
 

@@ -45,8 +45,8 @@ using namespace boost::asio;
     GLib-GIO-CRITICAL **: This application can not open files.
 
  TO DO:
-    Disable gui in server
-
+    Add get_players_data msg to client and server. Then I will be allowed to run many clients on
+    localhost!
 */
 
 // Only one thread
@@ -57,6 +57,7 @@ public:
         : argc(argc_),
           argv(argv_)
     {
+        game_objects_factory->set_manager(world_manager);
     }
 
     void tick(const boost::system::error_code&)
@@ -95,7 +96,7 @@ private:
     deadline_timer timer {server.main_server.m_io_service, interval};
 
     std::shared_ptr<core::server_game_objects_factory> game_objects_factory
-        {std::make_shared<core::server_game_objects_factory>(nullptr)};
+        {std::make_shared<core::server_game_objects_factory>()};
 
     std::shared_ptr<core::server_world_manager> world_manager
         {std::make_shared<core::server_world_manager>(game_objects_factory)};

@@ -11,13 +11,15 @@ namespace core
 client_player::client_player(std::shared_ptr<presentation::renderer> renderer_,
                              std::shared_ptr<control::controller> controller_,
                              std::shared_ptr<core::client_maze> maze_,
-                             std::shared_ptr<networking::client> client_,
-                             int posx_, int posy_)
+                             std::shared_ptr<networking::client> client_, int id_,
+                             int posx_, int posy_, bool active_)
     : game_object(posx_, posy_),
       drawable(renderer_),
       controller(controller_),
       maze(maze_),
-      client(client_)
+      client(client_),
+      id(id_),
+      active(active_)
 {
 }
 
@@ -60,12 +62,12 @@ void client_player::tick(unsigned short)
 
     if (client != nullptr && ((oldx != posx) || (oldy != posy)) )
     {
-        networking::messages::position_changed request = {oldx, oldy, posx, posy};
+        networking::messages::position_changed request = {id, oldx, oldy, posx, posy};
         client->send_request(request);
         auto response = client->read_position_changed_response();
         assert(response.content == "OK");
-        logger_.log("client_player: send position_changed request = {%d, %d} -> {%d, %d} "
-                    "and got response", oldx, oldy, posx, posy);
+        logger_.log("client_player: id = %d, send position_changed request = {%d, %d} -> {%d, %d} "
+                    "and got response", id, oldx, oldy, posx, posy);
     }
 }
 

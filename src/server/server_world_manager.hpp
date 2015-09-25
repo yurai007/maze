@@ -6,6 +6,9 @@
 #include <unordered_map>
 #include "../common/abstract_world_manager.hpp"
 #include "server_game_objects_factory.hpp"
+#include "../common/messages.hpp"
+
+using namespace networking;
 
 namespace core
 {
@@ -29,6 +32,7 @@ public:
     std::vector<int> get_enemies_data(bool verify) const;
     std::shared_ptr<core::server_maze> get_maze() const;
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
+    messages::get_players_data_response allocate_player_for_client();
     std::pair<int, int> get_player_position(int player_id);
 
 private:

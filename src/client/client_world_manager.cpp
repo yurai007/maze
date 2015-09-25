@@ -37,8 +37,26 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
     return response;
 }
 
+networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
+{
+    networking::messages::get_players_data request;
+    client->send_request(request);
+
+    auto response = client->read_get_players_data_response();
+
+    logger_.log("client_world_manager: get_players_data was load. id = %d, posx = %d, posy = %d,"
+                " active = %b", response.id, response.posx, response.posy, response.active);
+
+    return response;
+}
+
 void client_world_manager::preprocess_loading()
 {
+    auto players_data = get_players_data_from_network();
+    player_id = players_data.id;
+    player_posx = players_data.posx;
+    player_posy = players_data.posy;
+
     auto enemies_data = get_enemies_data_from_network();
 
     for (size_t i = 0; i < enemies_data.content.size(); i += 3)
@@ -107,8 +125,23 @@ void client_world_manager::make_enemy(int posx, int posy)
 
 void client_world_manager::make_player(int posx, int posy)
 {
-    game_objects.push_back(objects_factory->create_client_player(posx, posy));
-    logger_.log("client_world_manager: added player on position = {%d, %d}", posx, posy);
+    assert(player_id > 0);
+    assert(player_posx < INT_MAX);
+    assert(player_posy < INT_MAX);
+
+    if (posx == player_posx && posy == player_posy)
+    {
+        game_objects.push_back(objects_factory->create_client_player(player_id, posx, posy, true));
+        logger_.log("client_world_manager: added active player on position = {%d, %d}, id = %d",
+                    posx, posy, player_id);
+    }
+    else
+    {
+        game_objects.push_back(objects_factory->create_client_player(0, posx, posy, false));
+        logger_.log("client_world_manager: added unactive player on position = {%d, %d}",
+                    posx, posy);
+    }
+
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)

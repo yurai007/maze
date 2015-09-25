@@ -22,10 +22,11 @@ public:
 
     void tick(unsigned short tick_counter) override;
 
-private:
+//private:
     std::shared_ptr<core::server_maze> maze;
     std::shared_ptr<core::server_world_manager> manager;
     int id;
+    bool alive {false};
 };
 
 }

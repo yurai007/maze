@@ -27,6 +27,7 @@ public:
     client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
                          std::shared_ptr<networking::client> client_);
     networking::messages::get_enemies_data_response get_enemies_data_from_network();
+    networking::messages::get_players_data_response get_players_data_from_network();
 
     void preprocess_loading() override;
     void postprocess_loading() override;
@@ -46,6 +47,9 @@ private:
     std::shared_ptr<networking::client> client {nullptr};
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_enemy_id;
     std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
+    int player_id {0};
+    int player_posx {INT_MAX};
+    int player_posy {INT_MAX};
 };
 
 }

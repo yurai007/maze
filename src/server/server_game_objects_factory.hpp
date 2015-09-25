@@ -8,22 +8,6 @@
 #include "server_resource.hpp"
 #include "server_enemy.hpp"
 #include "server_maze.hpp"
-//#include "server_world_manager.hpp"
-
-//namespace presentation
-//{
-//    class renderer;
-//}
-
-//namespace control
-//{
-//    class controller;
-//}
-
-//namespace networking
-//{
-//    class server;
-//}
 
 namespace core
 {
@@ -34,7 +18,8 @@ class server_world_manager;
 class server_game_objects_factory
 {
 public:
-    server_game_objects_factory(std::shared_ptr<core::server_world_manager> manager);
+    server_game_objects_factory() = default;
+    void set_manager(std::shared_ptr<server_world_manager> manager);
 
     std::shared_ptr<server_maze> create_server_maze(std::shared_ptr<maze_loader> loader);
     std::shared_ptr<server_player> create_server_player(int posx, int posy);

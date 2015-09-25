@@ -37,7 +37,7 @@ public:
                          std::shared_ptr<networking::client> client);
 
     std::shared_ptr<client_maze> create_client_maze(std::shared_ptr<maze_loader> loader);
-    std::shared_ptr<client_player> create_client_player(int posx, int posy);
+    std::shared_ptr<client_player> create_client_player(int id, int posx, int posy, bool active);
     std::shared_ptr<client_enemy> create_client_enemy(
             std::shared_ptr<core::client_world_manager> manager,
             int posx, int posy, int id);

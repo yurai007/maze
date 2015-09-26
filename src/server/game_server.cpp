@@ -35,7 +35,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	});
 
 	dispatcher->add_handler(
-				[&](messages::get_enemies_data &msg)
+				[&](messages::get_enemies_data &)
 	{
 		logger_.log("game_server: recieved get_enemies_data");
 
@@ -59,7 +59,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	});
 
 	dispatcher->add_handler(
-				[&](messages::get_players_data &msg)
+				[&](messages::get_players_data &)
 	{
 		logger_.log("game_server: recieved get_players_data");
 		messages::get_players_data_response response = manager->allocate_player_for_client();

@@ -47,7 +47,9 @@ void server::stop()
 void server::remove_connection(std::shared_ptr<connection> connection_)
 {
     connections.erase(connection_);
-    logger_.log("server: connection was removed");
+    logger_.log("server: connection with id = %d was removed",
+                connection_->get_socket().native_handle());
+    connection_->stop();
 }
 
 void server::send_on_current_connection(const serialization::byte_buffer

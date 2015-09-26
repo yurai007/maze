@@ -3,8 +3,6 @@
 
 #include "byte_buffer.hpp"
 
-// TO DO: problem because message_id sizeof is 1 in serialization
-
 namespace networking
 {
 

@@ -3,8 +3,6 @@
 
 #include "byte_buffer.hpp"
 
-// TO DO: problem because message_id sizeof is 1 in serialization
-
 namespace networking
 {
 
@@ -179,27 +177,26 @@ struct get_players_data
 	{
 		return 6;
 	}
-	std::string content {"player"};
+	std::string content {"players"};
 };
 
 struct get_players_data_response
 {
 	get_players_data_response() = default;
 
+	get_players_data_response(const std::vector<int> &players_data)
+		: content(players_data)
+	{
+	}
+
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
-		buffer.put_int(id);
-		buffer.put_int(posx);
-		buffer.put_int(posy);
-		buffer.put_bool(active);
+		buffer.put_int_vector(content);
 	}
 
 	void deserialize_from_buffer(serialization::byte_buffer &buffer)
 	{
-		id = buffer.get_int();
-		posx = buffer.get_int();
-		posy = buffer.get_int();
-		active = buffer.get_bool();
+		content = buffer.get_int_vector();
 	}
 
 	static int message_id()
@@ -207,8 +204,71 @@ struct get_players_data_response
 		return 7;
 	}
 
-	int id, posx, posy;
-	bool active;
+	std::vector<int> content; //[id, posx, posy]
+};
+
+struct client_shutdown
+{
+	client_shutdown() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int(player_id);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		player_id = buffer.get_int();
+	}
+
+	static int message_id()
+	{
+		return 8;
+	}
+
+	int player_id;
+};
+
+struct get_id
+{
+	get_id() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_string(content);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		content = buffer.get_string();
+	}
+
+	static int message_id()
+	{
+		return 9;
+	}
+	std::string content {"id"};
+};
+
+struct get_id_response
+{
+	get_id_response() = default;
+
+	void serialize_to_buffer(serialization::byte_buffer &buffer) const
+	{
+		buffer.put_int(player_id);
+	}
+
+	void deserialize_from_buffer(serialization::byte_buffer &buffer)
+	{
+		player_id = buffer.get_int();
+	}
+
+	static int message_id()
+	{
+		return 10;
+	}
+	int player_id;
 };
 
 }

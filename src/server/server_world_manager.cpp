@@ -96,7 +96,34 @@ void server_world_manager::update_player_position(int player_id, int oldx, int o
    player_id_to_position[player_id] = std::make_pair(newx, newy);
 }
 
-messages::get_players_data_response server_world_manager::allocate_player_for_client()
+// allocate ???
+
+std::vector<int> server_world_manager::get_players_data(bool verify) const
+{
+    std::vector<int> players_data;
+    std::shared_ptr<server_player> player;
+
+    for (auto &object : game_objects)
+    {
+        player = std::dynamic_pointer_cast<server_player>(object);
+        if (player != nullptr)
+        {
+            auto position = player->get_position();
+            if (verify)
+            {
+                char field = maze_->get_field(std::get<0>(position), std::get<1>(position));
+                assert(field == 'P');
+            }
+            players_data.push_back(player->id);
+            players_data.push_back(std::get<0>(position));
+            players_data.push_back(std::get<1>(position));
+        }
+    }
+
+    return players_data;
+}
+
+int server_world_manager::allocate_data_for_new_player()
 {
     std::shared_ptr<server_player> player;
     for (auto &object : game_objects)
@@ -108,15 +135,29 @@ messages::get_players_data_response server_world_manager::allocate_player_for_cl
                 break;
         }
     }
-    // enaugh players number for everyone
+    // player really exists
     assert(player != nullptr);
-    assert(player->alive == false);
-
+    assert(!player->alive);
     player->alive = true;
-    auto pos = player->get_position();
-    messages::get_players_data_response data = {player->id, std::get<0>(pos), std::get<1>(pos),
-                                                player->alive};
-    return data;
+    return player->id;
+}
+
+void server_world_manager::shutdown_player(int id)
+{
+    std::shared_ptr<server_player> player;
+    for (auto &object : game_objects)
+    {
+        player = std::dynamic_pointer_cast<server_player>(object);
+        if (player != nullptr)
+        {
+            if (player->id == id)
+                break;
+        }
+    }
+    // player really exists
+    assert(player != nullptr);
+    assert(player->id == id);
+    player->alive = false;
 }
 
 std::pair<int, int> server_world_manager::get_player_position(int player_id)

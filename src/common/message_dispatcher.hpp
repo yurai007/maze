@@ -19,7 +19,7 @@ namespace networking
        Ref: http://stackoverflow.com/questions/25714390/is-it-possible-to-do-this-lambda-event-manager-in-c
  * 1. boost::any
      - holds any type. Sth like dynamic in C#.
-     - It's impossible to implicit cast form boost::any. We must use boost::any_cast
+     - It's impossible to implicit cast from boost::any. We must use boost::any_cast
      - It's not implemented by void*! It uses dynamic polymorphism and virtual methods instead.
    2. Observing callstack is good idea to understanding how it works
  */

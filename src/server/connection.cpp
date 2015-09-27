@@ -46,16 +46,12 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
     {
         m_server.current_connection = shared_from_this();
         unsigned char msg_length = 0;
-//        logger_.log("connection with id = %d: recieved %d B", socket.native_handle(),
-//                                     bytes_transferred);
 
         if (remaining_bytes == 0)
         {
-            msg_length = data_buffer.m_byte_buffer[0]; // type_id + payload
+            msg_length = data_buffer.m_byte_buffer[0];
             remaining_bytes =  msg_length + 1 - bytes_transferred;
             current = bytes_transferred;
-//            logger_.log("connection with id = %d: expected %d B",
-//                                         socket.native_handle(), msg_length + 1);
         }
         else
         {

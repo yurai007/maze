@@ -20,10 +20,9 @@ public:
     void run();
     void stop();
 
-     server main_server {5555};
+    server main_server {5555};
 
 private:
-
     remote_transport::sender sender {main_server};
 };
 

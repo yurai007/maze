@@ -8,11 +8,6 @@
 namespace core
 {
 
-//abstract_world_manager::abstract_world_manager(std::shared_ptr<core::abstract_maze> maze)
-//    : maze_(maze)
-//{
-//}
-
 void abstract_world_manager::load_all()
 {
     logger_.log("abstract_world_manager: start loading");

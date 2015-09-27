@@ -7,8 +7,6 @@
 #include "connection.h"
 #include "../common/logger.hpp"
 
-//#include "message_dispatcher.hpp"
-
 /*
         *  TCP echo server
         *  No listening (because non-blocking?).

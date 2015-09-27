@@ -44,18 +44,55 @@ networking::messages::get_players_data_response client_world_manager::get_player
 
     auto response = client->read_get_players_data_response();
 
-    logger_.log("client_world_manager: get_players_data was load. id = %d, posx = %d, posy = %d,"
-                " active = %b", response.id, response.posx, response.posy, response.active);
+    logger_.log("client_world_manager: get_players_data was load. Content dump:");
+    size_t i = 0;
+    for (; i < response.content.size(); i += 3)
+    {
+        if (i != 0 && (i % 15 == 0) )
+            logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
+                response.content[i+2]);
+        else
+            logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
+                response.content[i+2]);
+    }
+    if ((i-3)%15 != 0)
+        logger_.log_in_place("\n");
+    assert(response.content.size() % 3 == 0);
 
     return response;
 }
 
+int client_world_manager::get_id_data_from_network()
+{
+    networking::messages::get_id request;
+    client->send_request(request);
+
+    auto response = client->read_get_id_response();
+
+    logger_.log("client_world_manager: player_id = %d", response.player_id);
+    assert(response.player_id > 0);
+    return response.player_id;
+}
+
 void client_world_manager::preprocess_loading()
 {
+    player_id = get_id_data_from_network();
     auto players_data = get_players_data_from_network();
-    player_id = players_data.id;
-    player_posx = players_data.posx;
-    player_posy = players_data.posy;
+
+    for (size_t i = 0; i < players_data.content.size(); i += 3)
+    {
+        int id = players_data.content[i];
+        int x = players_data.content[i+1];
+        int y = players_data.content[i+2];
+        position_to_player_id[std::make_pair(x, y)] = id;
+
+        if (id == player_id)
+        {
+            player_posx = x;
+            player_posy = y;
+        }
+    }
+    logger_.log("client_world_manager: build position_to_player_id map");
 
     auto enemies_data = get_enemies_data_from_network();
 
@@ -79,16 +116,23 @@ void client_world_manager::postprocess_loading()
     }
 
     position_to_enemy_id.clear();
+    position_to_player_id.clear();
 }
 
 void client_world_manager::preprocess_ticking()
 {
     maze_->update_content();
 
-    // get_enemies_data
-    // 1. get_enemies -> new_positions
-    //    new_positions: id -> (x, y)
-    // 2. enemy->tick updates position from new_positions
+    auto players_data = get_players_data_from_network();
+
+    for (size_t i = 0; i < players_data.content.size(); i += 3)
+    {
+        int id = players_data.content[i];
+        int x = players_data.content[i+1];
+        int y = players_data.content[i+2];
+        player_id_to_position[id] = std::make_pair(x, y);
+    }
+    // TO DO: I don't remove dead players yet...
 
     auto enemies_data = get_enemies_data_from_network();
 
@@ -99,7 +143,7 @@ void client_world_manager::preprocess_ticking()
         int y = enemies_data.content[i+2];
         enemy_id_to_position[id] = std::make_pair(x, y);
     }
-    logger_.log("client_world_manager: updated maze content and enemy_id_to_position map");
+    logger_.log("client_world_manager: updated maze content and maps with positions");
 }
 
 void client_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
@@ -129,19 +173,20 @@ void client_world_manager::make_player(int posx, int posy)
     assert(player_posx < INT_MAX);
     assert(player_posy < INT_MAX);
 
-    if (posx == player_posx && posy == player_posy)
-    {
-        game_objects.push_back(objects_factory->create_client_player(player_id, posx, posy, true));
-        logger_.log("client_world_manager: added active player on position = {%d, %d}, id = %d",
-                    posx, posy, player_id);
-    }
-    else
-    {
-        game_objects.push_back(objects_factory->create_client_player(0, posx, posy, false));
-        logger_.log("client_world_manager: added unactive player on position = {%d, %d}",
-                    posx, posy);
-    }
+    auto player_pos = std::make_pair(posx, posy);
+    assert(position_to_player_id.find(player_pos) != position_to_player_id.end());
 
+    int id = position_to_player_id[player_pos];
+    bool active = (id == player_id);
+
+    game_objects.push_back(objects_factory->create_client_player(
+                               shared_from_this(),
+                               id,
+                               posx,
+                               posy,
+                               active));
+    logger_.log("client_world_manager: added player on position = {%d, %d}. Active = %b",
+                posx, posy, active);
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)
@@ -174,6 +219,11 @@ void client_world_manager::draw_all()
 std::tuple<int, int> client_world_manager::get_enemy_position(int id)
 {
     return enemy_id_to_position[id];
+}
+
+std::tuple<int, int> client_world_manager::get_player_position(int id)
+{
+    return player_id_to_position[id];
 }
 
 }

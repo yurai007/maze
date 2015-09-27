@@ -43,6 +43,11 @@ public:
          send(msg);
     }
 
+    void send_request(messages::get_id &msg)
+    {
+         send(msg);
+    }
+
     messages::get_chunk_response read_get_chunk_response()
     {
         return read<messages::get_chunk_response>();
@@ -61,6 +66,11 @@ public:
     messages::get_players_data_response read_get_players_data_response()
     {
         return read<messages::get_players_data_response>();
+    }
+
+    messages::get_id_response read_get_id_response()
+    {
+        return read<messages::get_id_response>();
     }
 
 private:
@@ -103,9 +113,12 @@ private:
         return msg;
     }
 
+    void stop();
+
     boost::asio::io_service io_service;
     tcp::resolver resolver {io_service};
     tcp::socket socket {io_service};
+    boost::asio::signal_set m_signals {io_service};
 };
 
 }

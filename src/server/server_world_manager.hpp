@@ -32,7 +32,9 @@ public:
     std::vector<int> get_enemies_data(bool verify) const;
     std::shared_ptr<core::server_maze> get_maze() const;
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
-    messages::get_players_data_response allocate_player_for_client();
+    std::vector<int> get_players_data(bool verify) const;
+    int allocate_data_for_new_player();
+    void shutdown_player(int id);
     std::pair<int, int> get_player_position(int player_id);
 
 private:

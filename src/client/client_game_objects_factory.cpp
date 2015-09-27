@@ -28,10 +28,11 @@ std::shared_ptr<client_maze> client_game_objects_factory::create_client_maze(std
     return maze_;
 }
 
-std::shared_ptr<client_player> client_game_objects_factory::create_client_player(int id, int posx, int posy,
-                                                                                 bool active)
+std::shared_ptr<client_player> client_game_objects_factory::create_client_player(
+                                        std::shared_ptr<client_world_manager> manager,
+                                        int id, int posx, int posy, bool active)
 {
-    return std::make_shared<client_player>(renderer_, controller_, maze_, client_, id, posx, posy, active);
+    return std::make_shared<client_player>(manager, renderer_, controller_, maze_, client_, id, posx, posy, active);
 }
 
 std::shared_ptr<client_enemy> client_game_objects_factory::create_client_enemy(

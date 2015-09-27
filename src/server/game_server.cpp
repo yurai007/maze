@@ -62,10 +62,44 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 				[&](messages::get_players_data &)
 	{
 		logger_.log("game_server: recieved get_players_data");
-		messages::get_players_data_response response = manager->allocate_player_for_client();
+
+		messages::get_players_data_response response(manager->get_players_data(true));
+
+		logger_.log("game_server: get_players_data before sending. Content dump:");
+		size_t i = 0;
+		for (; i < response.content.size(); i += 3)
+		{
+			if (i != 0 && (i % 30 == 0))
+				logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
+					response.content[i+2]);
+			else
+				logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
+					response.content[i+2]);
+		}
+		if ((i-3)%30 != 0)
+			logger_.log_in_place("\n");
+
 		sender.send(response);
-		logger_.log("game_server: send get_players_data_response for player id = %d, pos = {%d, %d}",
-					response.id, response.posx, response.posy);
+		logger_.log("game_server: send get_players_data_response");
+	});
+
+	dispatcher->add_handler(
+				[&](messages::get_id &)
+	{
+		logger_.log("game_server: recieved get_id");
+		messages::get_id_response response;
+		response.player_id = manager->allocate_data_for_new_player();
+
+		logger_.log("player_id = %d", response.player_id);
+		sender.send(response);
+		logger_.log("game_server: send get_id_response");
+	});
+
+	dispatcher->add_handler(
+				[&](messages::client_shutdown &msg)
+	{
+		logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
+		manager->shutdown_player(msg.player_id);
 	});
 
 	main_server.add_dispatcher(dispatcher);

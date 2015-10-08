@@ -48,6 +48,14 @@ using namespace boost::asio;
     GLib-GIO-CRITICAL **: This application can not open files.
 
  * cyclic reference are paintful and forward declarations are needed to break it
+
+ * unfortunately gtkmm is fucking piece of shit and there are so huge lags only for 3 clients on
+   one host that running multiple clients with GUI on one machine doesn't make sense.
+   So the roadmap is:
+   1. Disable gui and add to client_players enemy_server's logic for movement
+   2. Try this on one machine with up to 5 clients (one with GUI)
+   3. Add huge enemies number for introducing network congestion
+   4. Repeat for 2 machines.
 */
 
 class gui_driver

@@ -6,7 +6,7 @@ namespace networking
 
 client::client()
 {
-    // TO DO: signals doesn't work here. Maybe I need synchronous client?
+    // TO DO: signals doesn't work here. Maybe I need asynchronous client?
     m_signals.add(SIGINT);
     m_signals.add(SIGTERM);
   #if defined(SIGQUIT)

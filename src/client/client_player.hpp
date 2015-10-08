@@ -38,6 +38,7 @@ public:
 
     void active_tick();
     void unactive_tick();
+    bool is_active() const;
     void tick(unsigned short tick_counter) override;
 
     void draw() override;

@@ -108,12 +108,25 @@ void client_world_manager::preprocess_loading()
 
 void client_world_manager::postprocess_loading()
 {
-    for (auto &object : game_objects)
+    int active_player_id = -1;
+    for (size_t i = 0; i < game_objects.size(); i++)
     {
+        auto object = game_objects[i];
         auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
             if (drawable_object != nullptr)
                 drawable_object->load_image();
+
+       auto player = std::dynamic_pointer_cast<client_player>(object);
+            if (player != nullptr)
+            {
+                if (player->is_active())
+                    active_player_id = i;
+            }
     }
+
+    // I want active player to be on the end during ticking
+    assert(active_player_id >= 0);
+    std::swap(game_objects[active_player_id], game_objects.back());
 
     position_to_enemy_id.clear();
     position_to_player_id.clear();

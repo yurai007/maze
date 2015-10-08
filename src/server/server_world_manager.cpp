@@ -21,6 +21,18 @@ void server_world_manager::preprocess_loading()
 
 void server_world_manager::postprocess_loading()
 {
+    // I want to players on the beginning
+    int current_offset_players = 0;
+    for (size_t i = 0; i < game_objects.size(); i++)
+    {
+        auto player = std::dynamic_pointer_cast<server_player>(game_objects[i]);
+        if (player != nullptr)
+        {
+            assert(current_offset_players < game_objects.size());
+            std::swap(game_objects[current_offset_players], game_objects[i]);
+            current_offset_players++;
+        }
+    }
 }
 
 void server_world_manager::preprocess_ticking()
@@ -95,8 +107,6 @@ void server_world_manager::update_player_position(int player_id, int oldx, int o
    assert( (newx - oldx == 0 ) || (newy - oldy == 0) );
    player_id_to_position[player_id] = std::make_pair(newx, newy);
 }
-
-// allocate ???
 
 std::vector<int> server_world_manager::get_players_data(bool verify) const
 {

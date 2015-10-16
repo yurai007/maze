@@ -67,7 +67,7 @@ public:
     {
     }
 
-    int run()
+    int run(const std::string &ip_address)
     {
         application = Gtk::Application::create(argc, argv, "");
 
@@ -75,7 +75,7 @@ public:
         auto qt_renderer = std::make_shared<presentation::renderer>();
 
         //auto client =  std::make_shared<networking::client>(); // WTF?? Buggy make_shared???
-        std::shared_ptr<networking::client> client(new networking::client());
+        std::shared_ptr<networking::client> client(new networking::client(ip_address));
         std::shared_ptr<core::client_game_objects_factory> game_objects_factory(
                                 new core::client_game_objects_factory(qt_renderer,
                                 qt_controller,
@@ -114,10 +114,11 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
-    if (argc > 1)
-        logger_.log("Arg: %s", argv[1]);
+    assert(argc > 1);
+    logger_.log("Arg: %s", argv[1]);
 
     gui_driver driver(0, NULL);
-    return driver.run();
+    const std::string ip_address(argv[1]);
+    return driver.run(ip_address);
 }
 

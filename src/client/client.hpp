@@ -21,7 +21,7 @@ namespace networking
 class client
 {
 public:
-    client();
+    client(const std::string &ip_address);
 
     void send_request(messages::get_chunk &msg)
     {

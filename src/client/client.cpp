@@ -4,7 +4,7 @@
 namespace networking
 {
 
-client::client()
+client::client(const std::string &ip_address)
 {
     // TO DO: signals doesn't work here. Maybe I need asynchronous client?
     m_signals.add(SIGINT);
@@ -14,7 +14,7 @@ client::client()
   #endif
     m_signals.async_wait(boost::bind(&client::stop, this));
 
-    tcp::resolver::query query(tcp::tcp::v4(), "127.0.0.1", "5555");
+    tcp::resolver::query query(tcp::tcp::v4(), ip_address, "5555");
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
     tcp::resolver::iterator end;
     boost::system::error_code error = boost::asio::error::host_not_found;

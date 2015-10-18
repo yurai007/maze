@@ -56,6 +56,14 @@ using namespace boost::asio;
    2. Try this on one machine with up to 5 clients (one with GUI)
    3. Add huge enemies number for introducing network congestion
    4. Repeat for 2 machines.
+
+ * Instead asynchronous signals calling I decided to use plain synchronous
+   call: world_manager->shut_down_client(); after end of gtk event loop.
+
+ * WTF? Destructors aren't called? Problems with shared_ptr destructors.
+ * TO DO: finish shut down. On the beginning only one player, extra players for extra clients
+   should appear and disappear after closing client. Problem - All clients get whole maze on the beginning
+   so I need on server side get only alive enemies
 */
 
 class gui_driver
@@ -88,14 +96,15 @@ public:
         world_manager->load_all();
         qt_renderer->set_world(world_manager);
 
-
         qt_controller->set_title("The Maze");
         qt_controller->set_default_size(1024, 768);
-
         qt_controller->add(*qt_renderer);
+
         qt_renderer->show();
 
         int result = application->run(*qt_controller);
+        world_manager->shut_down_client();
+
         return result;
     }
 

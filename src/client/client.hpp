@@ -48,6 +48,11 @@ public:
          send(msg);
     }
 
+    void send_request(messages::client_shutdown &msg)
+    {
+         send(msg);
+    }
+
     messages::get_chunk_response read_get_chunk_response()
     {
         return read<messages::get_chunk_response>();
@@ -118,7 +123,7 @@ private:
     boost::asio::io_service io_service;
     tcp::resolver resolver {io_service};
     tcp::socket socket {io_service};
-    boost::asio::signal_set m_signals {io_service};
+    //boost::asio::signal_set m_signals {io_service};
 };
 
 }

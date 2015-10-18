@@ -172,6 +172,12 @@ void client_world_manager::add_enemy(int posx, int posy, int id)
     logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
+void client_world_manager::shut_down_client()
+{
+    networking::messages::client_shutdown msg = {player_id};
+    client->send_request(msg);
+}
+
 void client_world_manager::make_enemy(int posx, int posy)
 {
     if (position_to_enemy_id.find(std::make_pair(posx, posy)) != position_to_enemy_id.end())

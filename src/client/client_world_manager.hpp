@@ -41,6 +41,7 @@ public:
 
     void draw_all();
     void add_enemy(int posx, int posy, int id);
+    void shut_down_client();
     std::tuple<int, int> get_enemy_position(int id);
     std::tuple<int, int> get_player_position(int id);
 

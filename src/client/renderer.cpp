@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <memory>
+#include "../common/logger.hpp"
 
 namespace presentation
 {

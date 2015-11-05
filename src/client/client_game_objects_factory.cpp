@@ -22,17 +22,18 @@ client_game_objects_factory::client_game_objects_factory(
 {
 }
 
-std::shared_ptr<client_maze> client_game_objects_factory::create_client_maze(std::shared_ptr<maze_loader> loader)
+std::shared_ptr<client_maze> client_game_objects_factory::create_client_maze(
+        std::shared_ptr<maze_loader> loader, bool visible)
 {
-    maze_ = std::make_shared<client_maze>(renderer_, loader);
+    maze_ = std::make_shared<client_maze>(renderer_, loader, visible);
     return maze_;
 }
 
-std::shared_ptr<client_player> client_game_objects_factory::create_client_player(
-                                        std::shared_ptr<client_world_manager> manager,
-                                        int id, int posx, int posy, bool active)
+std::shared_ptr<client_player> client_game_objects_factory::create_client_player(std::shared_ptr<client_world_manager> manager,
+                                        int id, int posx, int posy, bool active, bool automatic)
 {
-    return std::make_shared<client_player>(manager, renderer_, controller_, maze_, client_, id, posx, posy, active);
+    return std::make_shared<client_player>(manager, renderer_, controller_, maze_,
+                                           client_, id, posx, posy, active, automatic);
 }
 
 std::shared_ptr<client_enemy> client_game_objects_factory::create_client_enemy(
@@ -42,8 +43,9 @@ std::shared_ptr<client_enemy> client_game_objects_factory::create_client_enemy(
     return std::make_shared<client_enemy>(manager, renderer_, maze_, posx, posy, id);
 }
 
-std::shared_ptr<client_resource> client_game_objects_factory::create_client_resource(const std::string &name,
-                                                                int posx, int posy)
+std::shared_ptr<client_resource> client_game_objects_factory::create_client_resource(
+        const std::string &name,
+        int posx, int posy)
 {
     return std::make_shared<client_resource>(name, renderer_, posx, posy);
 }

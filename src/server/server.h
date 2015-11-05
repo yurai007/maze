@@ -34,25 +34,6 @@
      * I run 200k clients and it is no problem, I assume 400k is possible as for epoll
 */
 
-//void default_usage(int argc, char* argv[])
-//{
-//    try
-//    {
-//        if (argc != 2)
-//        {
-//            std::cerr << "This is simple echo server. Usage: ./boost_server <port>\n";
-//        }
-
-//        server echo_server_tcp(std::atoi(argv[1]));
-//        echo_server_tcp.run();
-//    }
-//    catch (std::exception& e)
-//    {
-//        std::cerr << "Exception: " << e.what() << "\n";
-//    }
-//}
-
-
 namespace networking
 {
 

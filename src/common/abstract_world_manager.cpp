@@ -11,10 +11,10 @@ namespace core
 void abstract_world_manager::load_all()
 {
     logger_.log("abstract_world_manager: start loading");
+    preprocess_loading();
+
     assert(maze_ != nullptr);
     maze_->load();
-
-    preprocess_loading();
 
     for (int row = 0; row < maze_->size(); row++)
         for (int column = 0; column < maze_->size(); column++)

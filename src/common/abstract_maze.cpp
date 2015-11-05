@@ -43,6 +43,17 @@ char abstract_maze::get_field(int column, int row) const
     return content[column][row];
 }
 
+void abstract_maze::set_field(int column, int row, char field)
+{
+    std::lock_guard<std::mutex> lock(maze_mutex);
+
+    const int size = static_cast<int>(content.size());
+    assert((0 <= column) && (column < size));
+    assert((0 <= row) && (row < size));
+    assert(field == 'P' || field == 'E' || field == 'G');
+    content[column][row] = field;
+}
+
 std::string abstract_maze::get_chunk(int leftdown_x, int leftdown_y,
                                          int rightupper_x, int rightupper_y) const
 {

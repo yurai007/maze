@@ -141,18 +141,17 @@ public:
     void tick(const boost::system::error_code&)
     {
         if (world_manager != nullptr)
-              world_manager->tick_all(true);
+              world_manager->tick_all();
 
         timer.expires_at(timer.expires_at() + interval);
         timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
     }
 
-    void stop()
-    {
-        logger_.log("Dupa1");
-        m_io_service.stop();
-        world_manager->shut_down_client();
-    }
+//    void stop()
+//    {
+//        m_io_service.stop();
+//        world_manager->shut_down_client();
+//    }
 
     int run(const std::string &ip_address)
     {
@@ -168,13 +167,13 @@ public:
         world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
         world_manager->load_all();
 
-        boost::asio::signal_set m_signals(m_io_service);
-        m_signals.add(SIGINT);
-        m_signals.add(SIGTERM);
-      #if defined(SIGQUIT)
-        m_signals.add(SIGQUIT);
-      #endif
-         m_signals.async_wait(boost::bind(&boost::asio::io_service::stop, &m_io_service));
+//        boost::asio::signal_set m_signals(m_io_service);
+//        m_signals.add(SIGINT);
+//        m_signals.add(SIGTERM);
+//      #if defined(SIGQUIT)
+//        m_signals.add(SIGQUIT);
+//      #endif
+//         m_signals.async_wait(boost::bind(&boost::asio::io_service::stop, &m_io_service));
 
         try
         {
@@ -185,7 +184,7 @@ public:
         {
             logger_.log("exception: %s", exception.what());
         }
-        logger_.log("Dupa2");
+        // TO DO: Doesn't work yet
         world_manager->shut_down_client();
 
         return 0;

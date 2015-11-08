@@ -31,6 +31,18 @@ void server_world_manager::load_all()
                 else
                     if (field == 'G')
                         make_resource("gold", column, row);
+                    else
+                        if (field == 'M')
+                            make_resource("mercury", column, row);
+                        else
+                            if (field == 'S')
+                                make_resource("stone", column, row);
+                            else
+                                if (field == 'W')
+                                    make_resource("wood", column, row);
+                                else
+                                    if (field == 's')
+                                        make_resource("sulfur", column, row);
         }
 
     logger_.log("server_world_manager: all game objects were loaded successfully");
@@ -96,7 +108,11 @@ void server_world_manager::tick_all()
         {
             auto position = resource->get_position();
 
-            if (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'G')
+            if ( (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'G')
+                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'M')
+                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'S')
+                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'W')
+                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 's'))
             {
                 object.reset();
                 logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
@@ -108,21 +124,6 @@ void server_world_manager::tick_all()
     logger_.log("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
 }
-
-//void server_world_manager::move_players_on_beginning()
-//{
-//    int current_offset_players = 0;
-//    for (size_t i = 0; i < players_and_resources.size(); i++)
-//    {
-//        auto player = std::dynamic_pointer_cast<server_player>(players_and_resources[i]);
-//        if (player != nullptr)
-//        {
-//            assert(current_offset_players < players_and_resources.size());
-//            std::swap(players_and_resources[current_offset_players], players_and_resources[i]);
-//            current_offset_players++;
-//        }
-//    }
-//}
 
 void server_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 {

@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-//#include "../common/abstract_world_manager.hpp"
 #include "server_game_objects_factory.hpp"
 #include "../common/messages.hpp"
 

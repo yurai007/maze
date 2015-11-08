@@ -7,12 +7,108 @@ namespace core
 client_world_manager::client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
                                            std::shared_ptr<networking::client> client_,
                                            bool automatic_players_)
-    : abstract_world_manager(),
-      objects_factory(objects_factory_),
+    : objects_factory(objects_factory_),
       client(client_),
       automatic_players(automatic_players_)
 {
     logger_.log("client_world_manager: started");
+}
+
+void client_world_manager::load_all()
+{
+    logger_.log("client_world_manager: start loading");
+    register_player_and_load_external_players_and_enemies_data();
+
+    assert(maze != nullptr);
+    maze->load();
+
+    for (int row = 0; row < maze->size(); row++)
+        for (int column = 0; column < maze->size(); column++)
+        {
+            char field = maze->get_field(column, row);
+            if (field == 'P')
+                make_player(column, row);
+            else
+                if (field == 'E')
+                    make_enemy(column, row);
+                else
+                    if (field == 'G')
+                        make_resource("gold", column, row);
+                    else
+                        if (field == 'M')
+                            make_resource("mercury", column, row);
+                        else
+                            if (field == 'S')
+                                make_resource("stone", column, row);
+                            else
+                                if (field == 'W')
+                                    make_resource("wood", column, row);
+                                else
+                                    if (field == 's')
+                                        make_resource("sulfur", column, row);
+        }
+
+    load_images_for_drawables();
+    logger_.log("client_world_manager: all game objects were loaded successfully");
+}
+
+void client_world_manager::tick_all()
+{
+    static unsigned short tick_counter = 0;
+    logger_.log("client_world_manager: started tick with id = %d", tick_counter);
+    handle_external_players_and_enemies();
+
+    maze->tick(tick_counter);
+    for (auto &object : game_objects)
+        if (object != nullptr)
+        {
+            auto old_position = object->get_position();
+            object->tick(tick_counter);
+            auto new_position = object->get_position();
+
+            if (new_position != old_position)
+            {
+                if (true)
+                    continue;
+            }
+            else
+            {
+                // dirty hack, downcasting for zombie
+                if (check_if_resource(object))
+                    // for resource client: get_chunk
+                    if ( (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
+                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'M')
+                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'S')
+                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'W')
+                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 's'))
+                    {
+                        object.reset();
+                        logger_.log("client_world_manager: removed resource from positon = {%d, %d}",
+                            std::get<0>(old_position), std::get<1>(old_position));
+                    }
+            }
+    }
+    logger_.log("client_world_manager: finished tick with id = %d", tick_counter);
+    tick_counter++;
+}
+
+void client_world_manager::draw_all()
+{
+    if (automatic_players)
+        return;
+
+    assert(maze != nullptr);
+    auto client_maze = std::dynamic_pointer_cast<core::client_maze>(maze);
+    assert(client_maze != nullptr);
+    client_maze->draw();
+
+    for (auto &object : game_objects)
+        if (object != nullptr)
+        {
+            auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
+                if (drawable_object != nullptr)
+                    drawable_object->draw();
+        }
 }
 
 networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
@@ -76,7 +172,7 @@ int client_world_manager::get_id_data_from_network()
     return response.player_id;
 }
 
-void client_world_manager::preprocess_loading()
+void client_world_manager::register_player_and_load_external_players_and_enemies_data()
 {
     player_id = get_id_data_from_network();
     auto players_data = get_players_data_from_network();
@@ -118,7 +214,8 @@ void client_world_manager::load_image_if_not_automatic(std::shared_ptr<game_obje
     }
 }
 
-int client_world_manager::remove_absent_player(networking::messages::get_players_data_response &players_data)
+int client_world_manager::remove_absent_player(networking::messages::get_players_data_response
+                                               &players_data)
 {
     size_t current_pos = 0;
     int removed_player_id = 0;
@@ -151,7 +248,7 @@ int client_world_manager::remove_absent_player(networking::messages::get_players
     return removed_player_id;
 }
 
-void client_world_manager::postprocess_loading()
+void client_world_manager::load_images_for_drawables()
 {
     int active_player_id = -1;
     for (size_t i = 0; i < game_objects.size(); i++)
@@ -175,14 +272,13 @@ void client_world_manager::postprocess_loading()
     position_to_player_id.clear();
 }
 
-void client_world_manager::preprocess_ticking()
+void client_world_manager::handle_external_players_and_enemies()
 {
-    maze_->update_content();
+    maze->update_content();
 
     auto players_data = get_players_data_from_network();
 
     // I may assume that id-s are in increasing order
-    // TO DO: I need order to iterate over keys. Key which is not touch should be removed
     for (size_t i = 0; i < players_data.content.size(); i += 3)
     {
         int id = players_data.content[i];
@@ -231,13 +327,13 @@ void client_world_manager::preprocess_ticking()
 
 void client_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 {
-    maze_ = objects_factory->create_client_maze(loader, !automatic_players);
+    maze = objects_factory->create_client_maze(loader, !automatic_players);
     logger_.log("client_world_manager: added maze");
 }
 
 void client_world_manager::add_enemy(int posx, int posy, int id)
 {
-    assert(maze_ != nullptr);
+    assert(maze != nullptr);
     game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
     logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
@@ -281,11 +377,6 @@ void client_world_manager::make_player(int posx, int posy)
 
 std::shared_ptr<game_object> client_world_manager::make_external_player(int id, int posx, int posy)
 {
-    //auto player_pos = std::make_pair(posx, posy);
-    //assert(position_to_player_id.find(player_pos) != position_to_player_id.end());
-
-    //int id = position_to_player_id[player_pos];
-
     game_objects.push_back(objects_factory->create_client_player(
                                shared_from_this(),
                                id,
@@ -307,25 +398,6 @@ void client_world_manager::make_resource(const std::string &name, int posx, int 
 bool client_world_manager::check_if_resource(std::shared_ptr<game_object> object)
 {
     return std::dynamic_pointer_cast<client_resource>(object) != nullptr;
-}
-
-void client_world_manager::draw_all()
-{
-    if (automatic_players)
-        return;
-
-    assert(maze_ != nullptr);
-    auto client_maze = std::dynamic_pointer_cast<core::client_maze>(maze_);
-    assert(client_maze != nullptr);
-    client_maze->draw();
-
-    for (auto &object : game_objects)
-        if (object != nullptr)
-        {
-            auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
-                if (drawable_object != nullptr)
-                    drawable_object->draw();
-        }
 }
 
 std::tuple<int, int> client_world_manager::get_enemy_position(int id)

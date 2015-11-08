@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <utility>
 #include <map>
-#include "../common/abstract_world_manager.hpp"
 #include "client.hpp"
 #include "client_game_objects_factory.hpp"
 
@@ -21,33 +20,36 @@ public:
     }
 };
 
-class client_world_manager : public abstract_world_manager,
-                             public std::enable_shared_from_this<client_world_manager>
+class client_world_manager : public std::enable_shared_from_this<client_world_manager>
 {
 public:
     client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
                          std::shared_ptr<networking::client> client_, bool automatic_players_);
+
+    void load_all();
+    void tick_all();
+    void draw_all();
+    std::tuple<int, int> get_enemy_position(int id);
+    std::tuple<int, int> get_player_position(int id);
+    void make_maze(std::shared_ptr<maze_loader> loader);
+    void shut_down_client();
+
+private:
+
     networking::messages::get_enemies_data_response get_enemies_data_from_network();
     networking::messages::get_players_data_response get_players_data_from_network();
     int get_id_data_from_network();
 
-    void preprocess_loading() override;
-    void postprocess_loading() override;
-    void preprocess_ticking() override;
-    void make_maze(std::shared_ptr<maze_loader> loader) override;
-    void make_enemy(int posx, int posy) override;
-    void make_player(int posx, int posy) override;
-    void make_resource(const std::string &name, int posx, int posy) override;
-    bool check_if_resource(std::shared_ptr<game_object> object) override;
+    void register_player_and_load_external_players_and_enemies_data();
+    void load_images_for_drawables() ;
+    void handle_external_players_and_enemies();
 
-    void draw_all();
+    void make_enemy(int posx, int posy);
+    void make_player(int posx, int posy);
+    void make_resource(const std::string &name, int posx, int posy);
+    bool check_if_resource(std::shared_ptr<game_object> object);
+
     void add_enemy(int posx, int posy, int id);
-    void shut_down_client();
-    std::tuple<int, int> get_enemy_position(int id);
-    std::tuple<int, int> get_player_position(int id);
-
-private:
-
     void load_image_if_not_automatic(std::shared_ptr<game_object> object);
     // assumption that only one player disappeard which clearly can be wrong
     int remove_absent_player(networking::messages::get_players_data_response &players_data);
@@ -58,6 +60,9 @@ private:
     {
         return "false\0true"+6*x;
     }
+
+    std::shared_ptr<core::abstract_maze> maze {nullptr};
+    std::vector<std::shared_ptr<game_object>> game_objects;
 
     std::shared_ptr<client_game_objects_factory> objects_factory;
     std::shared_ptr<networking::client> client {nullptr};

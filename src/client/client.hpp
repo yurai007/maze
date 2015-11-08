@@ -21,7 +21,7 @@ namespace networking
 class client
 {
 public:
-    client();
+    client(const std::string &ip_address);
 
     void send_request(messages::get_chunk &msg)
     {
@@ -44,6 +44,11 @@ public:
     }
 
     void send_request(messages::get_id &msg)
+    {
+         send(msg);
+    }
+
+    void send_request(messages::client_shutdown &msg)
     {
          send(msg);
     }
@@ -118,7 +123,7 @@ private:
     boost::asio::io_service io_service;
     tcp::resolver resolver {io_service};
     tcp::socket socket {io_service};
-    boost::asio::signal_set m_signals {io_service};
+    //boost::asio::signal_set m_signals {io_service};
 };
 
 }

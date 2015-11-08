@@ -18,6 +18,7 @@ public:
 
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
+    void set_field(int column, int row, char field);
 
     std::string get_chunk(int leftdown_x, int leftdown_y,
                                        int rightupper_x, int rightupper_y) const;

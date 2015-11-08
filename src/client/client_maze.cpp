@@ -6,9 +6,10 @@ namespace core
 {
 
 client_maze::client_maze(std::shared_ptr<presentation::renderer> renderer_,
-                         std::shared_ptr<maze_loader> loader)
+                         std::shared_ptr<maze_loader> loader, bool visible)
     : abstract_maze(loader),
-      drawable(renderer_)
+      drawable(renderer_),
+      is_visible(visible)
 {
 }
 
@@ -19,6 +20,9 @@ void client_maze::load_image()
 
 void client_maze::draw()
 {
+    if (!is_visible)
+        return;
+
     const int brick_size = 30;
     for (int row = 0; row < size(); row++)
         for (int column = 0; column < size(); column++)
@@ -36,6 +40,17 @@ void client_maze::draw()
 
 void client_maze::load()
 {
+    if (!is_visible)
+    {
+        std::lock_guard<std::mutex> lock(maze_mutex);
+        content = m_loader->load();
+        logger_.log("client_maze: content was load. Content dump:");
+
+        for (size_t i = 0; i < content.size(); i++)
+            logger_.log("row %d: %s", i, content[i].c_str());
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(maze_mutex);
     assert(renderer != nullptr);
 

@@ -36,8 +36,8 @@ void client_enemy::tick(unsigned short )
     int new_y = std::get<1>(new_position);
 
     logger_.log("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
-    // I assume no lags
-    assert( (new_x - posx == 0 ) || (new_y - posy == 0) );
+    // I assume lags and teleportation:)
+    //assert( (new_x - posx == 0 ) || (new_y - posy == 0) );
 
     // I assume no lags again
     if (new_x == posx-1)
@@ -52,7 +52,11 @@ void client_enemy::tick(unsigned short )
     if (new_y == posy+1)
         direction = 'D';
     else
-        assert(false);
+    {
+        assert(true);
+        logger_.log("client_enemy %d: detected teleportation", id);
+        direction = 0;
+    }
 
     posx = new_x;
     posy = new_y;

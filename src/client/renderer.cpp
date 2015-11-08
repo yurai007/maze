@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <memory>
+#include "../common/logger.hpp"
 
 namespace presentation
 {
@@ -93,7 +94,7 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
     if (world_manager != nullptr)
     {
         // maze have only newest state so moving fields is unecessary
-        world_manager->tick_all(true);
+        world_manager->tick_all();
         world_manager->draw_all();
     }
 

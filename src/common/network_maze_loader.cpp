@@ -9,9 +9,10 @@ network_maze_loader::network_maze_loader(std::shared_ptr<client> maze_client)
 {
 }
 
-
 std::vector<std::string> network_maze_loader::load()
 {
+    assert(m_maze_client != nullptr);
+
     constexpr int maze_size = 50;
     constexpr int max_msg_size = 256;
     constexpr int d = (maze_size*maze_size)/max_msg_size;

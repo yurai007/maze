@@ -14,7 +14,8 @@ client_resource::client_resource(const std::string &name_,
 
 void client_resource::load_image()
 {
-    renderer->load_image_and_register("gold", "../../../data/gold.bmp");
+    const std::string path = "../../../data/" + name + ".bmp";
+    renderer->load_image_and_register(name, path);
 }
 
 void client_resource::tick(unsigned short)
@@ -23,7 +24,7 @@ void client_resource::tick(unsigned short)
 
 void client_resource::draw()
 {
-    renderer->draw_image("gold", 30*posx, 30*posy);
+    renderer->draw_image(name, 30*posx, 30*posy);
 }
 
 }

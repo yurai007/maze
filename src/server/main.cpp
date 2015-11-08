@@ -63,7 +63,7 @@ public:
     void tick(const boost::system::error_code&)
     {
         if (world_manager != nullptr)
-              world_manager->tick_all(false);
+              world_manager->tick_all();
 
         timer.expires_at(timer.expires_at() + interval);
         timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));

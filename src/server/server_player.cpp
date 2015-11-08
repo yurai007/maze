@@ -34,7 +34,6 @@ void server_player::tick(unsigned short)
                         id, posx, posy, newx, newy);
             posx = newx;
             posy = newy;
-//            alive = true;
         }
 }
 

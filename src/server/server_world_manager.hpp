@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-#include "../common/abstract_world_manager.hpp"
 #include "server_game_objects_factory.hpp"
 #include "../common/messages.hpp"
 
@@ -13,22 +12,15 @@ using namespace networking;
 namespace core
 {
 
-class server_world_manager : public abstract_world_manager
+class server_world_manager
 {
 public:
     server_world_manager(std::shared_ptr<server_game_objects_factory>
                          objects_factory_);
 
-    void preprocess_loading() override;
-    void postprocess_loading() override;
-    void preprocess_ticking() override;
-
-    void make_maze(std::shared_ptr<maze_loader> loader) override;
-    void make_enemy(int posx, int posy) override;
-    void make_player(int posx, int posy) override;
-    void make_resource(const std::string &name, int posx, int posy) override;
-    bool check_if_resource(std::shared_ptr<game_object> object) override;
-
+    void load_all();
+    void tick_all();
+    void make_maze(std::shared_ptr<maze_loader> loader);
     std::vector<int> get_enemies_data(bool verify) const;
     std::shared_ptr<core::server_maze> get_maze() const;
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
@@ -38,8 +30,19 @@ public:
     std::pair<int, int> get_player_position(int player_id);
 
 private:
+
+    void load_maze_from_file();
+    //void move_players_on_beginning();
+    void make_enemy(int posx, int posy);
+    std::shared_ptr<server_player> make_player(int posx, int posy);
+    void make_resource(const std::string &name, int posx, int posy);
+
     std::shared_ptr<server_game_objects_factory> objects_factory;
     std::unordered_map<int, std::pair<int, int>> player_id_to_position;
+
+    std::shared_ptr<core::abstract_maze> maze {nullptr};
+    std::vector<std::shared_ptr<server_enemy>> enemies;
+    std::vector<std::shared_ptr<game_object>> players_and_resources;
 };
 
 }

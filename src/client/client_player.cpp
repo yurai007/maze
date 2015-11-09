@@ -30,7 +30,6 @@ void client_player::active_tick()
 {
     assert(controller != nullptr);
 
-    static char old_direction = 0;
     int oldx = posx, oldy = posy;
 
     direction = controller->get_direction();

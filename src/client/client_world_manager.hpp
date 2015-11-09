@@ -79,6 +79,7 @@ private:
     int external_player_id {0};
     int external_player_posx {INT_MAX};
     int external_player_posy {INT_MAX};
+    unsigned short tick_counter {0};
 };
 
 }

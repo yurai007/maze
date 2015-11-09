@@ -75,6 +75,9 @@ using namespace boost::asio;
  * why this fucking resolver doesn't work for loopback? Another constructor with
    tcp::resolver::query::canonical_name is needed
 
+ * now group_driver works as expected (despite verification problem on server). Static-s on client side
+   was the reason.
+
  * TODO:
    - signals in cmd_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
    - now I need more enemies (~50). Generate them randomly.
@@ -202,6 +205,78 @@ private:
     std::shared_ptr<core::client_world_manager> world_manager {nullptr};
 };
 
+
+class group_driver
+{
+public:
+    group_driver(int argc_, char** argv_, int players_number_)
+        : argc(argc_),
+          argv(argv_),
+          players_number(players_number_)
+    {
+    }
+
+    void tick(const boost::system::error_code&)
+    {
+        for (int i = 0; i < players_number; i++)
+        {
+            if (world_managers[i] != nullptr)
+                world_managers[i]->tick_all();
+        }
+
+        timer.expires_at(timer.expires_at() + interval);
+        timer.async_wait(boost::bind(&group_driver::tick, this, placeholders::error));
+    }
+
+    int run(const std::string &ip_address)
+    {
+        assert(players_number <= 128);
+        std::vector<std::shared_ptr<networking::client>> clients(players_number);
+        std::vector<std::shared_ptr<core::client_game_objects_factory>> factories(players_number);
+
+        for (int i = 0; i < players_number; i++)
+        {
+            clients[i] = std::make_shared<networking::client>(ip_address);
+            factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
+                                                                               nullptr,
+                                                                               clients[i]);
+            world_managers.push_back(std::make_shared<core::client_world_manager>(factories[i],
+                                                                                  clients[i],
+                                                                                  true));
+
+            world_managers.back()->make_maze(std::make_shared<networking::network_maze_loader>(clients[i]));
+            world_managers.back()->load_all();
+        }
+
+        try
+        {
+            timer.async_wait(boost::bind(&group_driver::tick, this, placeholders::error));
+            m_io_service.run();
+        }
+        catch (std::exception& exception)
+        {
+            logger_.log("exception: %s", exception.what());
+        }
+        // TO DO: Doesn't work yet
+        for (int i = 0; i < players_number; i++)
+        {
+            world_managers[i]->shut_down_client();
+        }
+        return 0;
+    }
+
+private:
+    int argc;
+    char **argv;
+
+    io_service m_io_service;
+    boost::posix_time::milliseconds interval {30};
+    deadline_timer timer {m_io_service, interval};
+
+    int players_number;
+    std::vector<std::shared_ptr<core::client_world_manager>> world_managers;
+};
+
 void generator_test_case()
 {
     utils::maze_generator generator(50);
@@ -231,6 +306,12 @@ int main(int argc, char** argv)
         cmd_driver driver(0, NULL);
         return driver.run(ip_address);
     }
+    else
+        if (mode == "many")
+        {
+            group_driver driver(0, NULL, 2);
+            return driver.run(ip_address);
+        }
     else
     {
         logger_.log("Bad mode");

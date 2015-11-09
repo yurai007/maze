@@ -49,13 +49,12 @@ void client_world_manager::load_all()
         }
 
     load_images_for_drawables();
-    logger_.log("client_world_manager: all game objects were loaded successfully");
+    logger_.log("client_world_manager%d: all game objects were loaded successfully", player_id);
 }
 
 void client_world_manager::tick_all()
 {
-    static unsigned short tick_counter = 0;
-    logger_.log("client_world_manager: started tick with id = %d", tick_counter);
+    logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
     handle_external_players_and_enemies();
 
     maze->tick(tick_counter);
@@ -88,7 +87,7 @@ void client_world_manager::tick_all()
                     }
             }
     }
-    logger_.log("client_world_manager: finished tick with id = %d", tick_counter);
+    logger_.log("client_world_manager%d: finished tick with id = %d", player_id, tick_counter);
     tick_counter++;
 }
 
@@ -118,7 +117,7 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
 
     auto response = client->read_get_enemies_data_response();
 
-    logger_.log("client_world_manager: get_enemies_data was load. Content dump:");
+    logger_.log("client_world_manager%d: get_enemies_data was load. Content dump:", player_id);
     size_t i = 0;
     for (; i < response.content.size(); i += 3)
     {
@@ -142,7 +141,7 @@ networking::messages::get_players_data_response client_world_manager::get_player
 
     auto response = client->read_get_players_data_response();
 
-    logger_.log("client_world_manager: get_players_data was load. Content dump:");
+    logger_.log("client_world_manager%d: get_players_data was load. Content dump:", player_id);
     size_t i = 0;
     for (; i < response.content.size(); i += 3)
     {
@@ -190,7 +189,7 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
             player_posy = y;
         }
     }
-    logger_.log("client_world_manager: build position_to_player_id map");
+    logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
 
     auto enemies_data = get_enemies_data_from_network();
 
@@ -201,7 +200,7 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
         int y = enemies_data.content[i+2];
         position_to_enemy_id[std::make_pair(x, y)] = id;
     }
-    logger_.log("client_world_manager: build position_to_enemy_id map");
+    logger_.log("client_world_manager%d: build position_to_enemy_id map", player_id);
 }
 
 void client_world_manager::load_image_if_not_automatic(std::shared_ptr<game_object> object)
@@ -223,12 +222,12 @@ int client_world_manager::remove_absent_player(networking::messages::get_players
     for (; (item != player_id_to_position.end()) &&
          (current_pos <  players_data.content.size()); )
     {
-        logger_.log("client_world_manager: item->key = %d,  current_pos = %d,  id = %d", item->first,
-                    current_pos, players_data.content[current_pos]);
+        logger_.log("client_world_manager%d: item->key = %d,  current_pos = %d,  id = %d", player_id,
+                    item->first, current_pos, players_data.content[current_pos]);
 
         if (players_data.content[current_pos] != item->first)
         {
-            logger_.log("client_world_manager: removing player_id = %d from map", item->first);
+            logger_.log("client_world_manager%d: removing player_id = %d from map", player_id, item->first);
             removed_player_id = item->first;
             item = player_id_to_position.erase(item);
         }
@@ -241,7 +240,7 @@ int client_world_manager::remove_absent_player(networking::messages::get_players
 
     if (item != player_id_to_position.end())
     {
-        logger_.log("client_world_manager: removing player_id = %d from map", item->first);
+        logger_.log("client_world_manager%d: removing player_id = %d from map", player_id, item->first);
         removed_player_id = item->first;
         player_id_to_position.erase(item);
     }
@@ -305,8 +304,8 @@ void client_world_manager::handle_external_players_and_enemies()
                 if (player->id == removed_player_id)
                 {
                     object.reset();
-                    logger_.log("client_world_manager: removed player_id = %d from game_objects",
-                                removed_player_id);
+                    logger_.log("client_world_manager%d: removed player_id = %d from game_objects",
+                                player_id, removed_player_id);
                     break;
                 }
             }
@@ -322,20 +321,20 @@ void client_world_manager::handle_external_players_and_enemies()
         int y = enemies_data.content[i+2];
         enemy_id_to_position[id] = std::make_pair(x, y);
     }
-    logger_.log("client_world_manager: updated maze content and maps with positions");
+    logger_.log("client_world_manager%d: updated maze content and maps with positions", player_id);
 }
 
 void client_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 {
     maze = objects_factory->create_client_maze(loader, !automatic_players);
-    logger_.log("client_world_manager: added maze");
+    logger_.log("client_world_manager%d: added maze", player_id);
 }
 
 void client_world_manager::add_enemy(int posx, int posy, int id)
 {
     assert(maze != nullptr);
     game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
-    logger_.log("client_world_manager: added enemy on position = {%d, %d}", posx, posy);
+    logger_.log("client_world_manager%d: added enemy on position = {%d, %d}", player_id, posx, posy);
 }
 
 void client_world_manager::shut_down_client()
@@ -371,8 +370,8 @@ void client_world_manager::make_player(int posx, int posy)
                                posy,
                                active,
                                automatic_players));
-    logger_.log("client_world_manager: added player on position = {%d, %d}. Active = %s, Automatic = %s",
-                posx, posy, bool_to_string(active), bool_to_string(automatic_players));
+    logger_.log("client_world_manager%d: added player on position = {%d, %d}. Active = %s, Automatic = %s",
+                player_id, posx, posy, bool_to_string(active), bool_to_string(automatic_players));
 }
 
 std::shared_ptr<game_object> client_world_manager::make_external_player(int id, int posx, int posy)
@@ -384,15 +383,15 @@ std::shared_ptr<game_object> client_world_manager::make_external_player(int id, 
                                posy,
                                false,
                                automatic_players));
-    logger_.log("client_world_manager: added external player on position = {%d, %d}. Active = false, Automatic = %s",
-                posx, posy, bool_to_string(automatic_players));
+    logger_.log("client_world_manager%d: added external player on position = {%d, %d}. Active = false, Automatic = %s",
+                player_id, posx, posy, bool_to_string(automatic_players));
     return game_objects.back();
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
     game_objects.push_back(objects_factory->create_client_resource(name, posx, posy));
-    logger_.log("client_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
+    logger_.log("client_world_manager%d: added %s on position = {%d, %d}", player_id, name.c_str(), posx, posy);
 }
 
 bool client_world_manager::check_if_resource(std::shared_ptr<game_object> object)

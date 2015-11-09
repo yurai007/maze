@@ -54,6 +54,7 @@ private:
     std::shared_ptr<networking::client> client;
     bool perform_rotation {false};
     char direction;
+    char old_direction {0};
 
     bool active, automatic;
 };

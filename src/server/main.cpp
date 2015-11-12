@@ -57,6 +57,7 @@ public:
         : argc(argc_),
           argv(argv_)
     {
+        logger_.enable(false);
         game_objects_factory->set_manager(world_manager);
     }
 
@@ -92,7 +93,7 @@ private:
     char **argv;
 
     networking::game_server server;
-    boost::posix_time::milliseconds interval {30};
+    boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.main_server.m_io_service, interval};
 
     std::shared_ptr<core::server_game_objects_factory> game_objects_factory

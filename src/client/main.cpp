@@ -222,6 +222,7 @@ public:
         {
             if (world_managers[i] != nullptr)
                 world_managers[i]->tick_all();
+            usleep(1*1000); //1ms
         }
 
         timer.expires_at(timer.expires_at() + interval);
@@ -309,7 +310,7 @@ int main(int argc, char** argv)
     else
         if (mode == "many")
         {
-            group_driver driver(0, NULL, 2);
+            group_driver driver(0, NULL, 40);
             return driver.run(ip_address);
         }
     else

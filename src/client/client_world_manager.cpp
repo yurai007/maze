@@ -222,9 +222,6 @@ int client_world_manager::remove_absent_player(networking::messages::get_players
     for (; (item != player_id_to_position.end()) &&
          (current_pos <  players_data.content.size()); )
     {
-        logger_.log("client_world_manager%d: item->key = %d,  current_pos = %d,  id = %d", player_id,
-                    item->first, current_pos, players_data.content[current_pos]);
-
         if (players_data.content[current_pos] != item->first)
         {
             logger_.log("client_world_manager%d: removing player_id = %d from map", player_id, item->first);
@@ -292,6 +289,21 @@ void client_world_manager::handle_external_players_and_enemies()
         player_id_to_position[id] = std::make_pair(x, y);
     }
 
+    int active_player_id = -1;
+    for (size_t i = 0; i < game_objects.size(); i++)
+    {
+        auto object = game_objects[i];
+        auto player = std::dynamic_pointer_cast<client_player>(object);
+            if (player != nullptr)
+            {
+                if (player->is_active())
+                    active_player_id = i;
+            }
+    }
+    // I want active player to be on the end during ticking
+    assert(active_player_id >= 0);
+    std::swap(game_objects[active_player_id], game_objects.back());
+
     int removed_player_id = remove_absent_player(players_data);
 
     if (removed_player_id > 0)
@@ -311,6 +323,8 @@ void client_world_manager::handle_external_players_and_enemies()
             }
         }
     }
+
+
 
     auto enemies_data = get_enemies_data_from_network();
 

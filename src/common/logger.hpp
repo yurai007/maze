@@ -20,6 +20,7 @@ public:
 
     void log(const char *string, ...);
     void log_in_place(const char *string, ...);
+    void enable(bool enabled);
 
 private:
 
@@ -35,7 +36,9 @@ private:
 
     char *put_time_in_buffer();
 
-    const bool on, write_to_file, write_date;
+    bool on;
+    const bool write_to_file, write_date;
+    bool opened {false};
     bool in_place;
     static const int max_log_size = 128;
     char buffer[max_log_size];

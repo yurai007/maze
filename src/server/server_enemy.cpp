@@ -29,7 +29,7 @@ int server_enemy::get_id() const
 
 void server_enemy::tick(unsigned short tick_counter)
 {
-    if (tick_counter % 10 != 0)
+    if (tick_counter % (10*30) != 0)
         return;
 
     direction = 0;

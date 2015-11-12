@@ -214,13 +214,14 @@ std::vector<int> server_world_manager::get_players_data(bool verify) const
 
 int server_world_manager::allocate_data_for_new_player()
 {
-    int posx = maze->size()/2;
-    int posy = maze->size()/2;
+    const int size = maze->size();
+    int posx = size/2;
+    int posy = size/2;
 
     while (maze->get_field(posx, posy) != ' ')
     {
-        posx = rand()%20;
-        posy = rand()%20;
+        posx = rand()%(size-5);
+        posy = rand()%(size-5);
     }
 
     auto player = make_player(posx, posy);

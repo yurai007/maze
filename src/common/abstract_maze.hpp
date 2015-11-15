@@ -20,8 +20,8 @@ public:
     char get_field(int column, int row) const;
     void set_field(int column, int row, char field);
 
-    std::string get_chunk(int leftdown_x, int leftdown_y,
-                                       int rightupper_x, int rightupper_y) const;
+    std::string get_chunk(unsigned leftdown_x, unsigned leftdown_y,
+                                       unsigned rightupper_x, unsigned rightupper_y) const;
 
     void move_field(int column, int row, int new_column, int new_row);
     void reset_field(int column, int row);

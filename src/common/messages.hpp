@@ -11,25 +11,25 @@ namespace messages
 
 struct get_chunk
 {
-	int ld_x, ld_y, ru_x, ru_y;
+	unsigned int ld_x, ld_y, ru_x, ru_y;
 
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
-		buffer.put_int(ld_x);
-		buffer.put_int(ld_y);
-		buffer.put_int(ru_x);
-		buffer.put_int(ru_y);
+		buffer.put_unsigned_int(ld_x);
+		buffer.put_unsigned_int(ld_y);
+		buffer.put_unsigned_int(ru_x);
+		buffer.put_unsigned_int(ru_y);
 	}
 
 	void deserialize_from_buffer(serialization::byte_buffer &buffer)
 	{
-		ld_x = buffer.get_int();
-		ld_y = buffer.get_int();
-		ru_x = buffer.get_int();
-		ru_y = buffer.get_int();
+		ld_x = buffer.get_unsigned_int();
+		ld_y = buffer.get_unsigned_int();
+		ru_x = buffer.get_unsigned_int();
+		ru_y = buffer.get_unsigned_int();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 0;
 	}
@@ -54,7 +54,7 @@ struct get_chunk_response
 		content = buffer.get_string();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 1;
 	}
@@ -84,7 +84,7 @@ struct position_changed
 		new_y = buffer.get_int();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 2;
 	}
@@ -104,7 +104,7 @@ struct position_changed_response
 		content = buffer.get_string();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 3;
 	}
@@ -126,7 +126,7 @@ struct get_enemies_data
 		content = buffer.get_string();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 4;
 	}
@@ -152,7 +152,7 @@ struct get_enemies_data_response
 		content = buffer.get_int_vector();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 5;
 	}
@@ -173,7 +173,7 @@ struct get_players_data
 		content = buffer.get_string();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 6;
 	}
@@ -199,7 +199,7 @@ struct get_players_data_response
 		content = buffer.get_int_vector();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 7;
 	}
@@ -221,7 +221,7 @@ struct client_shutdown
 		player_id = buffer.get_int();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 8;
 	}
@@ -243,7 +243,7 @@ struct get_id
 		content = buffer.get_string();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 9;
 	}
@@ -264,7 +264,7 @@ struct get_id_response
 		player_id = buffer.get_int();
 	}
 
-	static int message_id()
+	static char message_id()
 	{
 		return 10;
 	}

@@ -1,18 +1,9 @@
-#include <thread>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-
 #include "../common/maze_generator.hpp"
 #include "../common/logger.hpp"
-#include "../common/controller.hpp"
-#include "../common/message_dispatcher.hpp"
-#include "../common/network_maze_loader.hpp"
-#include "client_game_objects_factory.hpp"
-#include "client_world_manager.hpp"
-#include "renderer.hpp"
-#include "client.hpp"
 
-using namespace boost::asio;
+#include "no_gui_auto_driver.hpp"
+#include "no_gui_driver.hpp"
+#include "gui_driver.hpp"
 
 /*
  * Great makefile tutorial:
@@ -75,208 +66,15 @@ using namespace boost::asio;
  * why this fucking resolver doesn't work for loopback? Another constructor with
    tcp::resolver::query::canonical_name is needed
 
- * now group_driver works as expected (despite verification problem on server). Static-s on client side
+ * now no_gui_auto_driver works as expected (despite verification problem on server). Static-s on client side
    was the reason.
 
  * TODO:
-   - signals in cmd_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
+   - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
    - now I need more enemies (~50). Generate them randomly.
    - now in order to run e.g 50 players I need 50 separated directories. But I would like to
      generate ~5000 players. I need some event-driven generator like for 1024k problem.
 */
-
-class gui_driver
-{
-public:
-    gui_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
-    {
-    }
-
-    int run(const std::string &ip_address)
-    {
-        application = Gtk::Application::create(argc, argv, "");
-
-        auto qt_controller = std::make_shared<control::controller>();
-        auto qt_renderer = std::make_shared<presentation::renderer>();
-//        auto client =  std::make_shared<networking::client>(ip_address);
-        std::shared_ptr<networking::client> client(new networking::client(ip_address));
-        auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(qt_renderer,
-                                                                                        qt_controller,
-                                                                                        client);
-        auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
-                                                                          client,
-                                                                          false);
-
-        world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
-        world_manager->load_all();
-        qt_renderer->set_world(world_manager);
-
-        qt_controller->set_title("The Maze");
-        qt_controller->set_default_size(1024, 768);
-        qt_controller->add(*qt_renderer);
-
-        qt_renderer->show();
-
-        int result = application->run(*qt_controller);
-        world_manager->shut_down_client();
-
-        return result;
-    }
-
-private:
-    Glib::RefPtr<Gtk::Application> application;
-    int argc;
-    char **argv;
-};
-
-
-class cmd_driver
-{
-public:
-    cmd_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
-    {
-    }
-
-    void tick(const boost::system::error_code&)
-    {
-        if (world_manager != nullptr)
-              world_manager->tick_all();
-
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-    }
-
-//    void stop()
-//    {
-//        m_io_service.stop();
-//        world_manager->shut_down_client();
-//    }
-
-    int run(const std::string &ip_address)
-    {
-        auto client =  std::make_shared<networking::client>(ip_address);
-        auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(nullptr,
-                                                                                        nullptr,
-                                                                                        client);
-
-        world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
-                                                                          client,
-                                                                          true);
-
-        world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
-        world_manager->load_all();
-
-//        boost::asio::signal_set m_signals(m_io_service);
-//        m_signals.add(SIGINT);
-//        m_signals.add(SIGTERM);
-//      #if defined(SIGQUIT)
-//        m_signals.add(SIGQUIT);
-//      #endif
-//         m_signals.async_wait(boost::bind(&boost::asio::io_service::stop, &m_io_service));
-
-        try
-        {
-            timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-            m_io_service.run();
-        }
-        catch (std::exception& exception)
-        {
-            logger_.log("exception: %s", exception.what());
-        }
-        // TO DO: Doesn't work yet
-        world_manager->shut_down_client();
-
-        return 0;
-    }
-
-private:
-    int argc;
-    char **argv;
-
-    io_service m_io_service;
-    boost::posix_time::milliseconds interval {30};
-    deadline_timer timer {m_io_service, interval};
-
-
-    std::shared_ptr<core::client_world_manager> world_manager {nullptr};
-};
-
-
-class group_driver
-{
-public:
-    group_driver(int argc_, char** argv_, int players_number_)
-        : argc(argc_),
-          argv(argv_),
-          players_number(players_number_)
-    {
-    }
-
-    void tick(const boost::system::error_code&)
-    {
-        for (int i = 0; i < players_number; i++)
-        {
-            if (world_managers[i] != nullptr)
-                world_managers[i]->tick_all();
-            usleep(1*1000); //1ms
-        }
-
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait(boost::bind(&group_driver::tick, this, placeholders::error));
-    }
-
-    int run(const std::string &ip_address)
-    {
-        assert(players_number <= 128);
-        std::vector<std::shared_ptr<networking::client>> clients(players_number);
-        std::vector<std::shared_ptr<core::client_game_objects_factory>> factories(players_number);
-
-        for (int i = 0; i < players_number; i++)
-        {
-            clients[i] = std::make_shared<networking::client>(ip_address);
-            factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
-                                                                               nullptr,
-                                                                               clients[i]);
-            world_managers.push_back(std::make_shared<core::client_world_manager>(factories[i],
-                                                                                  clients[i],
-                                                                                  true));
-
-            world_managers.back()->make_maze(std::make_shared<networking::network_maze_loader>(clients[i]));
-            world_managers.back()->load_all();
-        }
-
-        try
-        {
-            timer.async_wait(boost::bind(&group_driver::tick, this, placeholders::error));
-            m_io_service.run();
-        }
-        catch (std::exception& exception)
-        {
-            logger_.log("exception: %s", exception.what());
-        }
-        // TO DO: Doesn't work yet
-        for (int i = 0; i < players_number; i++)
-        {
-            world_managers[i]->shut_down_client();
-        }
-        return 0;
-    }
-
-private:
-    int argc;
-    char **argv;
-
-    io_service m_io_service;
-    boost::posix_time::milliseconds interval {30};
-    deadline_timer timer {m_io_service, interval};
-
-    int players_number;
-    std::vector<std::shared_ptr<core::client_world_manager>> world_managers;
-};
 
 void generator_test_case()
 {
@@ -304,13 +102,13 @@ int main(int argc, char** argv)
     else
     if (mode == "gui-off")
     {
-        cmd_driver driver(0, NULL);
+        no_gui_driver driver;
         return driver.run(ip_address);
     }
     else
         if (mode == "many")
         {
-            group_driver driver(0, NULL, 40);
+            no_gui_auto_driver driver(20);
             return driver.run(ip_address);
         }
     else

@@ -57,7 +57,6 @@ public:
         : argc(argc_),
           argv(argv_)
     {
-        logger_.enable(false);
         game_objects_factory->set_manager(world_manager);
     }
 

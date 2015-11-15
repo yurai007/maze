@@ -81,7 +81,7 @@ struct dispatcher
 
         if (id == Msg::message_id())
         {
-            Msg msg = {};
+            Msg msg;
             buffer.offset++;
             msg.deserialize_from_buffer(buffer);
             handler(msg);

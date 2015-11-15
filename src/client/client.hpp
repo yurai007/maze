@@ -87,6 +87,9 @@ private:
         serialized_msg.put_char(0);
         serialized_msg.put_char(msg.message_id());
         msg.serialize_to_buffer(serialized_msg);
+        // TO DO: WTF??? Investigate how is it possible to pass this assert for msg clearly bigger than
+        //        256???
+        assert(serialized_msg.get_size() - 1 < 256);
         unsigned char size = (unsigned char)(serialized_msg.get_size() - 1);
         serialized_msg.m_byte_buffer[0] = size;
 
@@ -111,7 +114,7 @@ private:
         Msg msg;
         deserialized_msg.get_char();
         char msg_type = deserialized_msg.get_char();
-        if (Msg::message_id() != (int)msg_type)
+        if (Msg::message_id() != msg_type)
             logger_.log("client: recieved message with wrong type. Expected message_id = %d", msg_type);
 
         msg.deserialize_from_buffer(deserialized_msg);
@@ -123,7 +126,7 @@ private:
     boost::asio::io_service io_service;
     tcp::resolver resolver {io_service};
     tcp::socket socket {io_service};
-    //boost::asio::signal_set m_signals {io_service};
+    const std::string port {"5555"};
 };
 
 }

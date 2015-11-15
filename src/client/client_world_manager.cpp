@@ -5,12 +5,14 @@ namespace core
 {
 
 client_world_manager::client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
-                                           std::shared_ptr<networking::client> client_,
+                                           std::shared_ptr<networking::network_manager> network_manager_,
                                            bool automatic_players_)
     : objects_factory(objects_factory_),
-      client(client_),
+      network_manager(network_manager_),
       automatic_players(automatic_players_)
 {
+    assert(objects_factory != nullptr);
+    assert(network_manager != nullptr);
     logger_.log("client_world_manager: started");
 }
 
@@ -54,23 +56,19 @@ void client_world_manager::load_all()
 
 void client_world_manager::tick_all()
 {
+    assert(maze != nullptr);
     logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
     handle_external_players_and_enemies();
 
     maze->tick(tick_counter);
-    for (auto &object : game_objects)
+    for (auto &object : enemies_and_resources)
         if (object != nullptr)
         {
             auto old_position = object->get_position();
             object->tick(tick_counter);
             auto new_position = object->get_position();
 
-            if (new_position != old_position)
-            {
-                if (true)
-                    continue;
-            }
-            else
+            if (new_position == old_position)
             {
                 // dirty hack, downcasting for zombie
                 if (check_if_resource(object))
@@ -87,6 +85,12 @@ void client_world_manager::tick_all()
                     }
             }
     }
+
+    // players on the end
+    for (auto &player : players)
+        if (player != nullptr)
+            player->tick(tick_counter);
+
     logger_.log("client_world_manager%d: finished tick with id = %d", player_id, tick_counter);
     tick_counter++;
 }
@@ -101,74 +105,32 @@ void client_world_manager::draw_all()
     assert(client_maze != nullptr);
     client_maze->draw();
 
-    for (auto &object : game_objects)
+    for (auto &object : enemies_and_resources)
         if (object != nullptr)
         {
             auto drawable_object = std::dynamic_pointer_cast<drawable>(object);
                 if (drawable_object != nullptr)
                     drawable_object->draw();
         }
+
+    for (auto &player : players)
+        if (player != nullptr)
+            player->draw();
 }
 
 networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
 {
-    networking::messages::get_enemies_data request;
-    client->send_request(request);
-
-    auto response = client->read_get_enemies_data_response();
-
-    logger_.log("client_world_manager%d: get_enemies_data was load. Content dump:", player_id);
-    size_t i = 0;
-    for (; i < response.content.size(); i += 3)
-    {
-        if (i != 0 && (i % 15 == 0) )
-            logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-                response.content[i+2]);
-        else
-            logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-                response.content[i+2]);
-    }
-    if ((i-3)%15 != 0)
-        logger_.log_in_place("\n");
-    assert(response.content.size() % 3 == 0);
-    return response;
+    return network_manager->get_enemies_data_from_network(player_id);
 }
 
 networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
 {
-    networking::messages::get_players_data request;
-    client->send_request(request);
-
-    auto response = client->read_get_players_data_response();
-
-    logger_.log("client_world_manager%d: get_players_data was load. Content dump:", player_id);
-    size_t i = 0;
-    for (; i < response.content.size(); i += 3)
-    {
-        if (i != 0 && (i % 15 == 0) )
-            logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-                response.content[i+2]);
-        else
-            logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-                response.content[i+2]);
-    }
-    if ((i-3)%15 != 0)
-        logger_.log_in_place("\n");
-    assert(response.content.size() % 3 == 0);
-
-    return response;
+    return network_manager->get_players_data_from_network(player_id);
 }
 
 int client_world_manager::get_id_data_from_network()
 {
-    networking::messages::get_id request;
-    client->send_request(request);
-
-    auto response = client->read_get_id_response();
-
-    logger_.log("client_world_manager: player_id = %d", response.player_id);
-    assert(response.player_id > 0);
-    return response.player_id;
+    return network_manager->get_id_data_from_network();
 }
 
 void client_world_manager::register_player_and_load_external_players_and_enemies_data()
@@ -247,22 +209,26 @@ int client_world_manager::remove_absent_player(networking::messages::get_players
 void client_world_manager::load_images_for_drawables()
 {
     int active_player_id = -1;
-    for (size_t i = 0; i < game_objects.size(); i++)
+    for (size_t i = 0; i < players.size(); i++)
     {
-        auto object = game_objects[i];
-        load_image_if_not_automatic(object);
-
-        auto player = std::dynamic_pointer_cast<client_player>(object);
-            if (player != nullptr)
-            {
-                if (player->is_active())
-                    active_player_id = i;
-            }
+        auto player = players[i];
+        load_image_if_not_automatic(player);
+        if (player != nullptr)
+        {
+            if (player->is_active())
+                active_player_id = i;
+        }
     }
 
     // I want active player to be on the end during ticking
     assert(active_player_id >= 0);
-    std::swap(game_objects[active_player_id], game_objects.back());
+    std::swap(players[active_player_id], players.back());
+
+    for (size_t i = 0; i < enemies_and_resources.size(); i++)
+    {
+        auto object = enemies_and_resources[i];
+        load_image_if_not_automatic(object);
+    }
 
     position_to_enemy_id.clear();
     position_to_player_id.clear();
@@ -270,6 +236,7 @@ void client_world_manager::load_images_for_drawables()
 
 void client_world_manager::handle_external_players_and_enemies()
 {
+    assert(maze != nullptr);
     maze->update_content();
 
     auto players_data = get_players_data_from_network();
@@ -290,41 +257,36 @@ void client_world_manager::handle_external_players_and_enemies()
     }
 
     int active_player_id = -1;
-    for (size_t i = 0; i < game_objects.size(); i++)
+    for (size_t i = 0; i < players.size(); i++)
     {
-        auto object = game_objects[i];
-        auto player = std::dynamic_pointer_cast<client_player>(object);
-            if (player != nullptr)
-            {
-                if (player->is_active())
-                    active_player_id = i;
-            }
+        auto player = players[i];
+        if (player != nullptr)
+        {
+            if (player->is_active())
+                active_player_id = i;
+        }
     }
+
     // I want active player to be on the end during ticking
     assert(active_player_id >= 0);
-    std::swap(game_objects[active_player_id], game_objects.back());
+    std::swap(players[active_player_id], players.back());
 
     int removed_player_id = remove_absent_player(players_data);
 
     if (removed_player_id > 0)
     {
-        for (auto &object : game_objects)
-        {
-            auto player = std::dynamic_pointer_cast<client_player>(object);
+        for (auto &player : players)
             if (player != nullptr)
             {
-                if (player->id == removed_player_id)
+                if (player->get_id() == removed_player_id)
                 {
-                    object.reset();
+                    player.reset();
                     logger_.log("client_world_manager%d: removed player_id = %d from game_objects",
                                 player_id, removed_player_id);
                     break;
                 }
             }
-        }
     }
-
-
 
     auto enemies_data = get_enemies_data_from_network();
 
@@ -347,14 +309,13 @@ void client_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 void client_world_manager::add_enemy(int posx, int posy, int id)
 {
     assert(maze != nullptr);
-    game_objects.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
+    enemies_and_resources.push_back(objects_factory->create_client_enemy(shared_from_this(), posx, posy, id));
     logger_.log("client_world_manager%d: added enemy on position = {%d, %d}", player_id, posx, posy);
 }
 
 void client_world_manager::shut_down_client()
 {
-    networking::messages::client_shutdown msg = {player_id};
-    client->send_request(msg);
+    network_manager->shut_down_client(player_id);
 }
 
 void client_world_manager::make_enemy(int posx, int posy)
@@ -377,7 +338,7 @@ void client_world_manager::make_player(int posx, int posy)
     int id = position_to_player_id[player_pos];
     bool active = (id == player_id);
 
-    game_objects.push_back(objects_factory->create_client_player(
+    players.push_back(objects_factory->create_client_player(
                                shared_from_this(),
                                id,
                                posx,
@@ -390,7 +351,7 @@ void client_world_manager::make_player(int posx, int posy)
 
 std::shared_ptr<game_object> client_world_manager::make_external_player(int id, int posx, int posy)
 {
-    game_objects.push_back(objects_factory->create_client_player(
+    players.push_back(objects_factory->create_client_player(
                                shared_from_this(),
                                id,
                                posx,
@@ -399,12 +360,12 @@ std::shared_ptr<game_object> client_world_manager::make_external_player(int id, 
                                automatic_players));
     logger_.log("client_world_manager%d: added external player on position = {%d, %d}. Active = false, Automatic = %s",
                 player_id, posx, posy, bool_to_string(automatic_players));
-    return game_objects.back();
+    return players.back();
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
-    game_objects.push_back(objects_factory->create_client_resource(name, posx, posy));
+    enemies_and_resources.push_back(objects_factory->create_client_resource(name, posx, posy));
     logger_.log("client_world_manager%d: added %s on position = {%d, %d}", player_id, name.c_str(), posx, posy);
 }
 
@@ -415,6 +376,7 @@ bool client_world_manager::check_if_resource(std::shared_ptr<game_object> object
 
 std::tuple<int, int> client_world_manager::get_enemy_position(int id)
 {
+    assert(enemy_id_to_position.find(id) != enemy_id_to_position.end());
     return enemy_id_to_position[id];
 }
 
@@ -425,5 +387,3 @@ std::tuple<int, int> client_world_manager::get_player_position(int id)
 }
 
 }
-
-

@@ -13,7 +13,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	dispatcher->add_handler(
 				[&](messages::get_chunk &msg)
 	{
-		logger_.log("game_server: recieved get_chunk for [%d,%d] [%d,%d]", msg.ld_x, msg.ld_y,
+		logger_.log("game_server: recieved get_chunk for [%u,%u] [%u,%u]", msg.ld_x, msg.ld_y,
 					msg.ru_x, msg.ru_y);
 		messages::get_chunk_response response(maze->get_chunk(msg.ld_x, msg.ld_y,
 															  msg.ru_x, msg.ru_y));

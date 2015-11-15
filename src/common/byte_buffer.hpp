@@ -10,7 +10,7 @@
 namespace serialization
 {
 
-const static int max_size = 512;
+const static int max_size = 2048;
 
 struct byte_buffer
 {
@@ -82,6 +82,11 @@ struct byte_buffer
         put_value<bool>(value);
     }
 
+    void put_unsigned_int(unsigned int value)
+    {
+        put_value<unsigned int>(value);
+    }
+
     void put_int(int value)
     {
         put_value<int>(value);
@@ -120,6 +125,11 @@ struct byte_buffer
     int get_int()
     {
         return get_value<int>();
+    }
+
+    unsigned int get_unsigned_int()
+    {
+        return get_value<unsigned int>();
     }
 
     long get_long()
@@ -161,9 +171,9 @@ struct byte_buffer
         offset = 0;
     }
 
-    int get_size()
+    unsigned get_size() const
     {
-        return offset;
+        return static_cast<unsigned>(offset);
     }
 
     std::array<unsigned char, max_size> m_byte_buffer;

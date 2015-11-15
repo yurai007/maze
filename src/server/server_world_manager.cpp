@@ -162,7 +162,13 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
         if (verify)
         {
             char field = maze->get_field(std::get<0>(position), std::get<1>(position));
-            assert(field == 'E');
+
+            if (field != 'E')
+            {
+                logger_.log("server_world_manager: error! Verification failed for {%d, %d}",
+                            std::get<0>(position), std::get<1>(position));
+                assert(false);
+            }
         }
 
         result.push_back(enemy->get_id());
@@ -201,7 +207,12 @@ std::vector<int> server_world_manager::get_players_data(bool verify) const
             if (verify)
             {
                 char field = maze->get_field(std::get<0>(position), std::get<1>(position));
-                assert(field == 'P');
+                if (field != 'P')
+                {
+                    logger_.log("server_world_manager: error! Verification failed for {%d, %d}",
+                                std::get<0>(position), std::get<1>(position));
+                    assert(false);
+                }
             }
             players_data.push_back(player->id);
             players_data.push_back(std::get<0>(position));
@@ -220,8 +231,8 @@ int server_world_manager::allocate_data_for_new_player()
 
     while (maze->get_field(posx, posy) != ' ')
     {
-        posx = rand()%(size-5);
-        posy = rand()%(size-5);
+        posx = rand()%(size-10);
+        posy = rand()%(size-10);
     }
 
     auto player = make_player(posx, posy);

@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <utility>
 #include <map>
-#include "client.hpp"
+#include "network_manager.hpp"
 #include "client_game_objects_factory.hpp"
 
 namespace core
@@ -24,7 +24,8 @@ class client_world_manager : public std::enable_shared_from_this<client_world_ma
 {
 public:
     client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
-                         std::shared_ptr<networking::client> client_, bool automatic_players_);
+                         std::shared_ptr<networking::network_manager> network_manager_,
+                         bool automatic_players_);
 
     void load_all();
     void tick_all();
@@ -62,10 +63,11 @@ private:
     }
 
     std::shared_ptr<core::abstract_maze> maze {nullptr};
-    std::vector<std::shared_ptr<game_object>> game_objects;
+    std::vector<std::shared_ptr<client_player>> players;
+    std::vector<std::shared_ptr<game_object>> enemies_and_resources;
 
     std::shared_ptr<client_game_objects_factory> objects_factory;
-    std::shared_ptr<networking::client> client {nullptr};
+    std::shared_ptr<networking::network_manager> network_manager {nullptr};
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_enemy_id;
     std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_player_id;

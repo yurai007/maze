@@ -1,6 +1,6 @@
 #include "../client/renderer.hpp"
 #include "../common/controller.hpp"
-#include "../client/client.hpp"
+#include "../client/network_manager.hpp"
 #include "client_game_objects_factory.hpp"
 
 /*
@@ -15,10 +15,10 @@ namespace core
 client_game_objects_factory::client_game_objects_factory(
                      std::shared_ptr<presentation::renderer> renderer,
                      std::shared_ptr<control::controller> controller,
-                     std::shared_ptr<networking::client> client)
+                     std::shared_ptr<networking::network_manager> network_manager)
     : renderer_(renderer),
       controller_(controller),
-      client_(client)
+      network_manager_(network_manager)
 {
 }
 
@@ -33,7 +33,7 @@ std::shared_ptr<client_player> client_game_objects_factory::create_client_player
                                         int id, int posx, int posy, bool active, bool automatic)
 {
     return std::make_shared<client_player>(manager, renderer_, controller_, maze_,
-                                           client_, id, posx, posy, active, automatic);
+                                           network_manager_, id, posx, posy, active, automatic);
 }
 
 std::shared_ptr<client_enemy> client_game_objects_factory::create_client_enemy(

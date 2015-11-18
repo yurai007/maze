@@ -84,14 +84,14 @@ private:
     void send(Msg &msg)
     {
         serialization::byte_buffer serialized_msg;
-        serialized_msg.put_char(0);
+        serialized_msg.put_unsigned_short(0);
         serialized_msg.put_char(msg.message_id());
         msg.serialize_to_buffer(serialized_msg);
-        // TO DO: WTF??? Investigate how is it possible to pass this assert for msg clearly bigger than
-        //        256???
-        assert(serialized_msg.get_size() - 1 < 256);
-        unsigned char size = (unsigned char)(serialized_msg.get_size() - 1);
-        serialized_msg.m_byte_buffer[0] = size;
+
+        assert(serialized_msg.get_size() >= 2);
+        assert(serialized_msg.get_size() - 2 < 256*256);
+        unsigned short size = (unsigned short)(serialized_msg.get_size() - 2);
+        memcpy(&serialized_msg.m_byte_buffer[0], &size, sizeof(size));
 
         boost::system::error_code error;
 
@@ -112,7 +112,7 @@ private:
         assert(!error);
 
         Msg msg;
-        deserialized_msg.get_char();
+        deserialized_msg.get_unsigned_short();
         char msg_type = deserialized_msg.get_char();
         if (Msg::message_id() != msg_type)
             logger_.log("client: recieved message with wrong type. Expected message_id = %d", msg_type);

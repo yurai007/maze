@@ -116,14 +116,21 @@ struct get_enemies_data
 {
 	get_enemies_data() = default;
 
+	get_enemies_data(int player_id_)
+		: player_id(player_id_)
+	{
+	}
+
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
 		buffer.put_string(content);
+		buffer.put_int(player_id);
 	}
 
 	void deserialize_from_buffer(serialization::byte_buffer &buffer)
 	{
 		content = buffer.get_string();
+		player_id = buffer.get_int();
 	}
 
 	static char message_id()
@@ -131,6 +138,7 @@ struct get_enemies_data
 		return 4;
 	}
 	std::string content{"enemies"};
+	int player_id;
 };
 
 struct get_enemies_data_response

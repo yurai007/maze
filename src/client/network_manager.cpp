@@ -10,7 +10,7 @@ network_manager::network_manager(std::shared_ptr<networking::client> client_)
 
 messages::get_enemies_data_response network_manager::get_enemies_data_from_network(int player_id)
 {
-    messages::get_enemies_data request;
+    messages::get_enemies_data request(player_id);
     client->send_request(request);
 
     auto response = client->read_get_enemies_data_response();

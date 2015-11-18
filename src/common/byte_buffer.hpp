@@ -10,7 +10,7 @@
 namespace serialization
 {
 
-const static int max_size = 2048;
+const static int max_size = 2048*4;
 
 struct byte_buffer
 {
@@ -92,6 +92,11 @@ struct byte_buffer
         put_value<int>(value);
     }
 
+    void put_unsigned_short(unsigned short value)
+    {
+        put_value<unsigned short>(value);
+    }
+
     void put_long(long value)
     {
         put_value<long>(value);
@@ -125,6 +130,11 @@ struct byte_buffer
     int get_int()
     {
         return get_value<int>();
+    }
+
+    unsigned short get_unsigned_short()
+    {
+        return get_value<unsigned short>();
     }
 
     unsigned int get_unsigned_int()

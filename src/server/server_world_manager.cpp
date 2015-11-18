@@ -165,9 +165,10 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
 
             if (field != 'E')
             {
-                logger_.log("server_world_manager: error! Verification failed for {%d, %d}",
+                logger_.log("server_world_manager: error! Enemies cohesion verification failed for {%d, %d}",
                             std::get<0>(position), std::get<1>(position));
-                assert(false);
+                maze->set_field(std::get<0>(position), std::get<1>(position), 'E');
+                //assert(false);
             }
         }
 
@@ -209,9 +210,10 @@ std::vector<int> server_world_manager::get_players_data(bool verify) const
                 char field = maze->get_field(std::get<0>(position), std::get<1>(position));
                 if (field != 'P')
                 {
-                    logger_.log("server_world_manager: error! Verification failed for {%d, %d}",
+                    logger_.log("server_world_manager: error! Players cohesion verification failed for {%d, %d}",
                                 std::get<0>(position), std::get<1>(position));
-                    assert(false);
+                    maze->set_field(std::get<0>(position), std::get<1>(position), 'P');
+                    //assert(false);
                 }
             }
             players_data.push_back(player->id);
@@ -231,8 +233,8 @@ int server_world_manager::allocate_data_for_new_player()
 
     while (maze->get_field(posx, posy) != ' ')
     {
-        posx = rand()%(size-10);
-        posy = rand()%(size-10);
+        posx = rand()%(size-5);
+        posy = rand()%(size-20);
     }
 
     auto player = make_player(posx, posy);

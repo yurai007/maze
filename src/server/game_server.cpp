@@ -35,9 +35,9 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	});
 
 	dispatcher->add_handler(
-				[&](messages::get_enemies_data &)
+				[&](messages::get_enemies_data &msg)
 	{
-		logger_.log("game_server: recieved get_enemies_data");
+		logger_.log("game_server: recieved get_enemies_data from player = %d", msg.player_id);
 
 		messages::get_enemies_data_response response(manager->get_enemies_data(true));
 

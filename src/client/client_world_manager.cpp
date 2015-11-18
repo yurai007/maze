@@ -145,6 +145,8 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
         int y = players_data.content[i+2];
         position_to_player_id[std::make_pair(x, y)] = id;
 
+        player_id_to_position[id] = std::make_pair(x, y);
+
         if (id == player_id)
         {
             player_posx = x;
@@ -241,6 +243,9 @@ void client_world_manager::handle_external_players_and_enemies()
 
     auto players_data = get_players_data_from_network();
 
+    logger_.log("client_world_manager%d: player_id_to_position.size() = %zu players.size() = %zu",
+                player_id, player_id_to_position.size(), players.size());
+
     // I may assume that id-s are in increasing order
     for (size_t i = 0; i < players_data.content.size(); i += 3)
     {
@@ -323,7 +328,9 @@ void client_world_manager::make_enemy(int posx, int posy)
     if (position_to_enemy_id.find(std::make_pair(posx, posy)) != position_to_enemy_id.end())
         add_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
     else
-        assert(false);
+    {
+        //assert(false);
+    }
 }
 
 void client_world_manager::make_player(int posx, int posy)
@@ -358,8 +365,8 @@ std::shared_ptr<game_object> client_world_manager::make_external_player(int id, 
                                posy,
                                false,
                                automatic_players));
-    logger_.log("client_world_manager%d: added external player on position = {%d, %d}. Active = false, Automatic = %s",
-                player_id, posx, posy, bool_to_string(automatic_players));
+    logger_.log("client_world_manager%d: added external player id = %d on position = {%d, %d}. Active = false, Automatic = %s",
+                player_id, id, posx, posy, bool_to_string(automatic_players));
     return players.back();
 }
 

@@ -11,14 +11,15 @@ no_gui_auto_driver::no_gui_auto_driver(int players_number_)
 
 int no_gui_auto_driver::run(const std::string &ip_address)
 {
-    assert(players_number <= 128);
+    assert(players_number <= 512);
     std::vector<std::shared_ptr<networking::client>> clients(players_number);
     std::vector<std::shared_ptr<networking::network_manager>> network_managers(players_number);
     std::vector<std::shared_ptr<core::client_game_objects_factory>> factories(players_number);
 
     for (int i = 0; i < players_number; i++)
     {
-        clients[i] = std::make_shared<networking::client>(ip_address);
+        clients[i].reset(new networking::client(ip_address));
+                //std::make_shared<networking::client>(ip_address);
         network_managers[i] = std::make_shared<networking::network_manager>(clients[i]);
         factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
                                                                            nullptr,

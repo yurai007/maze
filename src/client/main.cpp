@@ -69,11 +69,28 @@
  * now no_gui_auto_driver works as expected (despite verification problem on server). Static-s on client side
    was the reason.
 
+ * For more than 254 players boost asio on client side throws exception - eventfd_select_interruptter:
+   Too may open files.
+
+ * modyfing /etc/security/limits.conf solves problem with too many open files.
+
+ * now for 512 players I have performance problem with maze_client.
+   Maze_client's timer (release build) can't perform ticking with resolution = 2ms. In logs I see
+   ticking every ~4-5ms. The bottleneck is probably logging itself which slow down whole process.
+   I must check this but reducing logging (only to started tick/finish tick) and check timings
+   Possible solutions:
+   - limit whole logging. Now I get after few minutes ~1GB logs. I can do this easly but it's boring.
+   - limit flushing. I guess flushing is the performance killer here.
+   - asynchronous logger. Logging would be on different (slow) I/O thread. Comunication between threads
+     by queue. Probably the best sollution.
+
+   I don't see any problems with maze_server now (even for debug build) but notice there is no network
+   communication (according to gnome monitor). Maze_server seems to be CPU-bound but as I wrote
+   1ms ticking for server is easy (for 512 clients and loopback :)
+
  * TODO:
+   - speed up maze_client for 512 players by reducing ticking from 4-5ms to 2ms
    - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
-   - now I need more enemies (~50). Generate them randomly.
-   - now in order to run e.g 50 players I need 50 separated directories. But I would like to
-     generate ~5000 players. I need some event-driven generator like for 1024k problem.
 */
 
 void generator_test_case()
@@ -108,7 +125,7 @@ int main(int argc, char** argv)
     else
         if (mode == "many")
         {
-            no_gui_auto_driver driver(20);
+            no_gui_auto_driver driver(512);
             return driver.run(ip_address);
         }
     else

@@ -35,7 +35,8 @@ void client_enemy::tick(unsigned short )
     int new_x = std::get<0>(new_position);
     int new_y = std::get<1>(new_position);
 
-    logger_.log("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
+    //logger_.log("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
+
     // I assume lags and teleportation:)
     //assert( (new_x - posx == 0 ) || (new_y - posy == 0) );
 

@@ -2,7 +2,6 @@
 #include <ctime>
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include "../common/logger.hpp"
 #include "server_enemy.hpp"
 #include "server_maze.hpp"
@@ -17,9 +16,10 @@ server_enemy::server_enemy(std::shared_ptr<core::server_maze> maze_,
       id(0)
 {
     static int id_generator = 0;
+    if (id_generator == 0)
+        srand(time(NULL));
     id_generator++;
     id = id_generator;
-    srand(time(NULL));
 }
 
 int server_enemy::get_id() const
@@ -38,7 +38,7 @@ void server_enemy::tick(unsigned short tick_counter)
     is_proper[1] += (int)!maze->is_field_filled(posx+1, posy);
     is_proper[2] += (int)!maze->is_field_filled(posx, posy-1);
     is_proper[3] += (int)!maze->is_field_filled(posx, posy+1);
-    int proper_directions_number = std::accumulate(is_proper.begin(), is_proper.end(), 0);
+    const int proper_directions_number = std::accumulate(is_proper.begin(), is_proper.end(), 0);
 
     if (proper_directions_number == 0)
         return;
@@ -50,8 +50,8 @@ void server_enemy::tick(unsigned short tick_counter)
             where--;
     current--;
     perform_rotation = true;
-    int oldx = posx;
-    int oldy = posy;
+    const int oldx = posx;
+    const int oldy = posy;
     if (current == 0)
     {
         direction = 'L';

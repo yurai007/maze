@@ -53,9 +53,7 @@ using namespace boost::asio;
 class cmd_driver
 {
 public:
-    cmd_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
+    cmd_driver()
     {
         game_objects_factory->set_manager(world_manager);
     }
@@ -88,12 +86,10 @@ public:
     }
 
 private:
-    int argc;
-    char **argv;
 
     networking::game_server server;
     boost::posix_time::milliseconds interval {1};
-    deadline_timer timer {server.main_server.m_io_service, interval};
+    deadline_timer timer {server.get_io_service(), interval};
 
     std::shared_ptr<core::server_game_objects_factory> game_objects_factory
         {std::make_shared<core::server_game_objects_factory>()};
@@ -117,7 +113,7 @@ int main(int argc, char** argv)
     if (argc > 1)
         logger_.log("Arg: %s", argv[1]);
 
-    cmd_driver driver(0, NULL);
+    cmd_driver driver;
     return driver.run();
 }
 

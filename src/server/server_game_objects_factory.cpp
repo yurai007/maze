@@ -16,10 +16,10 @@ std::shared_ptr<server_maze> server_game_objects_factory::create_server_maze(
     return maze_;
 }
 
-std::shared_ptr<server_player> server_game_objects_factory::create_server_player(int posx, int posy)
+std::shared_ptr<server_player> server_game_objects_factory::create_server_player(int posx, int posy, bool alive)
 {
     assert(manager_ != nullptr);
-    return std::make_shared<server_player>(maze_, manager_, posx, posy);
+    return std::make_shared<server_player>(maze_, manager_, posx, posy, alive);
 }
 
 std::shared_ptr<server_enemy> server_game_objects_factory::create_server_enemy(

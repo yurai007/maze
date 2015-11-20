@@ -24,7 +24,7 @@ void server_world_manager::load_all()
         {
             char field = maze->get_field(column, row);
             if (field == 'P')
-                make_player(column, row);
+                make_player(column, row, false);
             else
                 if (field == 'E')
                     make_enemy(column, row);
@@ -138,9 +138,9 @@ void server_world_manager::make_enemy(int posx, int posy)
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
-std::shared_ptr<server_player> server_world_manager::make_player(int posx, int posy)
+std::shared_ptr<server_player> server_world_manager::make_player(int posx, int posy, bool alive)
 {
-    auto player = objects_factory->create_server_player(posx, posy);
+    auto player = objects_factory->create_server_player(posx, posy, alive);
     players_and_resources.push_back(player);
     logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
     return player;
@@ -168,7 +168,6 @@ std::vector<int> server_world_manager::get_enemies_data(bool verify) const
                 logger_.log("server_world_manager: error! Enemies cohesion verification failed for {%d, %d}",
                             std::get<0>(position), std::get<1>(position));
                 maze->set_field(std::get<0>(position), std::get<1>(position), 'E');
-                //assert(false);
             }
         }
 
@@ -202,7 +201,7 @@ std::vector<int> server_world_manager::get_players_data(bool verify) const
     for (auto &object : players_and_resources)
     {
         player = std::dynamic_pointer_cast<server_player>(object);
-        if (player != nullptr && player->alive)
+        if (player != nullptr && player->is_alive())
         {
             auto position = player->get_position();
             if (verify)
@@ -213,10 +212,9 @@ std::vector<int> server_world_manager::get_players_data(bool verify) const
                     logger_.log("server_world_manager: error! Players cohesion verification failed for {%d, %d}",
                                 std::get<0>(position), std::get<1>(position));
                     maze->set_field(std::get<0>(position), std::get<1>(position), 'P');
-                    //assert(false);
                 }
             }
-            players_data.push_back(player->id);
+            players_data.push_back(player->get_id());
             players_data.push_back(std::get<0>(position));
             players_data.push_back(std::get<1>(position));
         }
@@ -237,12 +235,11 @@ int server_world_manager::allocate_data_for_new_player()
         posy = rand()%(size-20);
     }
 
-    auto player = make_player(posx, posy);
+    auto player = make_player(posx, posy, true);
     assert(player != nullptr);
-    player->alive = true;
-    maze->set_field(posx, posy, 'P');
 
-    return player->id;
+    maze->set_field(posx, posy, 'P');
+    return player->get_id();
 }
 
 void server_world_manager::shutdown_player(int id)
@@ -253,7 +250,7 @@ void server_world_manager::shutdown_player(int id)
         player = std::dynamic_pointer_cast<server_player>(object);
         if (player != nullptr)
         {
-            if (player->id == id)
+            if (player->get_id() == id)
             {
                 object.reset();
                 break;

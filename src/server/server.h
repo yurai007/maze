@@ -49,10 +49,9 @@ public:
     void remove_connection(std::shared_ptr<connection> connection_);
     void send_on_current_connection(const serialization::byte_buffer &data);
     void dispatch_msg_from_buffer(serialization::byte_buffer &buffer);
-
+    io_service &get_io_service();
 
     std::shared_ptr<connection> current_connection {nullptr};
-    io_service m_io_service;
 
 private:
     void register_handler_for_listening();
@@ -60,7 +59,7 @@ private:
                      const boost::system::error_code& error);
     void handle_stop();
 
-
+    io_service m_io_service;
     tcp::acceptor acceptor;
     boost::asio::signal_set m_signals;
     std::shared_ptr<message_dispatcher> m_dispatcher;

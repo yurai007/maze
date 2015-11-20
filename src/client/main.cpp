@@ -88,6 +88,9 @@
    communication (according to gnome monitor). Maze_server seems to be CPU-bound but as I wrote
    1ms ticking for server is easy (for 512 clients and loopback :)
 
+ * after limiting logging to only few lines per client_world_manager and disabling flushing in logger
+   overhead per tick decreased to ~2ms. I guess with asynchronous logger I achive ~1ms or less.
+
  * TODO:
    - speed up maze_client for 512 players by reducing ticking from 4-5ms to 2ms
    - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)

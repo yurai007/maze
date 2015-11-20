@@ -18,15 +18,17 @@ class server_player : public game_object
 public:
     server_player(std::shared_ptr<core::server_maze> maze_,
                   std::shared_ptr<core::server_world_manager> manager_,
-                  int posx_, int posy_);
+                  int posx_, int posy_, bool alive_);
 
     void tick(unsigned short tick_counter) override;
+    bool is_alive() const;
+    int get_id() const;
 
-//private:
+private:
     std::shared_ptr<core::server_maze> maze;
     std::shared_ptr<core::server_world_manager> manager;
     int id;
-    bool alive {false};
+    bool alive;
 };
 
 }

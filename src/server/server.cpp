@@ -64,6 +64,11 @@ void server::dispatch_msg_from_buffer(serialization::byte_buffer
     m_dispatcher->dispatch_msg_from_buffer(buffer);
 }
 
+io_service &server::get_io_service()
+{
+    return m_io_service;
+}
+
 void server::register_handler_for_listening()
 {
     logger_.log("server: start listening");

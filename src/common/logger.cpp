@@ -32,7 +32,8 @@ void logger::log(const char *string, ...)
         current_pos = put_time_in_buffer();
     va_list args;
     va_start (args, string);
-    vsnprintf (current_pos, max_log_size, string, args);
+    int return_code = vsnprintf (current_pos, max_log_size, string, args);
+    assert(return_code >= 0);
     va_end (args);
 
     if (write_to_file)
@@ -40,7 +41,7 @@ void logger::log(const char *string, ...)
         fputs(buffer, file_proxy);
             if (!in_place)
                 fputs("\n", file_proxy);
-        fflush(file_proxy);
+       // fflush(file_proxy);
     }
     else
     {
@@ -65,7 +66,8 @@ void logger::log(const char *string, ...)
          current_pos = put_time_in_buffer();
      va_list args;
      va_start (args, string);
-     vsnprintf (current_pos, max_log_size, string, args);
+     int return_code = vsnprintf (current_pos, max_log_size, string, args);
+     assert(return_code >= 0);
      va_end (args);
 
      if (write_to_file)
@@ -74,7 +76,7 @@ void logger::log(const char *string, ...)
              if (!in_place)
                  fputs("\n", file_proxy);
          // ???
-         fflush(file_proxy);
+       //  fflush(file_proxy);
      }
      else
      {
@@ -124,6 +126,7 @@ char *logger::put_time_in_buffer()
 
     buffer[current++] = ']';
     buffer[current++] = ' ';
+    assert(current < max_log_size);
     return &buffer[current];
 }
 

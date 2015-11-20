@@ -1,4 +1,5 @@
 #include "game_server.hpp"
+#include "../common/messages.hpp"
 #include "../common/message_dispatcher.hpp"
 #include "../common/byte_buffer.hpp"
 
@@ -113,6 +114,11 @@ void game_server::run()
 void game_server::stop()
 {
 	main_server.stop();
+}
+
+io_service &game_server::get_io_service()
+{
+	return main_server.get_io_service();
 }
 
 }

@@ -34,7 +34,7 @@ private:
     void load_maze_from_file();
     //void move_players_on_beginning();
     void make_enemy(int posx, int posy);
-    std::shared_ptr<server_player> make_player(int posx, int posy);
+    std::shared_ptr<server_player> make_player(int posx, int posy, bool alive);
     void make_resource(const std::string &name, int posx, int posy);
 
     std::shared_ptr<server_game_objects_factory> objects_factory;

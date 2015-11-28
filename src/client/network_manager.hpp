@@ -1,7 +1,7 @@
 #ifndef NETWORK_MANAGER_HPP
 #define NETWORK_MANAGER_HPP
 
-#include "../common/logger.hpp"
+#include "async_logger.hpp"
 #include "../common/messages.hpp"
 #include "client.hpp"
 

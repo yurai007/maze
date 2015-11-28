@@ -2,7 +2,7 @@
 
 #include "no_gui_auto_driver.hpp"
 #include "client_game_objects_factory.hpp"
-#include "../common/network_maze_loader.hpp"
+#include "network_maze_loader.hpp"
 
 no_gui_auto_driver::no_gui_auto_driver(int players_number_)
     : players_number(players_number_)
@@ -18,8 +18,9 @@ int no_gui_auto_driver::run(const std::string &ip_address)
 
     for (int i = 0; i < players_number; i++)
     {
-        clients[i].reset(new networking::client(ip_address));
+        //clients[i].reset(new networking::client(ip_address));
                 //std::make_shared<networking::client>(ip_address);
+        clients[i] = std::make_shared<networking::client>(ip_address);;
         network_managers[i] = std::make_shared<networking::network_manager>(clients[i]);
         factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
                                                                            nullptr,

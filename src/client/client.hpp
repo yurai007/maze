@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 
 #include "../common/messages.hpp"
-#include "../common/logger.hpp"
+#include "async_logger.hpp"
 
 using boost::asio::ip::tcp;
 

@@ -2,7 +2,7 @@
 
 #include "no_gui_driver.hpp"
 #include "client_game_objects_factory.hpp"
-#include "../common/network_maze_loader.hpp"
+#include "network_maze_loader.hpp"
 
 int no_gui_driver::run(const std::string &ip_address)
 {

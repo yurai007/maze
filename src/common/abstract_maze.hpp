@@ -23,8 +23,9 @@ public:
     std::string get_chunk(unsigned leftdown_x, unsigned leftdown_y,
                                        unsigned rightupper_x, unsigned rightupper_y) const;
 
-    void move_field(int column, int row, int new_column, int new_row);
-    void reset_field(int column, int row);
+    void move_field(const std::tuple<int, int> old_pos,
+                    const std::tuple<int, int> new_pos);
+    void reset_field(const std::tuple<int, int> pos);
     int size();
     void update_content();
     void verify();

@@ -2,7 +2,7 @@
 #define NETWORK_MAZE_LOADER_HPP
 
 #include <memory>
-#include "maze_loader.hpp"
+#include "../common/maze_loader.hpp"
 #include "../client/client.hpp"
 
 namespace networking

@@ -1,5 +1,5 @@
 #include "../common/maze_generator.hpp"
-#include "../common/logger.hpp"
+#include "async_logger.hpp"
 
 #include "no_gui_auto_driver.hpp"
 #include "no_gui_driver.hpp"
@@ -91,7 +91,28 @@
  * after limiting logging to only few lines per client_world_manager and disabling flushing in logger
    overhead per tick decreased to ~2ms. I guess with asynchronous logger I achive ~1ms or less.
 
+ * never ever call malloc for c++ classes. Strange things will happen like invalid pointer error because
+   malloc doesn't call constructors.
+   In C++ always new/placement new + delete/destructor call.
+
+ * According to stats_512.txt overeall latency is quite well (But notice I don't log too much).
+   Average latency ~ 1.2ms and only ~15% is >=2 ms.
+   There are sometimes big slow downs 1x 410ms and 1x 535ms. Couple of ~10ms-15ms.
+   I should prepare some fake logger test which will be contain only logging and produce log.txt.
+
+ * Finally new workflow with scripts. Just:
+   1. cdmaze
+   2. cd scripts
+   3. source run.sh release 512
+   4. source cleanup.sh
+
+   For latency statistics from logs:
+   1. cd bin/release
+   2. source ../latency_stat.sh
+
  * TODO:
+   - logger test. In pararell dynamic view for ability to run ~2k players:) Then server ticking
+     ~300us.
    - speed up maze_client for 512 players by reducing ticking from 4-5ms to 2ms
    - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
 */
@@ -105,13 +126,19 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
+    logger_.run();
     if (argc < 3)
     {
-        logger_.log("Usage: ./maze_client [ip_address] [mode]");
+        logger_.log("Usage: ./maze_client [ip_address] [mode] [players_number]");
         return 1;
     }
 
-    logger_.log("Arguments: ip_address = %s, mode = %s", argv[1], argv[2]);
+    if (argc == 4)
+        logger_.log("Arguments: ip_address = %s, mode = %s, players_number = %s",
+                    argv[1], argv[2], argv[3]);
+    else
+        logger_.log("Arguments: ip_address = %s, mode = %s",
+                    argv[1], argv[2]);
     const std::string ip_address(argv[1]), mode(argv[2]);
 
     if (mode == "gui-on")
@@ -128,7 +155,9 @@ int main(int argc, char** argv)
     else
         if (mode == "many")
         {
-            no_gui_auto_driver driver(512);
+            assert(argc == 4);
+            int players_number = std::stoi(std::string(argv[3]));
+            no_gui_auto_driver driver(players_number);
             return driver.run(ip_address);
         }
     else

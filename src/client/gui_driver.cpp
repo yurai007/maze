@@ -1,6 +1,6 @@
 #include "gui_driver.hpp"
 #include "client_game_objects_factory.hpp"
-#include "../common/network_maze_loader.hpp"
+#include "network_maze_loader.hpp"
 #include "../common/controller.hpp"
 
 gui_driver::gui_driver(int argc, char **argv)
@@ -14,10 +14,12 @@ int gui_driver::run(const std::string &ip_address)
 
     auto qt_controller = std::make_shared<control::controller>();
     auto qt_renderer = std::make_shared<presentation::renderer>();
-//        auto client =  std::make_shared<networking::client>(ip_address);
-    std::shared_ptr<networking::client> client(new networking::client(ip_address));
-    std::shared_ptr<networking::network_manager> network_manager(
-                new networking::network_manager(client));
+    auto client = std::make_shared<networking::client>(ip_address);
+    //std::shared_ptr<networking::client> client(new networking::client(ip_address));
+//    std::shared_ptr<networking::network_manager> network_manager(
+//                new networking::network_manager(client));
+    auto network_manager = std::make_shared<networking::network_manager>(client);
+
     auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(qt_renderer,
                                                                                     qt_controller,
                                                                                     network_manager);

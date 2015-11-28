@@ -71,8 +71,14 @@ std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
     return result;
 }
 
-void abstract_maze::move_field(int column, int row, int new_column, int new_row)
+void abstract_maze::move_field(const std::tuple<int, int> old_pos,
+                               const std::tuple<int, int> new_pos)
 {
+    int new_column = std::get<0>(new_pos);
+    int new_row = std::get<1>(new_pos);
+    int column = std::get<0>(old_pos);
+    int row = std::get<1>(old_pos);
+
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     const int size = static_cast<int>(content.size());
@@ -84,8 +90,11 @@ void abstract_maze::move_field(int column, int row, int new_column, int new_row)
     content[column][row] = ' ';
 }
 
-void abstract_maze::reset_field(int column, int row)
+void abstract_maze::reset_field(const std::tuple<int, int> pos)
 {
+    int column = std::get<0>(pos);
+    int row = std::get<1>(pos);
+
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     const int size = static_cast<int>(content.size());

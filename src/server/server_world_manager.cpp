@@ -60,44 +60,32 @@ void server_world_manager::tick_all()
         auto player = std::dynamic_pointer_cast<server_player>(object);
         if (player != nullptr)
         {
-            auto old_position = player->get_position();
+            const auto old_position = player->get_position();
             player->tick(tick_counter);
-            auto new_position = player->get_position();
+            const auto new_position = player->get_position();
 
             if (new_position != old_position)
             {
-                int new_pos_x = std::get<0>(new_position);
-                int new_pos_y = std::get<1>(new_position);
-
-                int old_pos_x = std::get<0>(old_position);
-                int old_pos_y = std::get<1>(old_position);
-
-                if (new_pos_x < INT_MAX)
-                    maze->move_field(old_pos_x, old_pos_y, new_pos_x, new_pos_y);
+                if (std::get<0>(new_position) < INT_MAX)
+                    maze->move_field(old_position, new_position);
                 else
-                    maze->reset_field(old_pos_x, old_pos_y);
+                    maze->reset_field(old_position);
             }
         }
     }
 
     for (auto &enemy : enemies)
     {
-        auto old_position = enemy->get_position();
+        const auto old_position = enemy->get_position();
         enemy->tick(tick_counter);
-        auto new_position = enemy->get_position();
+        const auto new_position = enemy->get_position();
 
         if (new_position != old_position)
         {
-            int new_pos_x = std::get<0>(new_position);
-            int new_pos_y = std::get<1>(new_position);
-
-            int old_pos_x = std::get<0>(old_position);
-            int old_pos_y = std::get<1>(old_position);
-
-            if (new_pos_x < INT_MAX)
-                maze->move_field(old_pos_x, old_pos_y, new_pos_x, new_pos_y);
+            if (std::get<0>(new_position) < INT_MAX)
+                maze->move_field(old_position, new_position);
             else
-                maze->reset_field(old_pos_x, old_pos_y);
+                maze->reset_field(old_position);
         }
     }
 
@@ -106,13 +94,10 @@ void server_world_manager::tick_all()
         auto resource = std::dynamic_pointer_cast<server_resource>(object);
         if (resource != nullptr)
         {
-            auto position = resource->get_position();
+            const auto position = resource->get_position();
+            const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
 
-            if ( (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'G')
-                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'M')
-                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'S')
-                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 'W')
-                 && (maze->get_field(std::get<0>(position), std::get<1>(position)) != 's'))
+            if ( field != 'G'&& field != 'M' && field != 'S'&& field != 'W' && field != 's')
             {
                 object.reset();
                 logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
@@ -259,9 +244,8 @@ void server_world_manager::shutdown_player(int id)
     }
     // player really exists
     assert(player != nullptr);
-    auto position = player->get_position();
-    maze->reset_field(std::get<0>(position), std::get<1>(position));
-    //player.reset();
+    const auto position = player->get_position();
+    maze->reset_field(position);
 }
 
 std::pair<int, int> server_world_manager::get_player_position(int player_id)

@@ -107,7 +107,6 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
         cairo_context->paint();
     }
     buffer_calls.clear();
-
     return true;
 }
 

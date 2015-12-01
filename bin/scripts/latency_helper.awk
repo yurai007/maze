@@ -15,7 +15,7 @@ BEGIN {
 				worst = val;
 			sum = sum+val;
 			latency[val]++;
-			print val;
+			#print val;
 		}	
 	last = line;
 	not_odd = !not_odd;	

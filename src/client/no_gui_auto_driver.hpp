@@ -19,7 +19,7 @@ private:
     void tick(const boost::system::error_code&);
 
     io_service m_io_service;
-    boost::posix_time::milliseconds interval {2};
+    boost::posix_time::milliseconds interval {2}; //2ms
     deadline_timer timer {m_io_service, interval};
 
     int players_number;

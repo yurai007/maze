@@ -22,9 +22,14 @@ void client_resource::tick(unsigned short)
 {
 }
 
-void client_resource::draw()
+void client_resource::draw(int active_player_x, int active_player_y)
 {
-    renderer->draw_image(name, 30*posx, 30*posy);
+    const int half_width = 50/2;
+    const int half_height = 50/2;
+    const int resource_x = posx + half_width - active_player_x;
+    const int resource_y = posy + half_height - active_player_y;
+    if (resource_x >= 0 && resource_y >= 0)
+        renderer->draw_image(name, 30*resource_x, 30*resource_y);
 }
 
 }

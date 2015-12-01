@@ -44,7 +44,7 @@ public:
     int get_id() const;
 
     void tick(unsigned short tick_counter) override;
-    void draw() override;
+    void draw(int active_player_x, int active_player_y) override;
     void load_image() override;
 
 private:

@@ -28,7 +28,7 @@ public:
     void tick(unsigned short) override;
 
     void load_image() override;
-    void draw() override;
+    void draw(int active_player_x, int active_player_y) override;
 private:
     std::shared_ptr<core::client_world_manager> manager;
     std::shared_ptr<core::client_maze> maze;

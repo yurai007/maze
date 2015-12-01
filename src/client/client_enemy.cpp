@@ -64,7 +64,7 @@ void client_enemy::tick(unsigned short )
     perform_rotation = true;
 }
 
-void client_enemy::draw()
+void client_enemy::draw(int active_player_x, int active_player_y)
 {
     std::string image_name = "enemy" + std::to_string(id);
     if (perform_rotation)
@@ -78,7 +78,14 @@ void client_enemy::draw()
         if (direction == 'U')
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
     }
-    renderer->draw_image(image_name, 30*posx, 30*posy);
+    const int half_width = 50/2;
+    const int half_height = 50/2;
+
+    const int enemy_x = posx + half_width - active_player_x;
+    const int enemy_y = posy + half_height - active_player_y;
+
+    if (enemy_x >= 0 && enemy_y >= 0)
+        renderer->draw_image(image_name, 30*enemy_x, 30*enemy_y);
 }
 
 }

@@ -167,7 +167,7 @@ void client_player::tick(unsigned short tick_counter)
         unactive_tick();
 }
 
-void client_player::draw()
+void client_player::draw(int active_player_x, int active_player_y)
 {
     assert(renderer != nullptr);
     const std::string image_name = "player" + std::to_string(id);
@@ -182,7 +182,19 @@ void client_player::draw()
         if (direction == 'U')
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
     }
-    renderer->draw_image(image_name, 30*posx, 30*posy);
+    const int half_width = 50/2;
+    const int half_height = 50/2;
+
+    if (active)
+        renderer->draw_image(image_name, 30*half_width, 30*half_height);
+    else
+    {
+        const int player_x = posx + half_width - active_player_x;
+        const int player_y = posy + half_height - active_player_y;
+
+        if (player_x >= 0 && player_y >= 0)
+            renderer->draw_image(image_name, 30*player_x, 30*player_y);
+    }
 }
 
 }

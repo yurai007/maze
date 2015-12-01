@@ -20,7 +20,7 @@ public:
         : renderer(renderer_) {}
 
     virtual void load_image() = 0;
-    virtual void draw() = 0;
+    virtual void draw(int active_player_x, int active_player_y) = 0;
     virtual ~drawable() {}
 protected:
     std::shared_ptr<presentation::renderer> renderer;

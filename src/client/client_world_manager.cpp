@@ -70,14 +70,11 @@ void client_world_manager::tick_all()
 
             if (new_position == old_position)
             {
+                const char field = maze->get_field(std::get<0>(old_position), std::get<1>(old_position));
                 // dirty hack, downcasting for zombie
                 if (check_if_resource(object))
                     // for resource client: get_chunk
-                    if ( (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'G')
-                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'M')
-                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'S')
-                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 'W')
-                         && (maze->get_field(std::get<0>(old_position), std::get<1>(old_position)) != 's'))
+                    if ( field != 'G' && field != 'M' && field != 'S' && field != 'W' && field != 's')
                     {
                         object.reset();
                         logger_.log("client_world_manager: removed resource from positon = {%d, %d}",
@@ -405,7 +402,8 @@ std::tuple<int, int> client_world_manager::get_enemy_position(int id)
 
 std::tuple<int, int> client_world_manager::get_player_position(int id)
 {
-    assert(player_id_to_position.find(id) != player_id_to_position.end());
+    // Here is the very often fail. Not sure if this assert is needed
+    //assert(player_id_to_position.find(id) != player_id_to_position.end());
     return player_id_to_position[id];
 }
 

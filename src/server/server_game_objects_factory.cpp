@@ -12,11 +12,11 @@ void server_game_objects_factory::set_manager(std::shared_ptr<server_world_manag
 std::shared_ptr<server_maze> server_game_objects_factory::create_server_maze(
         std::shared_ptr<maze_loader> loader)
 {
-    maze_ = std::make_shared<server_maze>(loader); //std::shared_ptr<server_maze>(new server_maze(loader));
-    return maze_;
+    return (maze_ = std::make_shared<server_maze>(loader));
 }
 
-std::shared_ptr<server_player> server_game_objects_factory::create_server_player(int posx, int posy, bool alive)
+std::shared_ptr<server_player> server_game_objects_factory::create_server_player(int posx, int posy,
+                                                                                 bool alive)
 {
     assert(manager_ != nullptr);
     return std::make_shared<server_player>(maze_, manager_, posx, posy, alive);

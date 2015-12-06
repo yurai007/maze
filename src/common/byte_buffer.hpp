@@ -10,7 +10,7 @@
 namespace serialization
 {
 
-const static int max_size = 2048*8;
+constexpr static int max_size = 2048*10;
 
 struct byte_buffer
 {

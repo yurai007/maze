@@ -26,9 +26,9 @@ public:
     void move_field(const std::tuple<int, int> old_pos,
                     const std::tuple<int, int> new_pos);
     void reset_field(const std::tuple<int, int> pos);
-    int size();
+    int size() const;
     void update_content();
-    void verify();
+    void verify() const;
     virtual void load() = 0;
     virtual ~abstract_maze() = default;
 

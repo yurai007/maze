@@ -11,7 +11,7 @@ no_gui_auto_driver::no_gui_auto_driver(int players_number_)
 
 int no_gui_auto_driver::run(const std::string &ip_address)
 {
-    assert(players_number <= 1024);
+    assert(players_number <= 1500);
     std::vector<std::shared_ptr<networking::client>> clients(players_number);
     std::vector<std::shared_ptr<networking::network_manager>> network_managers(players_number);
     std::vector<std::shared_ptr<core::client_game_objects_factory>> factories(players_number);

@@ -2,7 +2,7 @@
 #include <csignal>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
-#include "server.h"
+#include "server.hpp"
 #include "../common/byte_buffer.hpp"
 #include "../common/message_dispatcher.hpp"
 

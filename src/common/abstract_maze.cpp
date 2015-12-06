@@ -103,7 +103,7 @@ void abstract_maze::reset_field(const std::tuple<int, int> pos)
     content[column][row] = ' ';
 }
 
-int abstract_maze::size()
+int abstract_maze::size() const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
     return content.size();
@@ -124,7 +124,7 @@ void abstract_maze::update_content()
     logger_.log("abstract_maze: content was load");
 }
 
-void abstract_maze::verify()
+void abstract_maze::verify() const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 

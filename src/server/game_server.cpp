@@ -40,6 +40,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	{
 		logger_.log("game_server: recieved get_enemies_data from player = %d", msg.player_id);
 
+		manager->repair_if_uncorrect_enemies();
 		messages::get_enemies_data_response response(manager->get_enemies_data());
 
 		logger_.log("game_server: get_enemies_data before sending. Content dump:");
@@ -64,6 +65,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	{
 		logger_.log("game_server: recieved get_players_data");
 
+		manager->repair_if_uncorrect_players();
 		messages::get_players_data_response response(manager->get_players_data());
 
 //		logger_.log("game_server: get_players_data before sending. Content dump:");

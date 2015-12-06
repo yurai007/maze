@@ -4,7 +4,7 @@
 #include <set>
 #include <memory>
 #include <boost/asio.hpp>
-#include "connection.h"
+#include "connection.hpp"
 #include "../common/logger.hpp"
 
 /*
@@ -36,6 +36,8 @@
 
 namespace networking
 {
+
+constexpr static int sizeof_msg_size = sizeof(unsigned short);
 
 class message_dispatcher;
 

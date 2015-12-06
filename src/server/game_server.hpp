@@ -3,12 +3,14 @@
 
 #include <memory>
 #include "server_maze.hpp"
-#include "server.h"
+#include "server.hpp"
 #include "remote_transport.hpp"
 #include "server_world_manager.hpp"
 
 namespace networking
 {
+
+constexpr static int port_number = 5555;
 
 class game_server
 {
@@ -21,7 +23,7 @@ public:
     io_service &get_io_service();
 
 private:
-    server main_server {5555};
+    server main_server {port_number};
     remote_transport::sender sender {main_server};
 };
 

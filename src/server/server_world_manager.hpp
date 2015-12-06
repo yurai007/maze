@@ -22,14 +22,20 @@ public:
     void tick_all();
     void make_maze(std::shared_ptr<maze_loader> loader);
     std::vector<int> get_enemies_data() const;
-    std::shared_ptr<core::server_maze> get_maze() const;
-    void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
     std::vector<int> get_players_data() const;
+    std::pair<int, int> get_player_position(int player_id) const;
+    std::shared_ptr<core::server_maze> get_maze() const;
+
     int allocate_data_for_new_player();
     void shutdown_player(int id);
-    std::pair<int, int> get_player_position(int player_id);
+    void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
+    void repair_if_uncorrect_enemies();
+    void repair_if_uncorrect_players();
 
 private:
+
+    std::string map_field_to_resource_name(const char field) const;
+    void tick_and_move(std::shared_ptr<game_object> some_game_object, unsigned short tick_counter);
 
     void load_maze_from_file();
     void make_enemy(int posx, int posy);

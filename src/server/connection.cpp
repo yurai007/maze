@@ -1,8 +1,8 @@
 #include <iostream>
 #include <boost/bind.hpp>
 
-#include "connection.h"
-#include "server.h"
+#include "connection.hpp"
+#include "server.hpp"
 
 namespace networking
 {
@@ -51,7 +51,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         {
             memcpy(&msg_length, &data_buffer.m_byte_buffer[0], sizeof(msg_length));
 
-            remaining_bytes =  msg_length + 2 - bytes_transferred;
+            remaining_bytes =  msg_length + sizeof_msg_size - bytes_transferred;
             current = bytes_transferred;
         }
         else
@@ -64,7 +64,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
         {
             logger_.log("connection with id = %d: recieved %d B and expected %d B. Waiting for next %d B",
                                          socket.native_handle(), bytes_transferred,
-                                         msg_length + 2, remaining_bytes);
+                                         msg_length + sizeof_msg_size, remaining_bytes);
             socket.async_read_some(buffer(&data_buffer.m_byte_buffer[current], remaining_bytes),
                                    boost::bind(&connection::handle_read, this, placeholders::error,
                                                placeholders::bytes_transferred));
@@ -74,7 +74,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
             logger_.log("connection with id = %d: recieved %d B and expected %d B. Got full msg",
                         socket.native_handle(), bytes_transferred, bytes_transferred);
 
-            data_buffer.offset = 2;
+            data_buffer.offset = sizeof_msg_size;
             m_server.dispatch_msg_from_buffer(data_buffer);
         }
     }

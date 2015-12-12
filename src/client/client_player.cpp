@@ -65,7 +65,7 @@ void client_player::unactive_tick()
     const int new_x = std::get<0>(new_position);
     const int new_y = std::get<1>(new_position);
 
-    //logger_.log("client_player %d: new position = {%d, %d}", id, new_x, new_y);
+    logger_.log_debug("client_player %d: new position = {%d, %d}", id, new_x, new_y);
 
     if (new_x == posx-1)
         direction = 'L';

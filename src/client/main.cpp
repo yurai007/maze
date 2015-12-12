@@ -110,6 +110,8 @@
    1. cd bin/release
    2. source ../latency_stat.sh
 
+ * everything is fine on stress test for 1500 players.
+
  * TODO:
    - logger test. In pararell dynamic view for ability to run ~2k players:) Then server ticking
      ~300us.

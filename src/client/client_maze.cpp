@@ -53,9 +53,10 @@ void client_maze::load()
         std::lock_guard<std::mutex> lock(maze_mutex);
         content = m_loader->load();
         logger_.log("client_maze: content was load");
+        logger_.log_debug("client_maze: content: ");
 
-//        for (size_t i = 0; i < content.size(); i++)
-//            logger_.log("row %d: %s", i, content[i].c_str());
+        for (size_t i = 0; i < content.size(); i++)
+            logger_.log_debug("row %d: %s", i, content[i].c_str());
         return;
     }
 
@@ -64,9 +65,10 @@ void client_maze::load()
 
     content = m_loader->load();
     logger_.log("client_maze: content was load");
+    logger_.log_debug("client_maze: content: ");
 
-//    for (size_t i = 0; i < content.size(); i++)
-//        logger_.log("row %d: %s", i, content[i].c_str());
+    for (size_t i = 0; i < content.size(); i++)
+        logger_.log_debug("row %d: %s", i, content[i].c_str());
 
     renderer->load_image_and_register("brick", "../../../data/brick.bmp");
 }

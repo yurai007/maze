@@ -130,7 +130,7 @@ void abstract_maze::verify() const
 
     for (size_t i = 0; i < content.size(); i++)
     {
-        assert(content[i].size() == 50);
+        assert(content[i].size() == 60);
     }
 }
 

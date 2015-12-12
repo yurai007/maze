@@ -335,9 +335,16 @@ void test_case()
 	pthread_join(producer_struct, NULL);
 
 	printf("sums = %lld\n", sum);
+	assert(sum == 499999500000);
 	printf("OK\n");
 }
 
+}
+
+// It simulates logging in no_gui_auto_driver for 1024 players
+namespace async_logger_stress_test
+{
+    // TO DO:
 }
 
 int main(int, char*[])

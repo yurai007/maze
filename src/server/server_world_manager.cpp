@@ -60,7 +60,6 @@ void server_world_manager::tick_all()
             logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
                         std::get<0>(position), std::get<1>(position));
         }
-
     }
 
     for (auto &resource : resources)

@@ -22,20 +22,43 @@ public:
 
     static async_logger& get()
     {
-        static async_logger instance(true, true, true);
+        static async_logger instance(true, true, true, true);
         return instance;
     }
 
     void run();
-    void log(const char *string, ...);
+
+    template<typename... Arg>
+    void log(const char *string, Arg... args)
+    {
+        fast_log(false, string, args...);
+    }
+
+    template<typename... Arg>
+    void log_debug(const char *string, Arg... args)
+    {
+        if (debug_on_here)
+            fast_log(false, string, args...);
+    }
+
+//    template<typename... Arg>
+//    void log_in_place(const char *string, Arg... args)
+//    {
+//        fast_log(true, string, args...);
+//    }
+
+//    template<typename... Arg>
+//    void log_debug_in_place(const char *string, Arg... args)
+//    {
+//        if (debug_on_here)
+//            fast_log(true, string, args...);
+//    }
+
     void enable(bool enabled);
 
 private:
 
-    void internal_log(const std::string &buffer);
-    //void internal_log_in_place(const char *string, ...);
-
-    async_logger(bool enabled, bool log_to_file, bool log_date);
+    async_logger(bool enabled, bool log_to_file, bool log_date, bool debug_on);
 
     template<class Msg>
     void log_message(const Msg &msg)
@@ -46,12 +69,14 @@ private:
     ~async_logger();
 
     char *put_time_in_buffer();
+    void fast_log(bool in_place, const char *string, ...);
+    void slow_log(const std::string &buffer);
 
     bool on;
-    const bool write_to_file, write_date;
+    const bool write_to_file, write_date, debug_on_here;
     bool opened {false};
-    static const int max_log_size = 128;
-    char buffer[max_log_size];
+    constexpr static int max_line_size = 128;
+    char buffer[max_line_size];
     FILE * file_proxy = nullptr;
 
     std::thread io_thread;

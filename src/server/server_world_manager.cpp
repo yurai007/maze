@@ -51,6 +51,7 @@ void server_world_manager::tick_all()
 
     for (auto &resource : resources)
     {
+        assert(resource != nullptr);
         const auto position = resource->get_position();
         const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
 
@@ -224,6 +225,7 @@ std::string server_world_manager::map_field_to_resource_name(const char field) c
 void server_world_manager::tick_and_move(std::shared_ptr<game_object> some_game_object,
                                          unsigned short tick_counter)
 {
+    assert(some_game_object != nullptr);
     const auto old_position = some_game_object->get_position();
     some_game_object->tick(tick_counter);
     const auto new_position = some_game_object->get_position();

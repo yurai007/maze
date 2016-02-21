@@ -128,7 +128,6 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
-    logger_.enable(false);
     logger_.run();
     if (argc < 3)
     {

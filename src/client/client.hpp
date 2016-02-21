@@ -94,11 +94,14 @@ private:
         memcpy(&serialized_msg.m_byte_buffer[0], &size, sizeof(size));
 
         boost::system::error_code error;
-
-        size_t send_bytes = socket.write_some(boost::asio::buffer(serialized_msg.m_byte_buffer,
+        size_t send_bytes = boost::asio::write(socket, boost::asio::buffer(serialized_msg.m_byte_buffer,
                                                              serialized_msg.offset), error);
-        assert(send_bytes > 0);
-        assert(!error);
+        if (error)
+        {
+            logger_.log("client: write error = %d", error.value());
+            assert(false);
+        }
+        assert(send_bytes == static_cast<size_t>(serialized_msg.offset));
     }
 
     template<class Msg>
@@ -108,8 +111,12 @@ private:
         serialization::byte_buffer deserialized_msg;
         size_t recieved_bytes = socket.read_some(boost::asio::buffer(
                                                        deserialized_msg.m_byte_buffer), error);
+        if (error)
+        {
+            logger_.log("client: read error = %d", error.value());
+            assert(false);
+        }
         assert(recieved_bytes > 0);
-        assert(!error);
 
         Msg msg;
         deserialized_msg.get_unsigned_short();

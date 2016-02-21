@@ -1,5 +1,4 @@
 #include <thread>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
 #include "../common/maze_generator.hpp"
@@ -64,7 +63,7 @@ public:
               world_manager->tick_all();
 
         timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
+        timer.async_wait([this](auto error_code){ this->tick(error_code); });
     }
 
     int run()
@@ -74,7 +73,7 @@ public:
 
         try
         {
-            timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
+            timer.async_wait([this](auto error_code){ this->tick(error_code); });
             server.init(world_manager->get_maze(), world_manager);
             server.run();
         }

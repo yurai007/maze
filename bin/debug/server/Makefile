@@ -8,8 +8,6 @@ program_CXX_SRCS := $(wildcard $(PATH_TO_SOURCES2)*.cpp $(PATH_TO_SOURCES)*.cpp)
 program_C_OBJS := ${program_C_SRCS:.c=.o}
 program_CXX_OBJS := ${program_CXX_SRCS:.cpp=.o}
 program_OBJS := $(program_C_OBJS) $(program_CXX_OBJS)
-#program_INCLUDE_DIRS := /home/yurai/Downloads/boost_1_58_0
-#program_LIBRARY_DIRS := /home/yurai/Downloads/boost_1_58_0/bin.v2/libs/system/build/gcc-4.9.2/release/link-static/threading-multi
 program_LIBRARIES := boost_system
 
 CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))

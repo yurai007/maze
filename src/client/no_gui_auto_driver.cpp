@@ -1,5 +1,3 @@
-#include <boost/bind.hpp>
-
 #include "no_gui_auto_driver.hpp"
 #include "client_game_objects_factory.hpp"
 #include "network_maze_loader.hpp"
@@ -18,8 +16,6 @@ int no_gui_auto_driver::run(const std::string &ip_address)
 
     for (int i = 0; i < players_number; i++)
     {
-        //clients[i].reset(new networking::client(ip_address));
-                //std::make_shared<networking::client>(ip_address);
         clients[i] = std::make_shared<networking::client>(ip_address);;
         network_managers[i] = std::make_shared<networking::network_manager>(clients[i]);
         factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
@@ -35,7 +31,7 @@ int no_gui_auto_driver::run(const std::string &ip_address)
 
     try
     {
-        timer.async_wait(boost::bind(&no_gui_auto_driver::tick, this, placeholders::error));
+        timer.async_wait([this](auto error_code){ this->tick(error_code); });
         m_io_service.run();
     }
     catch (std::exception& exception)
@@ -60,5 +56,5 @@ void no_gui_auto_driver::tick(const boost::system::error_code&)
     manager_id = (manager_id+1)%world_managers.size();
 
     timer.expires_at(timer.expires_at() + interval);
-    timer.async_wait(boost::bind(&no_gui_auto_driver::tick, this, placeholders::error));
+    timer.async_wait([this](auto error_code){ this->tick(error_code); });
 }

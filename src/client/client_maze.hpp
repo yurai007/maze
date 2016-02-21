@@ -2,6 +2,7 @@
 #define CLIENT_MAZE_HPP
 
 #include "../common/abstract_maze.hpp"
+#include "client_player.hpp"
 
 namespace core
 {
@@ -14,12 +15,14 @@ public:
                 bool visible);
 
     void load_image() override;
-    void draw() override;
+    void draw(int active_player_x, int active_player_y) override;
     void load() override;
+    void attach_active_player(std::shared_ptr<client_player> player);
 
     std::shared_ptr<presentation::renderer> get_renderer() const;
 private:
     const bool is_visible;
+    std::shared_ptr<client_player> active_player {nullptr};
 };
 
 }

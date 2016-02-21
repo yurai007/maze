@@ -9,82 +9,25 @@
 namespace framework
 {
 
-logger::logger(bool enabled, bool log_to_file, bool log_date, bool log_in_place)
-    : on(enabled), write_to_file(log_to_file), write_date(log_date), in_place(log_in_place)
+logger::logger(bool enabled, bool log_to_file, bool log_date, bool debug_on)
+    : on(enabled), write_to_file(log_to_file), write_date(log_date), debug_on_here(debug_on)
 {
     if (on && write_to_file)
+    {
         file_proxy = fopen ("log.txt", "w");
+        opened = true;
+    }
 }
 
-// TO DO: lock may be much relaxed probably (maybe even to put_time_in_buffer)
-void logger::log(const char *string, ...)
+void logger::enable(bool enabled)
 {
-    if (!on)
-        return;
-    char *current_pos = buffer;
-
     std::lock_guard<std::mutex> lock(mutex);
-    if (write_date && !in_place)
-        current_pos = put_time_in_buffer();
-    va_list args;
-    va_start (args, string);
-    vsnprintf (current_pos, max_log_size, string, args);
-    va_end (args);
-
-    if (write_to_file)
-    {
-        fputs(buffer, file_proxy);
-            if (!in_place)
-                fputs("\n", file_proxy);
-        fflush(file_proxy);
-    }
-    else
-    {
-        if (!in_place)
-            printf("%s\n", buffer);
-        else
-            printf("%s", buffer);
-    }
+    on = enabled;
 }
-
- void logger::log_in_place(const char *string, ...)
- {
-     if (!on)
-         return;
-
-     char *current_pos = buffer;
-
-     std::lock_guard<std::mutex> lock(mutex);
-     in_place = true;
-
-     if (write_date && !in_place)
-         current_pos = put_time_in_buffer();
-     va_list args;
-     va_start (args, string);
-     vsnprintf (current_pos, max_log_size, string, args);
-     va_end (args);
-
-     if (write_to_file)
-     {
-         fputs(buffer, file_proxy);
-             if (!in_place)
-                 fputs("\n", file_proxy);
-         // ???
-         fflush(file_proxy);
-     }
-     else
-     {
-         if (!in_place)
-             printf("%s\n", buffer);
-         else
-             printf("%s", buffer);
-     }
-     in_place = false;
- }
 
 logger::~logger()
 {
-    if (on && write_to_file)
+    if (opened)
     {
         fclose (file_proxy);
     }
@@ -114,7 +57,40 @@ char *logger::put_time_in_buffer()
 
     buffer[current++] = ']';
     buffer[current++] = ' ';
+    assert(current < max_line_size);
     return &buffer[current];
+}
+
+void logger::internal_log(bool in_place, const char *string, ...)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (!on)
+        return;
+    char *current_pos = buffer;
+    if (write_date && !in_place)
+        current_pos = put_time_in_buffer();
+
+    va_list args;
+    va_start (args, string);
+    int return_code = vsnprintf (current_pos, max_line_size, string, args);
+    assert(return_code >= 0);
+    va_end (args);
+
+    if (write_to_file)
+    {
+        fputs(buffer, file_proxy);
+            if (!in_place)
+                fputs("\n", file_proxy);
+      //  fflush(file_proxy);
+    }
+    else
+    {
+        if (!in_place)
+            printf("%s\n", buffer);
+        else
+            printf("%s", buffer);
+    }
 }
 
 

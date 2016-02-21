@@ -2,7 +2,7 @@
 #include <csignal>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
-#include "server.h"
+#include "server.hpp"
 #include "../common/byte_buffer.hpp"
 #include "../common/message_dispatcher.hpp"
 
@@ -62,6 +62,11 @@ void server::dispatch_msg_from_buffer(serialization::byte_buffer
                                       &buffer)
 {
     m_dispatcher->dispatch_msg_from_buffer(buffer);
+}
+
+io_service &server::get_io_service()
+{
+    return m_io_service;
 }
 
 void server::register_handler_for_listening()

@@ -35,9 +35,7 @@ void client_enemy::tick(unsigned short )
     int new_x = std::get<0>(new_position);
     int new_y = std::get<1>(new_position);
 
-    logger_.log("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
-    // I assume lags and teleportation:)
-    //assert( (new_x - posx == 0 ) || (new_y - posy == 0) );
+    logger_.log_debug("client_enemy %d: new position = {%d, %d}", id, new_x, new_y);
 
     // I assume no lags again
     if (new_x == posx-1)
@@ -63,7 +61,7 @@ void client_enemy::tick(unsigned short )
     perform_rotation = true;
 }
 
-void client_enemy::draw()
+void client_enemy::draw(int active_player_x, int active_player_y)
 {
     std::string image_name = "enemy" + std::to_string(id);
     if (perform_rotation)
@@ -77,7 +75,14 @@ void client_enemy::draw()
         if (direction == 'U')
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
     }
-    renderer->draw_image(image_name, 30*posx, 30*posy);
+    const int half_width = 50/2;
+    const int half_height = 50/2;
+
+    const int enemy_x = posx + half_width - active_player_x;
+    const int enemy_y = posy + half_height - active_player_y;
+
+    if (enemy_x >= 0 && enemy_y >= 0)
+        renderer->draw_image(image_name, 30*enemy_x, 30*enemy_y);
 }
 
 }

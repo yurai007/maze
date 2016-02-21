@@ -1,4 +1,5 @@
 #include "game_server.hpp"
+#include "../common/messages.hpp"
 #include "../common/message_dispatcher.hpp"
 #include "../common/byte_buffer.hpp"
 
@@ -13,7 +14,7 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	dispatcher->add_handler(
 				[&](messages::get_chunk &msg)
 	{
-		logger_.log("game_server: recieved get_chunk for [%d,%d] [%d,%d]", msg.ld_x, msg.ld_y,
+		logger_.log("game_server: recieved get_chunk for [%u,%u] [%u,%u]", msg.ld_x, msg.ld_y,
 					msg.ru_x, msg.ru_y);
 		messages::get_chunk_response response(maze->get_chunk(msg.ld_x, msg.ld_y,
 															  msg.ru_x, msg.ru_y));
@@ -35,11 +36,12 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	});
 
 	dispatcher->add_handler(
-				[&](messages::get_enemies_data &)
+				[&](messages::get_enemies_data &msg)
 	{
-		logger_.log("game_server: recieved get_enemies_data");
+		logger_.log("game_server: recieved get_enemies_data from player = %d", msg.player_id);
 
-		messages::get_enemies_data_response response(manager->get_enemies_data(true));
+		manager->repair_if_uncorrect_enemies();
+		messages::get_enemies_data_response response(manager->get_enemies_data());
 
 		logger_.log("game_server: get_enemies_data before sending. Content dump:");
 		size_t i = 0;
@@ -63,21 +65,22 @@ void game_server::init(std::shared_ptr<core::server_maze> maze,
 	{
 		logger_.log("game_server: recieved get_players_data");
 
-		messages::get_players_data_response response(manager->get_players_data(true));
+		manager->repair_if_uncorrect_players();
+		messages::get_players_data_response response(manager->get_players_data());
 
-		logger_.log("game_server: get_players_data before sending. Content dump:");
-		size_t i = 0;
-		for (; i < response.content.size(); i += 3)
-		{
-			if (i != 0 && (i % 30 == 0))
-				logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-					response.content[i+2]);
-			else
-				logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-					response.content[i+2]);
-		}
-		if ((i-3)%30 != 0)
-			logger_.log_in_place("\n");
+//		logger_.log("game_server: get_players_data before sending. Content dump:");
+//		size_t i = 0;
+//		for (; i < response.content.size(); i += 3)
+//		{
+//			if (i != 0 && (i % 30 == 0))
+//				logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
+//					response.content[i+2]);
+//			else
+//				logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
+//					response.content[i+2]);
+//		}
+//		if ((i-3)%30 != 0)
+//			logger_.log_in_place("\n");
 
 		sender.send(response);
 		logger_.log("game_server: send get_players_data_response");
@@ -113,6 +116,11 @@ void game_server::run()
 void game_server::stop()
 {
 	main_server.stop();
+}
+
+io_service &game_server::get_io_service()
+{
+	return main_server.get_io_service();
 }
 
 }

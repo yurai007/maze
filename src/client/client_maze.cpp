@@ -18,19 +18,27 @@ void client_maze::load_image()
     assert(false);
 }
 
-void client_maze::draw()
+void client_maze::draw(int active_player_x, int active_player_y)
 {
     if (!is_visible)
         return;
+    if (!active_player)
+        return;
 
+    auto pos = active_player->get_position();
+    const int x = std::get<0>(pos), y = std::get<1>(pos);
+
+    const int half_width = 50/2;
+    const int half_height = 50/2;
     const int brick_size = 30;
-    for (int row = 0; row < size(); row++)
-        for (int column = 0; column < size(); column++)
+
+    for (int row = y - half_height; row < y + half_height; row++)
+        for (int column = x - half_width; column < x + half_width; column++)
         {
             if (is_field_filled(column, row))
             {
-                int posx = column * brick_size;
-                int posy = row * brick_size;
+                const int posx = (column - (x - half_width)) * brick_size;
+                const int posy = (row - (y - half_height)) * brick_size;
 
                 std::lock_guard<std::mutex> lock(maze_mutex);
                 renderer->draw_image("brick", posx, posy);
@@ -44,10 +52,11 @@ void client_maze::load()
     {
         std::lock_guard<std::mutex> lock(maze_mutex);
         content = m_loader->load();
-        logger_.log("client_maze: content was load. Content dump:");
+        logger_.log("client_maze: content was load");
+        logger_.log_debug("client_maze: content: ");
 
         for (size_t i = 0; i < content.size(); i++)
-            logger_.log("row %d: %s", i, content[i].c_str());
+            logger_.log_debug("row %d: %s", i, content[i].c_str());
         return;
     }
 
@@ -55,12 +64,18 @@ void client_maze::load()
     assert(renderer != nullptr);
 
     content = m_loader->load();
-    logger_.log("client_maze: content was load. Content dump:");
+    logger_.log("client_maze: content was load");
+    logger_.log_debug("client_maze: content: ");
 
     for (size_t i = 0; i < content.size(); i++)
-        logger_.log("row %d: %s", i, content[i].c_str());
+        logger_.log_debug("row %d: %s", i, content[i].c_str());
 
     renderer->load_image_and_register("brick", "../../../data/brick.bmp");
+}
+
+void client_maze::attach_active_player(std::shared_ptr<client_player> player)
+{
+    active_player = player;
 }
 
 std::shared_ptr<presentation::renderer> client_maze::get_renderer() const

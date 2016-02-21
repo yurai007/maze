@@ -20,7 +20,7 @@ namespace control
 
 namespace networking
 {
-    class client;
+    class network_manager;
 }
 
 namespace core
@@ -34,7 +34,7 @@ class client_game_objects_factory
 public:
     client_game_objects_factory(std::shared_ptr<presentation::renderer> renderer,
                          std::shared_ptr<control::controller> controller,
-                         std::shared_ptr<networking::client> client);
+                         std::shared_ptr<networking::network_manager> network_manager);
 
     std::shared_ptr<client_maze> create_client_maze(std::shared_ptr<maze_loader> loader, bool visible);
     std::shared_ptr<client_player> create_client_player(std::shared_ptr<client_world_manager> manager,
@@ -47,7 +47,7 @@ public:
 private:
     std::shared_ptr<presentation::renderer> renderer_;
     std::shared_ptr<control::controller> controller_;
-    std::shared_ptr<networking::client> client_;
+    std::shared_ptr<networking::network_manager> network_manager_;
     std::shared_ptr<core::client_maze> maze_;
 };
 

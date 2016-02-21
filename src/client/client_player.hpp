@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "../common/game_object.hpp"
+#include "network_manager.hpp"
 
 namespace control
 {
@@ -30,7 +31,7 @@ public:
            std::shared_ptr<presentation::renderer> renderer_,
            std::shared_ptr<control::controller> controller_,
            std::shared_ptr<core::client_maze> maze_,
-           std::shared_ptr<networking::client> client_,
+           std::shared_ptr<networking::network_manager> network_manager_,
            int id_,
            int posx_, int posy_,
            bool active_,
@@ -40,20 +41,21 @@ public:
     void unactive_tick();
     void automatic_tick(int tick_counter);
     bool is_active() const;
+    int get_id() const;
+
     void tick(unsigned short tick_counter) override;
-
-    void draw() override;
+    void draw(int active_player_x, int active_player_y) override;
     void load_image() override;
-
-    int id;
 
 private:
     std::shared_ptr<core::client_world_manager> manager;
     std::shared_ptr<control::controller> controller;
     std::shared_ptr<core::client_maze> maze;
-    std::shared_ptr<networking::client> client;
+    std::shared_ptr<networking::network_manager> network_manager;
     bool perform_rotation {false};
     char direction;
+    char old_direction {0};
+    int id;
 
     bool active, automatic;
 };

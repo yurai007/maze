@@ -56,23 +56,29 @@ void abstract_maze::set_field(int column, int row, char field)
     content[column][row] = field;
 }
 
-std::string abstract_maze::get_chunk(int leftdown_x, int leftdown_y,
-                                         int rightupper_x, int rightupper_y) const
+std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
+                                         unsigned rightupper_x, unsigned rightupper_y) const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
     // IV cw
-    assert(0 <= leftdown_x && leftdown_x < static_cast<int>(content.size()) );
+    assert(leftdown_x < content.size() );
     assert(leftdown_x <= rightupper_x);
     assert(leftdown_y >= rightupper_y);
-    int length = rightupper_x - leftdown_x + 1;
+    const unsigned length = rightupper_x - leftdown_x + 1;
     std::string result;
     for (size_t i = rightupper_y; i <= leftdown_y; i++)
         result += content[i].substr(leftdown_x, length);
     return result;
 }
 
-void abstract_maze::move_field(int column, int row, int new_column, int new_row)
+void abstract_maze::move_field(const std::tuple<int, int> old_pos,
+                               const std::tuple<int, int> new_pos)
 {
+    int new_column = std::get<0>(new_pos);
+    int new_row = std::get<1>(new_pos);
+    int column = std::get<0>(old_pos);
+    int row = std::get<1>(old_pos);
+
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     const int size = static_cast<int>(content.size());
@@ -84,8 +90,11 @@ void abstract_maze::move_field(int column, int row, int new_column, int new_row)
     content[column][row] = ' ';
 }
 
-void abstract_maze::reset_field(int column, int row)
+void abstract_maze::reset_field(const std::tuple<int, int> pos)
 {
+    int column = std::get<0>(pos);
+    int row = std::get<1>(pos);
+
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     const int size = static_cast<int>(content.size());
@@ -94,7 +103,7 @@ void abstract_maze::reset_field(int column, int row)
     content[column][row] = ' ';
 }
 
-int abstract_maze::size()
+int abstract_maze::size() const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
     return content.size();
@@ -105,23 +114,23 @@ void abstract_maze::update_content()
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     auto temporary_content = m_loader->load();
-    logger_.log("abstract_maze: content was load. Content dump diff:");
-    for (size_t i = 0; i < temporary_content.size(); i++)
-    {
-        if (temporary_content[i] != content[i])
-            logger_.log("row %d: %s", i, temporary_content[i].c_str());
-    }
 
+//    for (size_t i = 0; i < temporary_content.size(); i++)
+//    {
+//        if (temporary_content[i] != content[i])
+//            logger_.log("row %d: %s", i, temporary_content[i].c_str());
+//    }
     content = temporary_content;
+//    logger_.log("abstract_maze: content was load");
 }
 
-void abstract_maze::verify()
+void abstract_maze::verify() const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
     for (size_t i = 0; i < content.size(); i++)
     {
-        assert(content[i].size() == 50);
+        assert(content[i].size() == 60);
     }
 }
 

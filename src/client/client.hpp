@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 
 #include "../common/messages.hpp"
-#include "../common/logger.hpp"
+#include "async_logger.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -84,11 +84,14 @@ private:
     void send(Msg &msg)
     {
         serialization::byte_buffer serialized_msg;
-        serialized_msg.put_char(0);
+        serialized_msg.put_unsigned_short(0);
         serialized_msg.put_char(msg.message_id());
         msg.serialize_to_buffer(serialized_msg);
-        unsigned char size = (unsigned char)(serialized_msg.get_size() - 1);
-        serialized_msg.m_byte_buffer[0] = size;
+
+        assert(serialized_msg.get_size() >= 2);
+        assert(serialized_msg.get_size() - 2 < 256*256);
+        unsigned short size = (unsigned short)(serialized_msg.get_size() - 2);
+        memcpy(&serialized_msg.m_byte_buffer[0], &size, sizeof(size));
 
         boost::system::error_code error;
 
@@ -109,9 +112,9 @@ private:
         assert(!error);
 
         Msg msg;
-        deserialized_msg.get_char();
+        deserialized_msg.get_unsigned_short();
         char msg_type = deserialized_msg.get_char();
-        if (Msg::message_id() != (int)msg_type)
+        if (Msg::message_id() != msg_type)
             logger_.log("client: recieved message with wrong type. Expected message_id = %d", msg_type);
 
         msg.deserialize_from_buffer(deserialized_msg);
@@ -123,7 +126,7 @@ private:
     boost::asio::io_service io_service;
     tcp::resolver resolver {io_service};
     tcp::socket socket {io_service};
-    //boost::asio::signal_set m_signals {io_service};
+    const std::string port {"5555"};
 };
 
 }

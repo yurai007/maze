@@ -22,7 +22,7 @@ public:
     void set_manager(std::shared_ptr<server_world_manager> manager);
 
     std::shared_ptr<server_maze> create_server_maze(std::shared_ptr<maze_loader> loader);
-    std::shared_ptr<server_player> create_server_player(int posx, int posy);
+    std::shared_ptr<server_player> create_server_player(int posx, int posy, bool alive);
     std::shared_ptr<server_enemy> create_server_enemy(int posx, int posy);
     std::shared_ptr<server_resource> create_server_resource(const std::string &name,
                                                             int posx, int posy);

@@ -1,18 +1,9 @@
-#include <thread>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-
 #include "../common/maze_generator.hpp"
-#include "../common/logger.hpp"
-#include "../common/controller.hpp"
-#include "../common/message_dispatcher.hpp"
-#include "../common/network_maze_loader.hpp"
-#include "client_game_objects_factory.hpp"
-#include "client_world_manager.hpp"
-#include "renderer.hpp"
-#include "client.hpp"
+#include "async_logger.hpp"
 
-using namespace boost::asio;
+#include "no_gui_auto_driver.hpp"
+#include "no_gui_driver.hpp"
+#include "gui_driver.hpp"
 
 /*
  * Great makefile tutorial:
@@ -75,132 +66,58 @@ using namespace boost::asio;
  * why this fucking resolver doesn't work for loopback? Another constructor with
    tcp::resolver::query::canonical_name is needed
 
+ * now no_gui_auto_driver works as expected (despite verification problem on server). Static-s on client side
+   was the reason.
+
+ * For more than 254 players boost asio on client side throws exception - eventfd_select_interruptter:
+   Too may open files.
+
+ * modyfing /etc/security/limits.conf solves problem with too many open files.
+
+ * now for 512 players I have performance problem with maze_client.
+   Maze_client's timer (release build) can't perform ticking with resolution = 2ms. In logs I see
+   ticking every ~4-5ms. The bottleneck is probably logging itself which slow down whole process.
+   I must check this but reducing logging (only to started tick/finish tick) and check timings
+   Possible solutions:
+   - limit whole logging. Now I get after few minutes ~1GB logs. I can do this easly but it's boring.
+   - limit flushing. I guess flushing is the performance killer here.
+   - asynchronous logger. Logging would be on different (slow) I/O thread. Comunication between threads
+     by queue. Probably the best sollution.
+
+   I don't see any problems with maze_server now (even for debug build) but notice there is no network
+   communication (according to gnome monitor). Maze_server seems to be CPU-bound but as I wrote
+   1ms ticking for server is easy (for 512 clients and loopback :)
+
+ * after limiting logging to only few lines per client_world_manager and disabling flushing in logger
+   overhead per tick decreased to ~2ms. I guess with asynchronous logger I achive ~1ms or less.
+
+ * never ever call malloc for c++ classes. Strange things will happen like invalid pointer error because
+   malloc doesn't call constructors.
+   In C++ always new/placement new + delete/destructor call.
+
+ * According to stats_512.txt overeall latency is quite well (But notice I don't log too much).
+   Average latency ~ 1.2ms and only ~15% is >=2 ms.
+   There are sometimes big slow downs 1x 410ms and 1x 535ms. Couple of ~10ms-15ms.
+   I should prepare some fake logger test which will be contain only logging and produce log.txt.
+
+ * Finally new workflow with scripts. Just:
+   1. cdmaze
+   2. cd scripts
+   3. source run.sh release 512
+   4. source cleanup.sh
+
+   For latency statistics from logs:
+   1. cd bin/release
+   2. source ../latency_stat.sh
+
+ * everything is fine on stress test for 1500 players.
+
  * TODO:
-   - signals in cmd_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
-   - now I need more enemies (~50). Generate them randomly.
-   - now in order to run e.g 50 players I need 50 separated directories. But I would like to
-     generate ~5000 players. I need some event-driven generator like for 1024k problem.
+   - logger test. In pararell dynamic view for ability to run ~2k players:) Then server ticking
+     ~300us.
+   - speed up maze_client for 512 players by reducing ticking from 4-5ms to 2ms
+   - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
 */
-
-class gui_driver
-{
-public:
-    gui_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
-    {
-    }
-
-    int run(const std::string &ip_address)
-    {
-        application = Gtk::Application::create(argc, argv, "");
-
-        auto qt_controller = std::make_shared<control::controller>();
-        auto qt_renderer = std::make_shared<presentation::renderer>();
-//        auto client =  std::make_shared<networking::client>(ip_address);
-        std::shared_ptr<networking::client> client(new networking::client(ip_address));
-        auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(qt_renderer,
-                                                                                        qt_controller,
-                                                                                        client);
-        auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
-                                                                          client,
-                                                                          false);
-
-        world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
-        world_manager->load_all();
-        qt_renderer->set_world(world_manager);
-
-        qt_controller->set_title("The Maze");
-        qt_controller->set_default_size(1024, 768);
-        qt_controller->add(*qt_renderer);
-
-        qt_renderer->show();
-
-        int result = application->run(*qt_controller);
-        world_manager->shut_down_client();
-
-        return result;
-    }
-
-private:
-    Glib::RefPtr<Gtk::Application> application;
-    int argc;
-    char **argv;
-};
-
-
-class cmd_driver
-{
-public:
-    cmd_driver(int argc_, char** argv_)
-        : argc(argc_),
-          argv(argv_)
-    {
-    }
-
-    void tick(const boost::system::error_code&)
-    {
-        if (world_manager != nullptr)
-              world_manager->tick_all();
-
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-    }
-
-//    void stop()
-//    {
-//        m_io_service.stop();
-//        world_manager->shut_down_client();
-//    }
-
-    int run(const std::string &ip_address)
-    {
-        auto client =  std::make_shared<networking::client>(ip_address);
-        auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(nullptr,
-                                                                                        nullptr,
-                                                                                        client);
-
-        world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
-                                                                          client,
-                                                                          true);
-
-        world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
-        world_manager->load_all();
-
-//        boost::asio::signal_set m_signals(m_io_service);
-//        m_signals.add(SIGINT);
-//        m_signals.add(SIGTERM);
-//      #if defined(SIGQUIT)
-//        m_signals.add(SIGQUIT);
-//      #endif
-//         m_signals.async_wait(boost::bind(&boost::asio::io_service::stop, &m_io_service));
-
-        try
-        {
-            timer.async_wait(boost::bind(&cmd_driver::tick, this, placeholders::error));
-            m_io_service.run();
-        }
-        catch (std::exception& exception)
-        {
-            logger_.log("exception: %s", exception.what());
-        }
-        // TO DO: Doesn't work yet
-        world_manager->shut_down_client();
-
-        return 0;
-    }
-
-private:
-    int argc;
-    char **argv;
-
-    io_service m_io_service;
-    boost::posix_time::milliseconds interval {30};
-    deadline_timer timer {m_io_service, interval};
-
-
-    std::shared_ptr<core::client_world_manager> world_manager {nullptr};
-};
 
 void generator_test_case()
 {
@@ -211,13 +128,19 @@ void generator_test_case()
 
 int main(int argc, char** argv)
 {
+    logger_.run();
     if (argc < 3)
     {
-        logger_.log("Usage: ./maze_client [ip_address] [mode]");
+        logger_.log("Usage: ./maze_client [ip_address] [mode] [players_number]");
         return 1;
     }
 
-    logger_.log("Arguments: ip_address = %s, mode = %s", argv[1], argv[2]);
+    if (argc == 4)
+        logger_.log("Arguments: ip_address = %s, mode = %s, players_number = %s",
+                    argv[1], argv[2], argv[3]);
+    else
+        logger_.log("Arguments: ip_address = %s, mode = %s",
+                    argv[1], argv[2]);
     const std::string ip_address(argv[1]), mode(argv[2]);
 
     if (mode == "gui-on")
@@ -228,9 +151,17 @@ int main(int argc, char** argv)
     else
     if (mode == "gui-off")
     {
-        cmd_driver driver(0, NULL);
+        no_gui_driver driver;
         return driver.run(ip_address);
     }
+    else
+        if (mode == "many")
+        {
+            assert(argc == 4);
+            int players_number = std::stoi(std::string(argv[3]));
+            no_gui_auto_driver driver(players_number);
+            return driver.run(ip_address);
+        }
     else
     {
         logger_.log("Bad mode");

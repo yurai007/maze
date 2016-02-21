@@ -81,7 +81,7 @@ struct dispatcher
 
         if (id == Msg::message_id())
         {
-            Msg msg = {};
+            Msg msg;
             buffer.offset++;
             msg.deserialize_from_buffer(buffer);
             handler(msg);
@@ -122,7 +122,7 @@ public:
             if (call(some_dispatcher, buffer))
                 return;
         }
-        logger_.log("message dispatcher: there is no handler for this msg");
+//        logger_.log("message dispatcher: there is no handler for this msg");
     }
 
 private:

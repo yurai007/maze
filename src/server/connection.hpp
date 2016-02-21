@@ -1,10 +1,8 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <cstdlib>
 #include <boost/asio.hpp>
 #include <memory>
-#include <array>
 
 #include "../common/logger.hpp"
 #include "../common/byte_buffer.hpp"
@@ -37,7 +35,6 @@ private:
 
     server &m_server;
     tcp::socket socket;
-    // I'm not sure yet but maybe send and recieve buffers will be needed
     serialization::byte_buffer data_buffer;
     int remaining_bytes {0};
     int current {0};

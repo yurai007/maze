@@ -9,10 +9,11 @@ namespace core
 
 server_player::server_player(std::shared_ptr<core::server_maze> maze_,
                              std::shared_ptr<core::server_world_manager> manager_,
-                             int posx_, int posy_)
+                             int posx_, int posy_, bool alive_)
     : game_object(posx_, posy_),
       maze(maze_),
-      manager(manager_)
+      manager(manager_),
+      alive(alive_)
 {
     assert(manager != nullptr);
     static int id_generator = 0;
@@ -35,6 +36,16 @@ void server_player::tick(unsigned short)
             posx = newx;
             posy = newy;
         }
+}
+
+bool server_player::is_alive() const
+{
+    return alive;
+}
+
+int server_player::get_id() const
+{
+    return id;
 }
 
 }

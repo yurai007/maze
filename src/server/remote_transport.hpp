@@ -3,9 +3,7 @@
 
 #include <memory>
 #include "../common/byte_buffer.hpp"
-#include "server.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "server.hpp"
 
 namespace networking
 {
@@ -23,11 +21,15 @@ public:
     void send(Msg &msg)
     {
         serialization::byte_buffer data;
-        data.put_char(0);
+        data.put_unsigned_short(0);
         data.put_char(msg.message_id());
         msg.serialize_to_buffer(data);
-        unsigned char size = (unsigned char)(data.get_size() - 1);
-        data.m_byte_buffer[0] = size;
+
+        assert(data.get_size() >= sizeof_msg_size);
+        assert(data.get_size() - sizeof_msg_size < 256*256);
+        unsigned short size = (unsigned short)(data.get_size() - sizeof_msg_size);
+        memcpy(&data.m_byte_buffer[0], &size, sizeof(size));
+
         m_server.send_on_current_connection(data);
     }
 private:

@@ -41,23 +41,11 @@ public:
             fast_log(false, string, args...);
     }
 
-//    template<typename... Arg>
-//    void log_in_place(const char *string, Arg... args)
-//    {
-//        fast_log(true, string, args...);
-//    }
-
-//    template<typename... Arg>
-//    void log_debug_in_place(const char *string, Arg... args)
-//    {
-//        if (debug_on_here)
-//            fast_log(true, string, args...);
-//    }
-
     void enable(bool enabled);
 
 private:
 
+    void stop();
     async_logger(bool enabled, bool log_to_file, bool log_date, bool debug_on);
 
     template<class Msg>

@@ -122,7 +122,7 @@ public:
             if (call(some_dispatcher, buffer))
                 return;
         }
-        logger_.log("message dispatcher: there is no handler for this msg");
+//        logger_.log("message dispatcher: there is no handler for this msg");
     }
 
 private:

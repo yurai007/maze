@@ -121,7 +121,7 @@ void abstract_maze::update_content()
 //            logger_.log("row %d: %s", i, temporary_content[i].c_str());
 //    }
     content = temporary_content;
-    logger_.log("abstract_maze: content was load");
+//    logger_.log("abstract_maze: content was load");
 }
 
 void abstract_maze::verify() const

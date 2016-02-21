@@ -57,6 +57,11 @@ void async_logger::enable(bool enabled)
     on = enabled;
 }
 
+void async_logger::stop()
+{
+    finished = true;
+}
+
 void async_logger::slow_log(const std::string &buffer)
 {
     if (write_to_file)
@@ -73,6 +78,7 @@ void async_logger::slow_log(const std::string &buffer)
 
 async_logger::~async_logger()
 {
+    stop();
     io_thread.join();
     if (opened)
     {

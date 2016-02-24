@@ -8,23 +8,23 @@ namespace core
 {
 
 server_player::server_player(std::shared_ptr<core::server_maze> maze_,
-                             std::shared_ptr<core::server_world_manager> manager_,
+                             std::weak_ptr<server_world_manager> manager_,
                              int posx_, int posy_, bool alive_)
     : game_object(posx_, posy_),
       maze(maze_),
       manager(manager_),
       alive(alive_)
 {
-    assert(manager != nullptr);
+    assert(manager.lock() != nullptr);
     static int id_generator = 0;
     id_generator++;
     id = id_generator;
-    manager->update_player_position(id, posx, posy, posx, posy);
+    (manager.lock())->update_player_position(id, posx, posy, posx, posy);
 }
 
 void server_player::tick(unsigned short)
 {
-    auto new_position = manager->get_player_position(id);
+    auto new_position = (manager.lock())->get_player_position(id);
     int newx = new_position.first;
     int newy = new_position.second;
         if (newx == posx && newy == posy)

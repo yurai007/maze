@@ -1,7 +1,6 @@
 PATH_TO_SOURCES :=  ../../../src/server/
 PATH_TO_SOURCES2 :=  ../../../src/common/
-CXXFLAGS += -std=c++14 -W -Wall -g `pkg-config gtkmm-3.0 --cflags --libs` -lpthread -lboost_system
-LFLAGS += `pkg-config gtkmm-3.0 --cflags --libs`
+CXXFLAGS += -std=c++14 -W -Wall -g -lpthread -lboost_system
 program_NAME := maze_server
 program_C_SRCS := $(wildcard $(PATH_TO_SOURCES2)*.c $(PATH_TO_SOURCES)*.c)
 program_CXX_SRCS := $(wildcard $(PATH_TO_SOURCES2)*.cpp $(PATH_TO_SOURCES)*.cpp)
@@ -17,7 +16,7 @@ LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 .PHONY: all clean distclean
 
 maze_server: $(program_OBJS)
-	$(LINK.cc) $(program_OBJS) -o $(program_NAME) -lpthread -lboost_system `pkg-config gtkmm-3.0 --cflags --libs`
+	$(LINK.cc) $(program_OBJS) -o $(program_NAME) -lpthread -lboost_system
 
 clean:
 	@- $(RM) $(program_NAME)

@@ -1,5 +1,5 @@
 #include "../client/renderer.hpp"
-#include "../common/controller.hpp"
+#include "controller.hpp"
 #include "../client/network_manager.hpp"
 #include "client_game_objects_factory.hpp"
 

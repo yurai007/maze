@@ -24,8 +24,8 @@ using namespace boost::asio;
    Probably after adding extra 'renderer*' field to maze SO randomly occured.
 
  * Suppose renderer has : public enable_shared_from_this. Despite that I cannot use shared_from_this
-   in renderer constructor because I get std::bad_weak_ptr exception. So I decided to introduce setter
-   in renderer.
+   in renderer constructor because I get std::bad_weak_ptr exception. So I decided to introduce
+   setter in renderer.
 
  * 1. rvalue reference: int &&x = 123; Foo &&foo = Foo();
    2. move-semantics: emplace_back(123) but emplace_back(std::move(foo)) where foo is left value.
@@ -46,24 +46,38 @@ using namespace boost::asio;
  TO DO:
     Add get_players_data msg to client and server. Then I will be allowed to run many clients on
     localhost!
+
+ TO DO:
+    only when server and client will be clean uder valgrind I can replace std::shared_ptr by
+    fit_smart_ptr
+
+    87 errors
+
+    1. Invalid reads in server::handle_stop.
+    2. Many allocations and leaks from gtk. Use case only with server
+       without manager.
+
+     After removing this fucking gtk dependency (ldd + `pkg-config gtkmm-3.0 --cflags --libs`):
+
+     total heap usage: 2,097 allocs, 1,859 frees, 173,714 bytes allocated
+     decreased to
+     total heap usage: 33 allocs, 33 frees, 25,860 bytes allocated
+     and no more leaks!
+
+   3. Many cyclic dependency:
+      server_game_objects_factory -> server_world_manager -> server_game_objects_factory
+      server_world_manager -> server_player -> server_world_manager
+
+   4. Problem with resource cleanup in server_world_manager::tick_all.
 */
 
-// Only one thread
-class cmd_driver
+class server_driver
 {
 public:
-    cmd_driver()
+    server_driver()
     {
+        assert(world_manager != nullptr);
         game_objects_factory->set_manager(world_manager);
-    }
-
-    void tick(const boost::system::error_code&)
-    {
-        if (world_manager != nullptr)
-              world_manager->tick_all();
-
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait([this](auto error_code){ this->tick(error_code); });
     }
 
     int run()
@@ -86,6 +100,13 @@ public:
 
 private:
 
+    void tick(const boost::system::error_code&)
+    {
+        world_manager->tick_all();
+        timer.expires_at(timer.expires_at() + interval);
+        timer.async_wait([this](auto error_code){ this->tick(error_code); });
+    }
+
     networking::game_server server;
     boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.get_io_service(), interval};
@@ -100,19 +121,13 @@ private:
 
 using namespace networking::messages;
 
-void generator_test_case()
-{
-    utils::maze_generator generator(50);
-    generator.generate_with_patterns_from("patterns.in", 3);
-    generator.save_to_file("maze.txt");
-}
-
 int main(int argc, char** argv)
 {
     if (argc > 1)
         logger_.log("Arg: %s", argv[1]);
 
-    cmd_driver driver;
-    return driver.run();
+    server_driver driver;
+    driver.run();
+    return 0;
 }
 

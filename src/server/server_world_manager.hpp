@@ -15,7 +15,7 @@ namespace core
 class server_world_manager
 {
 public:
-    server_world_manager(std::shared_ptr<server_game_objects_factory>
+    server_world_manager(std::weak_ptr<server_game_objects_factory>
                          objects_factory_);
 
     void load_all();
@@ -42,7 +42,7 @@ private:
     std::shared_ptr<server_player> make_player(int posx, int posy, bool alive);
     void make_resource(const std::string &name, int posx, int posy);
 
-    std::shared_ptr<server_game_objects_factory> objects_factory;
+    std::weak_ptr<server_game_objects_factory> objects_factory;
     std::unordered_map<int, std::pair<int, int>> player_id_to_position;
 
     std::shared_ptr<core::abstract_maze> maze {nullptr};

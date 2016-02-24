@@ -7,10 +7,10 @@
 namespace core
 {
 
-server_world_manager::server_world_manager(std::shared_ptr<server_game_objects_factory> objects_factory_)
+server_world_manager::server_world_manager(std::weak_ptr<server_game_objects_factory> objects_factory_)
     : objects_factory(objects_factory_)
 {
-    assert(objects_factory != nullptr);
+    assert(objects_factory.lock() != nullptr);
     logger_.log("server_world_manager: started");
 }
 
@@ -50,25 +50,25 @@ void server_world_manager::tick_all()
         tick_and_move(enemy, tick_counter);
 
     for (auto &resource : resources)
-    {
-        assert(resource != nullptr);
-        const auto position = resource->get_position();
-        const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
-
-        if ( field != 'G' && field != 'M' && field != 'S'&& field != 'W' && field != 's')
+        if (resource != nullptr)
         {
-            resource.reset();
-            logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
-                        std::get<0>(position), std::get<1>(position));
-        }
-    }
+            const auto position = resource->get_position();
+            const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
 
-    for (auto &resource : resources)
-        if (resource == nullptr)
-        {
-            std::swap(resource, resources.back());
-            resources.pop_back();
+            if ( field != 'G' && field != 'M' && field != 'S'&& field != 'W' && field != 's')
+            {
+                resource.reset();
+                logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
+                            std::get<0>(position), std::get<1>(position));
+            }
         }
+// TO DO: this cleanup is broken if resource.back() == null
+//    for (auto &resource : resources)
+//        if (resource == nullptr)
+//        {
+//            std::swap(resource, resources.back());
+//            resources.pop_back();
+//        }
 
     logger_.log("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
@@ -76,7 +76,7 @@ void server_world_manager::tick_all()
 
 void server_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 {
-    maze = objects_factory->create_server_maze(loader);
+    maze = (objects_factory.lock())->create_server_maze(loader);
     logger_.log("server_world_manager: added maze");
 }
 
@@ -212,7 +212,7 @@ void server_world_manager::repair_if_uncorrect_players()
 
 std::string server_world_manager::map_field_to_resource_name(const char field) const
 {
-    const static std::unordered_map<char, std::string> field_to_resource_name =
+    static const std::unordered_map<char, std::string> field_to_resource_name =
     {
         {'G', "gold"}, {'M', "mercury"}, {'S', "stone"}, {'W', "wood"}, {'s', "sulfur"}
     };
@@ -248,20 +248,20 @@ void server_world_manager::load_maze_from_file()
 void server_world_manager::make_enemy(int posx, int posy)
 {
     assert(maze != nullptr);
-    enemies.push_back(objects_factory->create_server_enemy(posx, posy));
+    enemies.push_back((objects_factory.lock())->create_server_enemy(posx, posy));
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
 std::shared_ptr<server_player> server_world_manager::make_player(int posx, int posy, bool alive)
 {
-    players.push_back(objects_factory->create_server_player(posx, posy, alive));
+    players.push_back((objects_factory.lock())->create_server_player(posx, posy, alive));
     logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
     return players.back();
 }
 
 void server_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
-    resources.push_back(objects_factory->create_server_resource(name, posx, posy));
+    resources.push_back((objects_factory.lock())->create_server_resource(name, posx, posy));
     logger_.log("server_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 

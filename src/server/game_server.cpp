@@ -9,6 +9,7 @@ namespace networking
 void game_server::init(std::shared_ptr<core::server_maze> maze,
 					   std::shared_ptr<core::server_world_manager> manager)
 {
+    assert(maze != nullptr && manager != nullptr);
 	auto dispatcher = std::make_shared<networking::message_dispatcher>();
 
 	dispatcher->add_handler(

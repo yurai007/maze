@@ -98,10 +98,12 @@ void server::handle_stop()
     logger_.log("server: stopped listening");
     acceptor.close();
 
-    for (auto &connection : connections)
+    auto connections_it = connections.begin();
+    while (connections_it != connections.end())
     {
-        connections.erase(connection);
+        auto connection = *connections_it;
         connection->stop();
+        connections_it = connections.erase(connections_it);
     }
     connections.clear();
 }

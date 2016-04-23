@@ -20,6 +20,8 @@ void client_maze::load_image()
 
 void client_maze::draw(int active_player_x, int active_player_y)
 {
+    (void)active_player_x; (void)active_player_y;
+
     if (!is_visible)
         return;
     if (!active_player)
@@ -35,14 +37,16 @@ void client_maze::draw(int active_player_x, int active_player_y)
     for (int row = y - half_height; row < y + half_height; row++)
         for (int column = x - half_width; column < x + half_width; column++)
         {
-            if (is_field_filled(column, row))
-            {
-                const int posx = (column - (x - half_width)) * brick_size;
-                const int posy = (row - (y - half_height)) * brick_size;
+            if (0 <= column && column < content.size())
+                if (0 <= row && row < content[column].size())
+                    if (is_field_filled(column, row))
+                    {
+                        const int posx = (column - (x - half_width)) * brick_size;
+                        const int posy = (row - (y - half_height)) * brick_size;
 
-                std::lock_guard<std::mutex> lock(maze_mutex);
-                renderer->draw_image("brick", posx, posy);
-            }
+                        std::lock_guard<std::mutex> lock(maze_mutex);
+                        renderer->draw_image("brick", posx, posy);
+                    }
         }
 }
 

@@ -19,6 +19,9 @@ private:
     void test_case_comparisions();
     void rvalue_references_reminder();
     void test_case_move_semantics();
+
+    void test_case_polymorphism();
+    void dummy_test_case_polymorphism();
 };
 
 }

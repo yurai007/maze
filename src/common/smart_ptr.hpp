@@ -62,6 +62,17 @@ namespace smart
        TO DO: check if get_ptr have conditional move instruction instead branch.
        Likely/Unlikely may optimize further it.
 
+  *11. When I need copy constructor of smart_ptr<T1> from another smart_ptr<T2> I must
+       express all parameter types explicitly (including storage policy). Without this
+       compiler won't notice this constructor.
+
+  *12. fit_storage_policy::get_counter_ptr() must be public because set_storage for another instatiation
+       of the same template (that's different types so don't have access to protected members !)
+
+  *13. In fit_storage_policy::delete_storage():
+                ((pointer_type)((size_t*)(common_ptr) + 1))->~T();
+       works as expected for Base class because of dynamic binding call to destructor is
+       made by vptr in T so all is OK.
  */
 using nullptr_t = decltype(nullptr);
 
@@ -172,6 +183,11 @@ public:
         return (pointer_type)((size_t*)(common_ptr) + 1);
     }
 
+    counter_type get_counter_ptr() const
+    {
+        return (size_t*)common_ptr;
+    }
+
 protected:
 
     void reset_storage()
@@ -204,20 +220,19 @@ protected:
         return *(get_counter_ptr());
     }
 
-    counter_type get_counter_ptr() const
+    void set_storage(const fit_storage_policy<T> &other)
     {
-        return (size_t*)common_ptr;
+        common_ptr = other.get_counter_ptr();
     }
 
-    void set_storage(const fit_storage_policy<T> &other)
+    template<class T2>
+    void set_storage(const fit_storage_policy<T2> &other)
     {
         common_ptr = other.get_counter_ptr();
     }
 
     void delete_storage()
     {
-        // not sure what about virtual destructors here?
-        // or maybe free?
         ((pointer_type)((size_t*)(common_ptr) + 1))->~T();
         delete[] (char*)(common_ptr);
     }
@@ -231,7 +246,6 @@ private:
 
     void *common_ptr;
 };
-
 
 
 template <class T,
@@ -260,6 +274,16 @@ public:
     }
 
     smart_ptr(const smart_ptr &other)
+    {
+        this->set_storage(other);
+
+        if (this->check_counter())
+            this->inc_counter();
+    }
+
+    template<class T2,
+             template <class TOut> class storage2 = default_storage_policy>
+    smart_ptr(const smart_ptr<T2, storage2> &other)
     {
         this->set_storage(other);
 
@@ -376,6 +400,9 @@ inline smart_ptr<T, fit_storage_policy> smart_make_shared(Args && ...args)
     new ( ptr ) T(std::forward<Args>(args)...);
     return result_ptr;
 }
+
+template<class T>
+using fit_smart_ptr = smart_ptr<T, fit_storage_policy>;
 
 
 }

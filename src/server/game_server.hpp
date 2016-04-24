@@ -1,7 +1,8 @@
 #ifndef GAME_SERVER_HPP
 #define GAME_SERVER_HPP
 
-#include <memory>
+#include "../common/smart_ptr.hpp"
+
 #include "server_maze.hpp"
 #include "server.hpp"
 #include "remote_transport.hpp"
@@ -16,8 +17,8 @@ class game_server
 {
 public:
     game_server() = default;
-    void init(std::shared_ptr<core::server_maze> maze,
-              std::shared_ptr<core::server_world_manager> manager);
+    void init(smart::fit_smart_ptr<core::server_maze> maze,
+              smart::fit_smart_ptr<core::server_world_manager> manager);
     void run();
     void stop();
     io_service &get_io_service();

@@ -55,7 +55,7 @@ void client_maze::load()
     if (!is_visible)
     {
         std::lock_guard<std::mutex> lock(maze_mutex);
-        content = m_loader->load();
+        content = m_loader2->load();
         logger_.log("client_maze: content was load");
         logger_.log_debug("client_maze: content: ");
 
@@ -67,7 +67,7 @@ void client_maze::load()
     std::lock_guard<std::mutex> lock(maze_mutex);
     assert(renderer != nullptr);
 
-    content = m_loader->load();
+    content = m_loader2->load();
     logger_.log("client_maze: content was load");
     logger_.log_debug("client_maze: content: ");
 

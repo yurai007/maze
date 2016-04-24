@@ -5,6 +5,8 @@
 #include "../common/logger.hpp"
 #include "../common/message_dispatcher.hpp"
 #include "../common/file_maze_loader.hpp"
+#include "../common/smart_ptr.hpp"
+
 #include "server_world_manager.hpp"
 #include "game_server.hpp"
 
@@ -70,6 +72,10 @@ using namespace boost::asio;
       FIX: There was only dependecy to one map so I moved this on caller side
 
    4. Problem with resource cleanup in server_world_manager::tick_all.
+
+   TO DO: I need polymorphism (for upcasting), dynamic_pointer_cast and enable_shared_from_this.
+          Without this I can't use my smart_ptr.hpp
+
 */
 
 class server_driver
@@ -82,7 +88,7 @@ public:
 
     int run()
     {
-        world_manager->make_maze(std::make_shared<core::file_maze_loader>());
+        world_manager->make_maze(smart::smart_make_shared<core::file_maze_loader>());
         world_manager->load_all();
 
         try
@@ -111,11 +117,17 @@ private:
     boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.get_io_service(), interval};
 
-    std::shared_ptr<core::server_game_objects_factory> game_objects_factory
-        {std::make_shared<core::server_game_objects_factory>()};
+//    std::shared_ptr<core::server_game_objects_factory> game_objects_factory
+//        {std::make_shared<core::server_game_objects_factory>()};
 
-    std::shared_ptr<core::server_world_manager> world_manager
-        {std::make_shared<core::server_world_manager>(game_objects_factory)};
+//    std::shared_ptr<core::server_world_manager> world_manager
+//        {std::make_shared<core::server_world_manager>(game_objects_factory)};
+
+    smart::fit_smart_ptr<core::server_game_objects_factory> game_objects_factory
+        {smart::smart_make_shared<core::server_game_objects_factory>()};
+
+    smart::fit_smart_ptr<core::server_world_manager> world_manager
+        {smart::smart_make_shared<core::server_world_manager>(game_objects_factory)};
 
 };
 

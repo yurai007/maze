@@ -1,5 +1,6 @@
 #include <memory>
 #include <cassert>
+#include <iostream>
 
 #include "ut_smart_ptr.hpp"
 #include "../common/smart_ptr.hpp"
@@ -10,16 +11,20 @@ namespace smart
 void ut_smart_ptr::test_case_constructor_destructor()
 {
     static_assert(sizeof(smart_ptr<int>) == sizeof(void*) + sizeof(void*), "should be equal");
-    static_assert(sizeof(smart_ptr<smart_ptr<int>>) == sizeof(void*) + sizeof(void*), "should be equal");
+    static_assert(sizeof(smart_ptr<smart_ptr<int>>) == sizeof(void*) + sizeof(void*),
+                  "should be equal");
 
     static_assert(std::is_same< smart_ptr<int>::pointer_type, int* >::value, "should be true");
-    static_assert(std::is_same< smart_ptr<const char>::pointer_type, const char* >::value, "should be true");
+    static_assert(std::is_same< smart_ptr<const char>::pointer_type, const char* >::value,
+                  "should be true");
 
     static_assert(std::is_same< smart_ptr<int>::counter_type, size_t* >::value, "should be true");
-    static_assert(std::is_same< smart_ptr<const char>::counter_type, size_t* >::value, "should be true");
+    static_assert(std::is_same< smart_ptr<const char>::counter_type, size_t* >::value,
+                  "should be true");
 
     static_assert(std::is_same< smart_ptr<int>::countee_type, size_t >::value, "should be true");
-    static_assert(std::is_same< smart_ptr<const char>::countee_type, size_t >::value, "should be true");
+    static_assert(std::is_same< smart_ptr<const char>::countee_type, size_t >::value,
+                  "should be true");
 
     const smart_ptr<const char> ptr1(new char);
     const smart_ptr<const char> ptr2(nullptr);
@@ -232,15 +237,68 @@ void ut_smart_ptr::test_case_move_semantics()
     assert(ptr.use_count() == 2);
 }
 
-class dummy
+
+
+struct Base
 {
-public:
-    dummy() = default;
-    // trick just against -Wunused-parameter
-    dummy(int x) { (void)x; }
-    dummy(int x, double y) { (void)x, (void)y; }
-    dummy(int x, double y, const dummy &z) { (void)x, (void)y, (void)z; }
+    virtual std::string get_name() = 0;
+    virtual ~Base() = default;
 };
+
+struct Derived1 : public Base
+{
+    std::string get_name() override { return name1; }
+    std::string name1 {"Derived1"};
+};
+
+struct Derived2 : public Base
+{
+    std::string get_name() override { return name2; }
+    std::string name2 {"Derived2"};
+};
+
+class IncompleteType;
+
+void ut_smart_ptr::test_case_polymorphism()
+{
+    // just shared_ptr
+    std::shared_ptr<Base> p1 = std::make_shared<Derived1>();
+    assert(p1->get_name() == "Derived1");
+
+    std::shared_ptr<Base> p2 = std::make_shared<Derived2>();
+    assert(p2->get_name() == "Derived2");
+
+//    // "incomplete type" from constructor because of void
+//        void *foo1;
+//        std::shared_ptr<void> p3(foo1);
+
+//    // "incomplete type" from constructor because of forward declaration
+//        IncompleteType *foo2;
+//        std::shared_ptr<void> p4(foo2);
+
+    // smart_ptr; implicit conversion
+    smart_ptr<Base> sp1(new Derived1);
+    assert(sp1->get_name() == "Derived1");
+
+    smart_ptr<Base> sp2(new Derived2);
+    assert(sp2->get_name() == "Derived2");
+
+    // fit_smart_ptr
+    fit_smart_ptr<Base> spp1 = smart_make_shared<Derived1>();
+    assert(spp1->get_name() == "Derived1");
+
+    fit_smart_ptr<Base> spp2 = smart_make_shared<Derived2>();
+    assert(spp2->get_name() == "Derived2");
+
+    auto helper_lambda = [](const fit_smart_ptr<Base> base_ptr){
+        (void) base_ptr;
+    };
+
+    //helper_lambda(smart_make_shared<Base>());
+    helper_lambda(smart_make_shared<Derived1>());
+    helper_lambda(smart_make_shared<Derived2>());
+    //helper_lambda(smart_make_shared<void>());
+}
 
 void ut_smart_ptr::run_all()
 {
@@ -252,7 +310,8 @@ void ut_smart_ptr::run_all()
     test_case_comparisions();
     rvalue_references_reminder();
     test_case_move_semantics();
-//    test_case_make_shared();
+
+    test_case_polymorphism();
 }
 
 }

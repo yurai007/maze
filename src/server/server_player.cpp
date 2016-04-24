@@ -7,8 +7,8 @@
 namespace core
 {
 
-server_player::server_player(std::shared_ptr<core::server_maze> maze_,
-                             std::shared_ptr<std::unordered_map<int, std::pair<int, int>>> player_id_to_pos,
+server_player::server_player(smart::fit_smart_ptr<core::server_maze> maze_,
+                             smart::fit_smart_ptr<std::unordered_map<int, std::pair<int, int>>> player_id_to_pos,
                              int posx_, int posy_, bool alive_)
     : game_object(posx_, posy_),
       maze(maze_),

@@ -37,8 +37,8 @@ void client_maze::draw(int active_player_x, int active_player_y)
     for (int row = y - half_height; row < y + half_height; row++)
         for (int column = x - half_width; column < x + half_width; column++)
         {
-            if (0 <= column && column < content.size())
-                if (0 <= row && row < content[column].size())
+            if (0 <= column && column < static_cast<int>(content.size()))
+                if (0 <= row && row < static_cast<int>(content[column].size()))
                     if (is_field_filled(column, row))
                     {
                         const int posx = (column - (x - half_width)) * brick_size;

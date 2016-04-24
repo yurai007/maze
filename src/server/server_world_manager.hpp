@@ -15,15 +15,13 @@ namespace core
 class server_world_manager
 {
 public:
-    server_world_manager(std::weak_ptr<server_game_objects_factory>
-                         objects_factory_);
+    server_world_manager(std::shared_ptr<server_game_objects_factory> objects_factory_);
 
     void load_all();
     void tick_all();
     void make_maze(std::shared_ptr<maze_loader> loader);
     std::vector<int> get_enemies_data() const;
     std::vector<int> get_players_data() const;
-    std::pair<int, int> get_player_position(int player_id) const;
     std::shared_ptr<core::server_maze> get_maze() const;
 
     int allocate_data_for_new_player();
@@ -31,6 +29,7 @@ public:
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
     void repair_if_uncorrect_enemies();
     void repair_if_uncorrect_players();
+
 
 private:
 
@@ -42,8 +41,9 @@ private:
     std::shared_ptr<server_player> make_player(int posx, int posy, bool alive);
     void make_resource(const std::string &name, int posx, int posy);
 
-    std::weak_ptr<server_game_objects_factory> objects_factory;
-    std::unordered_map<int, std::pair<int, int>> player_id_to_position;
+    std::shared_ptr<server_game_objects_factory> objects_factory;
+    std::shared_ptr<std::unordered_map<int, std::pair<int, int>>> player_id_to_position
+        {std::make_shared<std::unordered_map<int, std::pair<int, int>>>()};
 
     std::shared_ptr<core::abstract_maze> maze {nullptr};
     std::vector<std::shared_ptr<server_enemy>> enemies;

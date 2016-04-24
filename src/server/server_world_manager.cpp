@@ -7,10 +7,10 @@
 namespace core
 {
 
-server_world_manager::server_world_manager(std::weak_ptr<server_game_objects_factory> objects_factory_)
+server_world_manager::server_world_manager(std::shared_ptr<server_game_objects_factory> objects_factory_)
     : objects_factory(objects_factory_)
 {
-    assert(objects_factory.lock() != nullptr);
+    assert(objects_factory != nullptr);
     logger_.log("server_world_manager: started");
 }
 
@@ -76,7 +76,7 @@ void server_world_manager::tick_all()
 
 void server_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
 {
-    maze = (objects_factory.lock())->create_server_maze(loader);
+    maze = objects_factory->create_server_maze(loader);
     logger_.log("server_world_manager: added maze");
 }
 
@@ -108,13 +108,6 @@ std::vector<int> server_world_manager::get_players_data() const
         }
     }
     return players_data;
-}
-
-std::pair<int, int> server_world_manager::get_player_position(int player_id) const
-{
-    const auto player_it = player_id_to_position.find(player_id);
-    assert(player_it != player_id_to_position.end());
-    return player_it->second;
 }
 
 std::shared_ptr<server_maze> server_world_manager::get_maze() const
@@ -164,11 +157,12 @@ void server_world_manager::shutdown_player(int id)
     maze->reset_field(position);
 }
 
-void server_world_manager::update_player_position(int player_id, int oldx, int oldy,
-                                                  int newx, int newy)
+void server_world_manager::update_player_position(
+        int player_id, int oldx, int oldy,
+        int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   player_id_to_position[player_id] = std::make_pair(newx, newy);
+   (*player_id_to_position)[player_id] = std::make_pair(newx, newy);
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()
@@ -248,20 +242,21 @@ void server_world_manager::load_maze_from_file()
 void server_world_manager::make_enemy(int posx, int posy)
 {
     assert(maze != nullptr);
-    enemies.push_back((objects_factory.lock())->create_server_enemy(posx, posy));
+    enemies.push_back(objects_factory->create_server_enemy(posx, posy));
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
 std::shared_ptr<server_player> server_world_manager::make_player(int posx, int posy, bool alive)
 {
-    players.push_back((objects_factory.lock())->create_server_player(posx, posy, alive));
+    players.push_back(objects_factory->create_server_player(player_id_to_position,
+                                                                     posx, posy, alive));
     logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
     return players.back();
 }
 
 void server_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
-    resources.push_back((objects_factory.lock())->create_server_resource(name, posx, posy));
+    resources.push_back(objects_factory->create_server_resource(name, posx, posy));
     logger_.log("server_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 

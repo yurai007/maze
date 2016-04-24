@@ -4,22 +4,17 @@
 namespace core
 {
 
-void server_game_objects_factory::set_manager(std::shared_ptr<server_world_manager> manager)
-{
-    manager_ = manager;
-}
-
 std::shared_ptr<server_maze> server_game_objects_factory::create_server_maze(
         std::shared_ptr<maze_loader> loader)
 {
     return (maze_ = std::make_shared<server_maze>(loader));
 }
 
-std::shared_ptr<server_player> server_game_objects_factory::create_server_player(int posx, int posy,
-                                                                                 bool alive)
+std::shared_ptr<server_player> server_game_objects_factory::create_server_player(
+        std::shared_ptr<std::unordered_map<int, std::pair<int, int>>> positions_cache,
+        int posx, int posy, bool alive)
 {
-    assert(manager_ != nullptr);
-    return std::make_shared<server_player>(maze_, manager_, posx, posy, alive);
+    return std::make_shared<server_player>(maze_, positions_cache, posx, posy, alive);
 }
 
 std::shared_ptr<server_enemy> server_game_objects_factory::create_server_enemy(

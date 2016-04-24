@@ -66,7 +66,8 @@ using namespace boost::asio;
 
    3. Many cyclic dependency:
       server_game_objects_factory -> server_world_manager -> server_game_objects_factory
-      server_world_manager -> server_player -> server_world_manager
+      server_world_manager -> server_player -> server_world_manager.
+      FIX: There was only dependecy to one map so I moved this on caller side
 
    4. Problem with resource cleanup in server_world_manager::tick_all.
 */
@@ -77,7 +78,6 @@ public:
     server_driver()
     {
         assert(world_manager != nullptr);
-        game_objects_factory->set_manager(world_manager);
     }
 
     int run()

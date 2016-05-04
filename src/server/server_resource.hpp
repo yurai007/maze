@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include "../common/logger.hpp"
 #include "../common/game_object.hpp"
 
 namespace core

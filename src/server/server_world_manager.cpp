@@ -7,7 +7,7 @@
 namespace core
 {
 
-server_world_manager::server_world_manager(std::shared_ptr<server_game_objects_factory> objects_factory_)
+server_world_manager::server_world_manager(smart::fit_smart_ptr<server_game_objects_factory> objects_factory_)
     : objects_factory(objects_factory_)
 {
     assert(objects_factory != nullptr);
@@ -50,31 +50,31 @@ void server_world_manager::tick_all()
         tick_and_move(enemy, tick_counter);
 
     for (auto &resource : resources)
-    {
-        assert(resource != nullptr);
-        const auto position = resource->get_position();
-        const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
-
-        if ( field != 'G' && field != 'M' && field != 'S'&& field != 'W' && field != 's')
+        if (resource != nullptr)
         {
-            resource.reset();
-            logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
-                        std::get<0>(position), std::get<1>(position));
-        }
-    }
+            const auto position = resource->get_position();
+            const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
 
-    for (auto &resource : resources)
-        if (resource == nullptr)
-        {
-            std::swap(resource, resources.back());
-            resources.pop_back();
+            if ( field != 'G' && field != 'M' && field != 'S'&& field != 'W' && field != 's')
+            {
+                resource = nullptr;
+                logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
+                            std::get<0>(position), std::get<1>(position));
+            }
         }
+// TO DO: this cleanup is broken if resource.back() == null
+//    for (auto &resource : resources)
+//        if (resource == nullptr)
+//        {
+//            std::swap(resource, resources.back());
+//            resources.pop_back();
+//        }
 
     logger_.log("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
 }
 
-void server_world_manager::make_maze(std::shared_ptr<maze_loader> loader)
+void server_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
 {
     maze = objects_factory->create_server_maze(loader);
     logger_.log("server_world_manager: added maze");
@@ -110,18 +110,10 @@ std::vector<int> server_world_manager::get_players_data() const
     return players_data;
 }
 
-std::pair<int, int> server_world_manager::get_player_position(int player_id) const
+smart::fit_smart_ptr<server_maze> server_world_manager::get_maze() const
 {
-    const auto player_it = player_id_to_position.find(player_id);
-    assert(player_it != player_id_to_position.end());
-    return player_it->second;
-}
-
-std::shared_ptr<server_maze> server_world_manager::get_maze() const
-{
-    auto maze_to_return = std::dynamic_pointer_cast<server_maze>(maze);
-    assert(maze_to_return != nullptr);
-    return maze_to_return;
+    assert(maze != nullptr);
+    return maze;
 }
 
 int server_world_manager::allocate_data_for_new_player()
@@ -144,7 +136,7 @@ int server_world_manager::allocate_data_for_new_player()
 
 void server_world_manager::shutdown_player(int id)
 {
-    std::shared_ptr<server_player> found_player;
+    smart::fit_smart_ptr<server_player> found_player;
     for (auto &player : players)
     {
         if (player != nullptr)
@@ -152,7 +144,7 @@ void server_world_manager::shutdown_player(int id)
             if (player->get_id() == id)
             {
                 found_player = player;
-                player.reset();
+                player = nullptr;
                 std::swap(player, players.back());
                 players.pop_back();
                 break;
@@ -164,11 +156,12 @@ void server_world_manager::shutdown_player(int id)
     maze->reset_field(position);
 }
 
-void server_world_manager::update_player_position(int player_id, int oldx, int oldy,
-                                                  int newx, int newy)
+void server_world_manager::update_player_position(
+        int player_id, int oldx, int oldy,
+        int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   player_id_to_position[player_id] = std::make_pair(newx, newy);
+   (*player_id_to_position)[player_id] = std::make_pair(newx, newy);
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()
@@ -212,7 +205,7 @@ void server_world_manager::repair_if_uncorrect_players()
 
 std::string server_world_manager::map_field_to_resource_name(const char field) const
 {
-    const static std::unordered_map<char, std::string> field_to_resource_name =
+    static const std::unordered_map<char, std::string> field_to_resource_name =
     {
         {'G', "gold"}, {'M', "mercury"}, {'S', "stone"}, {'W', "wood"}, {'s', "sulfur"}
     };
@@ -222,7 +215,7 @@ std::string server_world_manager::map_field_to_resource_name(const char field) c
 }
 
  // TO DO: why passsing by reference is not ok for shared_ptr - unknown conversion ??
-void server_world_manager::tick_and_move(std::shared_ptr<game_object> some_game_object,
+void server_world_manager::tick_and_move(smart::fit_smart_ptr<game_object> some_game_object,
                                          unsigned short tick_counter)
 {
     assert(some_game_object != nullptr);
@@ -252,9 +245,10 @@ void server_world_manager::make_enemy(int posx, int posy)
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 
-std::shared_ptr<server_player> server_world_manager::make_player(int posx, int posy, bool alive)
+smart::fit_smart_ptr<server_player> server_world_manager::make_player(int posx, int posy, bool alive)
 {
-    players.push_back(objects_factory->create_server_player(posx, posy, alive));
+    players.push_back(objects_factory->create_server_player(player_id_to_position,
+                                                                     posx, posy, alive));
     logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
     return players.back();
 }

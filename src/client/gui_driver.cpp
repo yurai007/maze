@@ -1,7 +1,7 @@
 #include "gui_driver.hpp"
 #include "client_game_objects_factory.hpp"
 #include "network_maze_loader.hpp"
-#include "../common/controller.hpp"
+#include "controller.hpp"
 
 gui_driver::gui_driver(int argc, char **argv)
     : argc_(argc), argv_(argv)

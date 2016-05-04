@@ -3,7 +3,6 @@
 
 #include <tuple>
 #include <memory>
-//#include "../client/renderer.hpp"
 
 namespace presentation
 {

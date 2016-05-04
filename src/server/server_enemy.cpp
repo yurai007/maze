@@ -9,7 +9,7 @@
 namespace core
 {
 
-server_enemy::server_enemy(std::shared_ptr<core::server_maze> maze_,
+server_enemy::server_enemy(smart::fit_smart_ptr<core::server_maze> maze_,
              int posx_, int posy_)
     : game_object(posx_, posy_),
       maze(maze_),

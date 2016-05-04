@@ -3,10 +3,11 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 #include <mutex>
+#include <memory>
 #include "game_object.hpp"
 #include "maze_loader.hpp"
+#include "smart_ptr.hpp"
 
 namespace core
 {
@@ -14,6 +15,7 @@ namespace core
 class abstract_maze : public game_object
 {
 public:
+    abstract_maze(smart::fit_smart_ptr<core::maze_loader> loader);
     abstract_maze(std::shared_ptr<core::maze_loader> loader);
 
     bool is_field_filled(int column, int row) const;
@@ -37,7 +39,8 @@ public:
 protected:
     std::vector<std::string> content;
     mutable std::mutex maze_mutex;
-    std::shared_ptr<core::maze_loader> m_loader;
+    smart::fit_smart_ptr<core::maze_loader> m_loader {nullptr};
+    std::shared_ptr<core::maze_loader> m_loader2 {nullptr};
 };
 
 }

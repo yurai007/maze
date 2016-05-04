@@ -15,9 +15,15 @@
 namespace core
 {
 
-abstract_maze::abstract_maze(std::shared_ptr<maze_loader> loader)
- : game_object(INT_MAX, INT_MAX),
-   m_loader(loader)
+abstract_maze::abstract_maze(smart::fit_smart_ptr<maze_loader> loader)
+    : game_object(INT_MAX, INT_MAX),
+      m_loader(loader)
+{
+}
+
+abstract_maze::abstract_maze(std::shared_ptr<core::maze_loader> loader)
+    : game_object(INT_MAX, INT_MAX),
+      m_loader2(loader)
 {
 }
 
@@ -113,7 +119,14 @@ void abstract_maze::update_content()
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
 
-    auto temporary_content = m_loader->load();
+    std::vector<std::string> temporary_content;
+    if (m_loader != nullptr)
+         temporary_content = m_loader->load();
+    else
+    if (m_loader2 != nullptr)
+         temporary_content = m_loader2->load();
+    else
+        assert(false);
 
 //    for (size_t i = 0; i < temporary_content.size(); i++)
 //    {

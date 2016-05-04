@@ -1,6 +1,4 @@
 #include <iostream>
-#include <boost/bind.hpp>
-
 #include "connection.hpp"
 #include "server.hpp"
 
@@ -21,8 +19,7 @@ tcp::socket& connection::get_socket()
 void connection::start()
 {
     socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                             boost::bind(&connection::handle_read, this, placeholders::error,
-                                         placeholders::bytes_transferred));
+                           [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
 }
 
 void connection::stop()
@@ -35,8 +32,7 @@ void connection::send(const serialization::byte_buffer &data)
     data_buffer = data;
     async_write(socket,
                 buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
-                boost::bind(&connection::handle_write, this, placeholders::error,
-                            placeholders::bytes_transferred));
+                [this](const auto &error, size_t bytes){ this->handle_write(error, bytes); });
 }
 
 // TCP doesn't ensure that 1 x send N bytes == 1 x recv N bytes
@@ -65,9 +61,9 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
             logger_.log("connection with id = %d: recieved %d B and expected %d B. Waiting for next %d B",
                                          socket.native_handle(), bytes_transferred,
                                          msg_length + sizeof_msg_size, remaining_bytes);
+
             socket.async_read_some(buffer(&data_buffer.m_byte_buffer[current], remaining_bytes),
-                                   boost::bind(&connection::handle_read, this, placeholders::error,
-                                               placeholders::bytes_transferred));
+                                   [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
         }
         else
         {
@@ -91,8 +87,7 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
         logger_.log("connection with id = %d: sent %d B", socket.native_handle(),
                                      bytes_transferred);
         socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                                 boost::bind(&connection::handle_read, this, placeholders::error,
-                                             placeholders::bytes_transferred));
+                                 [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
     }
     else
     {

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <csignal>
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "server.hpp"
 #include "../common/byte_buffer.hpp"
@@ -14,17 +13,13 @@ server::server(short port)
       acceptor(m_io_service, tcp::endpoint(tcp::v4(), port)),
       m_signals(m_io_service)
 {
-    // Register to handle the signals that indicate when the server should exit.
-     // It is safe to register for the same signal multiple times in a program,
-     // provided all registration for the specified signal is made through Asio.
-     m_signals.add(SIGINT);
-     m_signals.add(SIGTERM);
+    m_signals.add(SIGINT);
+    m_signals.add(SIGTERM);
    #if defined(SIGQUIT)
-     m_signals.add(SIGQUIT);
-   #endif // defined(SIGQUIT)
-     // not sure if this is safe here
-     m_signals.async_wait(boost::bind(&server::stop, this));
+    m_signals.add(SIGQUIT);
+   #endif
 
+    m_signals.async_wait([this](auto, auto) { this->stop();});
     register_handler_for_listening();
 }
 
@@ -77,7 +72,7 @@ void server::register_handler_for_listening()
 
     acceptor.async_accept(
                 new_connection->get_socket(),
-                boost::bind(&server::handle_accept, this, new_connection, placeholders::error));
+                [this, new_connection](auto error){ this->handle_accept(new_connection, error);});
 }
 
 void server::handle_accept(std::shared_ptr<connection> new_connection,
@@ -101,17 +96,16 @@ void server::handle_accept(std::shared_ptr<connection> new_connection,
 void server::handle_stop()
 {
     logger_.log("server: stopped listening");
-    // The server is stopped by cancelling all outstanding asynchronous
-     // operations. Once all operations have finished the io_service::run() call
-     // will exit.
-     acceptor.close();
+    acceptor.close();
 
-     for (auto &connection : connections)
-     {
-         connections.erase(connection);
-         connection->stop();
-     }
-     connections.clear();
+    auto connections_it = connections.begin();
+    while (connections_it != connections.end())
+    {
+        auto connection = *connections_it;
+        connection->stop();
+        connections_it = connections.erase(connections_it);
+    }
+    connections.clear();
 }
 
 }

@@ -1,7 +1,7 @@
 #include "client_player.hpp"
 #include "renderer.hpp"
 #include "client_maze.hpp"
-#include "../common/controller.hpp"
+#include "controller.hpp"
 #include "network_manager.hpp"
 
 namespace core

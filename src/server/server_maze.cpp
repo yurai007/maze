@@ -4,7 +4,7 @@
 namespace core
 {
 
-server_maze::server_maze(std::shared_ptr<maze_loader> loader)
+server_maze::server_maze(smart::fit_smart_ptr<maze_loader> loader)
     : abstract_maze(loader)
 {
 }

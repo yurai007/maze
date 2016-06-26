@@ -35,7 +35,7 @@ public:
     template<typename... Arg>
     void log_debug(const char *string, Arg... args)
     {
-        if (debug_on_here)
+        if (debug)
             internal_log(false, string, args...);
     }
 
@@ -63,7 +63,7 @@ private:
     void internal_log(bool in_place, const char *string, ...);
 
     bool on;
-    const bool write_to_file, write_date, debug_on_here;
+    const bool write_to_file, write_date, debug;
     bool opened {false};
     constexpr static int max_line_size = 128;
     char buffer[max_line_size];

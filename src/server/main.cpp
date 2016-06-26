@@ -117,12 +117,6 @@ private:
     boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.get_io_service(), interval};
 
-//    std::shared_ptr<core::server_game_objects_factory> game_objects_factory
-//        {std::make_shared<core::server_game_objects_factory>()};
-
-//    std::shared_ptr<core::server_world_manager> world_manager
-//        {std::make_shared<core::server_world_manager>(game_objects_factory)};
-
     smart::fit_smart_ptr<core::server_game_objects_factory> game_objects_factory
         {smart::smart_make_shared<core::server_game_objects_factory>()};
 

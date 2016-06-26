@@ -10,7 +10,7 @@ namespace framework
 {
 
 logger::logger(bool enabled, bool log_to_file, bool log_date, bool debug_on)
-    : on(enabled), write_to_file(log_to_file), write_date(log_date), debug_on_here(debug_on)
+    : on(enabled), write_to_file(log_to_file), write_date(log_date), debug(debug_on)
 {
     if (on && write_to_file)
     {

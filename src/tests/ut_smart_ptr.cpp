@@ -302,6 +302,7 @@ void ut_smart_ptr::test_case_polymorphism()
 
 void ut_smart_ptr::run_all()
 {
+    std::cout << "Running ut_smart_ptr tests...\n";
     test_case_constructor_destructor();
     test_case_dereference();
     test_case_copy_and_assignment();
@@ -312,6 +313,7 @@ void ut_smart_ptr::run_all()
     test_case_move_semantics();
 
     test_case_polymorphism();
+    std::cout << "All ut_smart_ptr tests passed\n";
 }
 
 }

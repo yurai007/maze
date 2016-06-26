@@ -73,7 +73,7 @@ void server_enemy::tick(unsigned short tick_counter)
         posy++;
     }
 
-    logger_.log("server_enemy: id = %d, position changed = {%d, %d} -> {%d, %d}",
+    logger_.log_debug("server_enemy: id = %d, position changed = {%d, %d} -> {%d, %d}",
                 id, oldx, oldy, posx, posy);
 }
 

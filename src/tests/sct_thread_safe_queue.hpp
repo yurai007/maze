@@ -67,6 +67,7 @@ void* consumer(void *id)
 
 void test_case()
 {
+    std::cout << "Running sct_thread_safe_queue tests...\n";
     pthread_t producer_struct;
     int producer_ids = CONSUMERS_NUMBER;
     int rc = pthread_create(&producer_struct, NULL, producer, &producer_ids);
@@ -92,7 +93,8 @@ void test_case()
 
     printf("sums = %lld\n", sum);
     assert(sum == 499999500000);
-    printf("OK\n");
+    std::cout << "Verdict: OK\n";
+    std::cout << "All sct_thread_safe_queue tests passed\n";
 }
 
 }

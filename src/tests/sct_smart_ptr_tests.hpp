@@ -223,7 +223,7 @@ public:
     {
         producer();
         consumer();
-        std::cout << "OK\n";
+        std::cout << "Verdict: OK\n";
     }
 
 private:
@@ -545,12 +545,13 @@ private:
 static void test_case()
 {
   //  std_shared_ptr_tests::test_case();
-
+    std::cout << "Running smart_sct tests...\n";
     producer_consumer_test<raw_queue>().run_test();
     producer_consumer_test<std_shared_ptr_queue>().run_test();
 
     producer_consumer_test<smart_ptr_queue>().run_test();
     producer_consumer_test<fit_smart_ptr_queue>().run_test();
+    std::cout << "All smart_sct tests passed\n";
 }
 
 

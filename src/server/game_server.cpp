@@ -10,7 +10,7 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
                        smart::fit_smart_ptr<core::server_world_manager> manager)
 {
     assert(maze != nullptr && manager != nullptr);
-	auto dispatcher = std::make_shared<networking::message_dispatcher>();
+    auto dispatcher = smart::smart_make_shared<networking::message_dispatcher>();
 
 	dispatcher->add_handler(
 				[&](messages::get_chunk &msg)

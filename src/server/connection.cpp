@@ -19,7 +19,7 @@ tcp::socket& connection::get_socket()
 void connection::start()
 {
     socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                           [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
+                       [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
 }
 
 void connection::stop()
@@ -40,7 +40,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 {
     if (!error)
     {
-        m_server.current_connection = shared_from_this();
+        m_server.current_connection = id;
         unsigned short msg_length = 0;
 
         if (remaining_bytes == 0)
@@ -48,22 +48,24 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
             memcpy(&msg_length, &data_buffer.m_byte_buffer[0], sizeof(msg_length));
 
             remaining_bytes =  msg_length + sizeof_msg_size - bytes_transferred;
-            current = bytes_transferred;
+            read_so_far_bytes = bytes_transferred;
         }
         else
         {
             remaining_bytes -= bytes_transferred;
-            current += bytes_transferred;
+            read_so_far_bytes += bytes_transferred;
         }
 
         if (remaining_bytes > 0)
         {
-            logger_.log("connection with id = %d: recieved %d B and expected %d B. Waiting for next %d B",
-                                         socket.native_handle(), bytes_transferred,
-                                         msg_length + sizeof_msg_size, remaining_bytes);
+            logger_.log("connection with id = %d: recieved %d B and expected %d B. "
+                        "Waiting for next %d B",
+                        socket.native_handle(), bytes_transferred,
+                        msg_length + sizeof_msg_size, remaining_bytes);
 
-            socket.async_read_some(buffer(&data_buffer.m_byte_buffer[current], remaining_bytes),
-                                   [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
+            socket.async_read_some(buffer(&data_buffer.m_byte_buffer[read_so_far_bytes], remaining_bytes),
+                                   [this](const auto &error, size_t bytes){
+                                                                this->handle_read(error, bytes); });
         }
         else
         {
@@ -76,7 +78,7 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
     }
     else
     {
-        m_server.remove_connection(shared_from_this());
+        m_server.remove_connection(id);
     }
 }
 
@@ -87,11 +89,12 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
         logger_.log("connection with id = %d: sent %d B", socket.native_handle(),
                                      bytes_transferred);
         socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                                 [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
+                                 [this](const auto &error, size_t bytes){
+                                                                this->handle_read(error, bytes); });
     }
     else
     {
-        m_server.remove_connection(shared_from_this());
+        m_server.remove_connection(id);
     }
 }
 

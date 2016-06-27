@@ -2,7 +2,6 @@
 #define CONNECTION_H
 
 #include <boost/asio.hpp>
-#include <memory>
 
 #include "../common/logger.hpp"
 #include "../common/byte_buffer.hpp"
@@ -15,7 +14,7 @@ using ip::tcp;
 
 class server;
 
-class connection : public std::enable_shared_from_this<connection>
+class connection
 {
 public:
 
@@ -28,6 +27,8 @@ public:
     void stop();
     void send(const serialization::byte_buffer &data);
 
+    unsigned id {0};
+
 private:
 
     void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
@@ -37,7 +38,7 @@ private:
     tcp::socket socket;
     serialization::byte_buffer data_buffer;
     int remaining_bytes {0};
-    int current {0};
+    int read_so_far_bytes {0};
 };
 
 }

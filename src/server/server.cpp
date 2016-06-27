@@ -23,7 +23,7 @@ server::server(short port)
     register_handler_for_listening();
 }
 
-void server::add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher)
+void server::add_dispatcher(smart::fit_smart_ptr<message_dispatcher> dispatcher)
 {
     m_dispatcher = dispatcher;
 }
@@ -39,18 +39,23 @@ void server::stop()
     handle_stop();
 }
 
-void server::remove_connection(std::shared_ptr<connection> connection_)
+void server::remove_connection(unsigned connection_id)
 {
-    connections.erase(connection_);
+    std::swap(connections.back(), connections[connection_id]);
+    connections[connection_id]->id = connection_id;
+
+    auto connection_ = connections.back();
     logger_.log("server: connection with id = %d was removed",
                 connection_->get_socket().native_handle());
     connection_->stop();
+
+    connections.pop_back();
 }
 
 void server::send_on_current_connection(const serialization::byte_buffer
                                         &data)
 {
-    current_connection->send(data);
+    connections[current_connection]->send(data);
 }
 
 void server::dispatch_msg_from_buffer(serialization::byte_buffer
@@ -67,15 +72,16 @@ io_service &server::get_io_service()
 void server::register_handler_for_listening()
 {
     logger_.log("server: start listening");
-    auto new_connection = std::make_shared<connection>(m_io_service, *this);
-    connections.insert(new_connection);
+    auto new_connection = smart::smart_make_shared<connection>(m_io_service, *this);
+    new_connection->id = connections.size();
+    connections.push_back(new_connection);
 
     acceptor.async_accept(
                 new_connection->get_socket(),
                 [this, new_connection](auto error){ this->handle_accept(new_connection, error);});
 }
 
-void server::handle_accept(std::shared_ptr<connection> new_connection,
+void server::handle_accept(smart::fit_smart_ptr<connection> new_connection,
                            const boost::system::error_code& error)
 {
     if (!error)
@@ -88,7 +94,7 @@ void server::handle_accept(std::shared_ptr<connection> new_connection,
     else
     {
         logger_.log("server: connection accepting failed");
-        new_connection.reset();
+        new_connection = nullptr;
     }
     register_handler_for_listening();
 }

@@ -249,7 +249,7 @@ private:
 
 
 template <class T,
-          template <class T> class storage = default_storage_policy
+          template <class U> class storage = default_storage_policy
           >
 class smart_ptr : public storage<T>
 {

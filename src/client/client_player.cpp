@@ -1,3 +1,4 @@
+#include <numeric>
 #include "client_player.hpp"
 #include "renderer.hpp"
 #include "client_maze.hpp"

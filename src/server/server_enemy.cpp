@@ -2,6 +2,7 @@
 #include <ctime>
 #include <algorithm>
 #include <array>
+#include <numeric>
 #include "../common/logger.hpp"
 #include "server_enemy.hpp"
 #include "server_maze.hpp"

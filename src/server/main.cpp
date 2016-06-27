@@ -81,7 +81,8 @@ using namespace boost::asio;
 class server_driver
 {
 public:
-    server_driver()
+    server_driver(bool pause_for_test)
+        : pause_mode(pause_for_test)
     {
         assert(world_manager != nullptr);
     }
@@ -93,7 +94,8 @@ public:
 
         try
         {
-            timer.async_wait([this](auto error_code){ this->tick(error_code); });
+            if (!pause_mode)
+                timer.async_wait([this](auto error_code){ this->tick(error_code); });
             server.init(world_manager->get_maze(), world_manager);
             server.run();
         }
@@ -113,6 +115,7 @@ private:
         timer.async_wait([this](auto error_code){ this->tick(error_code); });
     }
 
+    bool pause_mode;
     networking::game_server server;
     boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.get_io_service(), interval};
@@ -122,7 +125,6 @@ private:
 
     smart::fit_smart_ptr<core::server_world_manager> world_manager
         {smart::smart_make_shared<core::server_world_manager>(game_objects_factory)};
-
 };
 
 using namespace networking::messages;
@@ -130,9 +132,18 @@ using namespace networking::messages;
 int main(int argc, char** argv)
 {
     if (argc > 1)
-        logger_.log("Arg: %s", argv[1]);
-
-    server_driver driver;
+    {
+        logger_.log("Arguments: mode = %s", argv[1]);
+        const std::string mode(argv[1]);
+        if (mode != "pause-for-test")
+        {
+            logger_.log("Usage: ./maze_server [mode]");
+            return 0;
+        }
+        server_driver driver(true);
+        driver.run();
+    }
+    server_driver driver(false);
     driver.run();
     return 0;
 }

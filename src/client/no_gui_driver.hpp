@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <memory>
+#include "../common/smart_ptr.hpp"
 #include "abstract_driver.hpp"
 #include "client_world_manager.hpp"
 

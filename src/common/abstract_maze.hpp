@@ -40,7 +40,6 @@ protected:
     std::vector<std::string> content;
     mutable std::mutex maze_mutex;
     smart::fit_smart_ptr<core::maze_loader> m_loader {nullptr};
-    std::shared_ptr<core::maze_loader> m_loader2 {nullptr};
 };
 
 }

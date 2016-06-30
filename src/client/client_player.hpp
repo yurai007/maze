@@ -2,8 +2,10 @@
 #define CLIENT_PLAYER_HPP
 
 #include <memory>
+#include "../common/smart_ptr.hpp"
 #include "../common/game_object.hpp"
 #include "network_manager.hpp"
+#include "drawable.hpp"
 
 namespace control
 {
@@ -27,11 +29,11 @@ namespace core
 class client_player : public game_object, public drawable
 {
 public:
-    client_player(std::shared_ptr<core::client_world_manager> manager_,
-           std::shared_ptr<presentation::renderer> renderer_,
-           std::shared_ptr<control::controller> controller_,
+    client_player(std::shared_ptr<client_world_manager> manager_,
+           smart::fit_smart_ptr<presentation::renderer> renderer_,
+           smart::fit_smart_ptr<control::controller> controller_,
            std::shared_ptr<core::client_maze> maze_,
-           std::shared_ptr<networking::network_manager> network_manager_,
+           smart::fit_smart_ptr<networking::network_manager> network_manager_,
            int id_,
            int posx_, int posy_,
            bool active_,
@@ -49,9 +51,9 @@ public:
 
 private:
     std::shared_ptr<core::client_world_manager> manager;
-    std::shared_ptr<control::controller> controller;
+    smart::fit_smart_ptr<control::controller> controller;
     std::shared_ptr<core::client_maze> maze;
-    std::shared_ptr<networking::network_manager> network_manager;
+    smart::fit_smart_ptr<networking::network_manager> network_manager;
     bool perform_rotation {false};
     char direction;
     char old_direction {0};

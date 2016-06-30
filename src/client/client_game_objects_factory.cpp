@@ -1,7 +1,8 @@
-#include "../client/renderer.hpp"
-#include "controller.hpp"
 #include "../client/network_manager.hpp"
 #include "client_game_objects_factory.hpp"
+
+#include "../client/renderer.hpp"
+#include "controller.hpp"
 
 /*
  * How to force gcc to make inifinite compilation (inifinite loop)?
@@ -13,9 +14,9 @@ namespace core
 {
 
 client_game_objects_factory::client_game_objects_factory(
-                     std::shared_ptr<presentation::renderer> renderer,
-                     std::shared_ptr<control::controller> controller,
-                     std::shared_ptr<networking::network_manager> network_manager)
+                     smart::fit_smart_ptr<presentation::renderer> renderer,
+                     smart::fit_smart_ptr<control::controller> controller,
+                     smart::fit_smart_ptr<networking::network_manager> network_manager)
     : renderer_(renderer),
       controller_(controller),
       network_manager_(network_manager)
@@ -23,13 +24,15 @@ client_game_objects_factory::client_game_objects_factory(
 }
 
 std::shared_ptr<client_maze> client_game_objects_factory::create_client_maze(
-        std::shared_ptr<maze_loader> loader, bool visible)
+        smart::fit_smart_ptr<maze_loader> loader,
+        bool visible)
 {
     maze_ = std::make_shared<client_maze>(renderer_, loader, visible);
     return maze_;
 }
 
-std::shared_ptr<client_player> client_game_objects_factory::create_client_player(std::shared_ptr<client_world_manager> manager,
+std::shared_ptr<client_player> client_game_objects_factory::create_client_player(
+                                        std::shared_ptr<client_world_manager> manager,
                                         int id, int posx, int posy, bool active, bool automatic)
 {
     return std::make_shared<client_player>(manager, renderer_, controller_, maze_,

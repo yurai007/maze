@@ -37,8 +37,8 @@ enum class clockwise_rotation
     d90, d180, d270, d360
 };
 
-class renderer : public Gtk::DrawingArea,
-                 public std::enable_shared_from_this<renderer>
+class renderer : public Gtk::DrawingArea
+                 //public std::enable_shared_from_this<renderer>
 {
 public:
     renderer();

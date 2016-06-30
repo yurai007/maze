@@ -9,10 +9,10 @@ namespace core
 {
 
 client_player::client_player(std::shared_ptr<client_world_manager> manager_,
-                             std::shared_ptr<presentation::renderer> renderer_,
-                             std::shared_ptr<control::controller> controller_,
+                             smart::fit_smart_ptr<presentation::renderer> renderer_,
+                             smart::fit_smart_ptr<control::controller> controller_,
                              std::shared_ptr<core::client_maze> maze_,
-                             std::shared_ptr<networking::network_manager> network_manager_, int id_,
+                             smart::fit_smart_ptr<networking::network_manager> network_manager_, int id_,
                              int posx_, int posy_, bool active_, bool automatic_)
     : game_object(posx_, posy_),
       drawable(renderer_),

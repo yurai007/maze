@@ -23,8 +23,8 @@ public:
 class client_world_manager : public std::enable_shared_from_this<client_world_manager>
 {
 public:
-    client_world_manager(std::shared_ptr<client_game_objects_factory> objects_factory_,
-                         std::shared_ptr<networking::network_manager> network_manager_,
+    client_world_manager(smart::fit_smart_ptr<client_game_objects_factory> objects_factory_,
+                         smart::fit_smart_ptr<networking::network_manager> network_manager_,
                          bool automatic_players_);
 
     void load_all();
@@ -32,7 +32,7 @@ public:
     void draw_all();
     std::tuple<int, int> get_enemy_position(int id);
     std::tuple<int, int> get_player_position(int id);
-    void make_maze(std::shared_ptr<maze_loader> loader);
+    void make_maze(smart::fit_smart_ptr<maze_loader> loader);
     void shut_down_client();
 
 private:
@@ -48,26 +48,26 @@ private:
     void make_enemy(int posx, int posy);
     void make_player(int posx, int posy);
     void make_resource(const std::string &name, int posx, int posy);
-    bool check_if_resource(std::shared_ptr<game_object> object);
 
     void add_enemy(int posx, int posy, int id);
-    void load_image_if_not_automatic(std::shared_ptr<game_object> object);
+    void load_image_if_not_automatic(std::shared_ptr<drawable> object);
     // assumption that only one player disappeard which clearly can be wrong
     int remove_absent_player(networking::messages::get_players_data_response &players_data);
     // same as above. Assumption that only one new at time
-    std::shared_ptr<game_object> make_external_player(int id, int posx, int posy);
+    std::shared_ptr<drawable> make_external_player(int id, int posx, int posy);
 
     static const char *bool_to_string(bool x)
     {
         return "false\0true"+6*x;
     }
 
-    std::shared_ptr<core::abstract_maze> maze {nullptr};
+    std::shared_ptr<core::client_maze> maze {nullptr};
     std::vector<std::shared_ptr<client_player>> players;
-    std::vector<std::shared_ptr<game_object>> enemies_and_resources;
+    std::vector<std::shared_ptr<client_enemy>> enemies;
+    std::vector<std::shared_ptr<client_resource>> resources;
 
-    std::shared_ptr<client_game_objects_factory> objects_factory;
-    std::shared_ptr<networking::network_manager> network_manager {nullptr};
+    smart::fit_smart_ptr<client_game_objects_factory> objects_factory;
+    smart::fit_smart_ptr<networking::network_manager> network_manager {nullptr};
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_enemy_id;
     std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_player_id;

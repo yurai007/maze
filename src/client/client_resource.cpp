@@ -5,7 +5,7 @@ namespace core
 {
 
 client_resource::client_resource(const std::string &name_,
-                   std::shared_ptr<presentation::renderer> renderer_, int posx_, int posy_)
+                   smart::fit_smart_ptr<presentation::renderer> renderer_, int posx_, int posy_)
     : game_object(posx_, posy_),
       drawable(renderer_),
       name(name_)

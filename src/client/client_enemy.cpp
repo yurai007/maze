@@ -8,7 +8,7 @@ namespace core
 {
 
 client_enemy::client_enemy(std::shared_ptr<client_world_manager> manager_,
-                           std::shared_ptr<presentation::renderer> renderer_,
+                           smart::fit_smart_ptr<presentation::renderer> renderer_,
                            std::shared_ptr<core::client_maze> maze_,
                            int posx_, int posy_, int id_)
     : game_object(posx_, posy_),

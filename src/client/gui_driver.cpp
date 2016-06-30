@@ -1,3 +1,5 @@
+
+#include "../common/smart_ptr.hpp"
 #include "gui_driver.hpp"
 #include "client_game_objects_factory.hpp"
 #include "network_maze_loader.hpp"
@@ -12,22 +14,19 @@ int gui_driver::run(const std::string &ip_address)
 {
     application = Gtk::Application::create(argc_, argv_, "");
 
-    auto qt_controller = std::make_shared<control::controller>();
-    auto qt_renderer = std::make_shared<presentation::renderer>();
-    auto client = std::make_shared<networking::client>(ip_address);
-    //std::shared_ptr<networking::client> client(new networking::client(ip_address));
-//    std::shared_ptr<networking::network_manager> network_manager(
-//                new networking::network_manager(client));
-    auto network_manager = std::make_shared<networking::network_manager>(client);
+    auto qt_controller = smart::smart_make_shared<control::controller>();
+    auto qt_renderer = smart::smart_make_shared<presentation::renderer>();
+    auto client = smart::smart_make_shared<networking::client>(ip_address);
+    auto network_manager = smart::smart_make_shared<networking::network_manager>(client);
 
-    auto game_objects_factory = std::make_shared<core::client_game_objects_factory>(qt_renderer,
+    auto game_objects_factory = smart::smart_make_shared<core::client_game_objects_factory>(qt_renderer,
                                                                                     qt_controller,
                                                                                     network_manager);
     auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
                                                                       network_manager,
                                                                       false);
 
-    world_manager->make_maze(std::make_shared<networking::network_maze_loader>(client));
+    world_manager->make_maze(smart::smart_make_shared<networking::network_maze_loader>(client));
     world_manager->load_all();
     qt_renderer->set_world(world_manager);
 

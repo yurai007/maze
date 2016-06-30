@@ -2,28 +2,10 @@
 #define GAME_OBJECT_HPP
 
 #include <tuple>
-#include <memory>
-
-namespace presentation
-{
-    class renderer;
-}
+#include "smart_ptr.hpp"
 
 namespace core
 {
-
-class drawable
-{
-public:
-    drawable(std::shared_ptr<presentation::renderer> renderer_)
-        : renderer(renderer_) {}
-
-    virtual void load_image() = 0;
-    virtual void draw(int active_player_x, int active_player_y) = 0;
-    virtual ~drawable() {}
-protected:
-    std::shared_ptr<presentation::renderer> renderer;
-};
 
 class game_object
 {

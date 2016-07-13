@@ -29,7 +29,7 @@ int no_gui_auto_driver::run(const std::string &ip_address)
         factories[i] = smart::smart_make_shared<core::client_game_objects_factory>(dummy_renderer,
                                                                            dummy_controller,
                                                                            network_managers[i]);
-        world_managers.push_back(std::make_shared<core::client_world_manager>(factories[i],
+        world_managers.push_back(smart::smart_make_shared<core::client_world_manager>(factories[i],
                                                                               network_managers[i],
                                                                               true));
 

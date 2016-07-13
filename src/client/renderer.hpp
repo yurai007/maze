@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <tuple>
-#include <memory>
 
 #include <gtkmm/application.h>
 #include <gtkmm/window.h>
@@ -41,7 +40,7 @@ class renderer : public Gtk::DrawingArea
 {
 public:
     renderer();
-    void set_world(std::shared_ptr<core::client_world_manager> world_manager_);
+    void set_world(smart::fit_smart_ptr<core::client_world_manager> world_manager_);
     void draw_circle(int pos_x, int pos_y);
     void draw_image(const std::string &image_name, int pos_x, int pos_y);
     void rotate_image(const std::string &image_name, clockwise_rotation rotation);
@@ -57,7 +56,7 @@ private:
     std::unordered_map<std::string, Glib::RefPtr<Gdk::Pixbuf>> name_to_image;
     std::vector<std::tuple<std::string, int, int>> buffer_calls;
 
-    std::shared_ptr<core::client_world_manager> world_manager {nullptr};
+    smart::fit_smart_ptr<core::client_world_manager> world_manager {nullptr};
 };
 
 }

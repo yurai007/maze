@@ -22,7 +22,7 @@ int gui_driver::run(const std::string &ip_address)
     auto game_objects_factory = smart::smart_make_shared<core::client_game_objects_factory>(qt_renderer,
                                                                                     qt_controller,
                                                                                     network_manager);
-    auto world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
+    auto world_manager = smart::smart_make_shared<core::client_world_manager>(game_objects_factory,
                                                                       network_manager,
                                                                       false);
 

@@ -1,7 +1,6 @@
 #include "renderer.hpp"
 #include <iostream>
 #include <cassert>
-#include <memory>
 #include "async_logger.hpp"
 
 namespace presentation
@@ -16,7 +15,7 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::shared_ptr<core::client_world_manager> world_manager_)
+void renderer::set_world(smart::fit_smart_ptr<core::client_world_manager> world_manager_)
 {
     world_manager = world_manager_;
 }

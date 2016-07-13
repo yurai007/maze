@@ -2,7 +2,6 @@
 #define ASYNC_LOGGER_HPP
 
 #include <cstdio>
-#include <memory>
 #include <thread>
 #include <atomic>
 

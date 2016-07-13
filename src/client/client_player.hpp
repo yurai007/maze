@@ -1,11 +1,11 @@
 #ifndef CLIENT_PLAYER_HPP
 #define CLIENT_PLAYER_HPP
 
-#include <memory>
 #include "../common/smart_ptr.hpp"
 #include "../common/game_object.hpp"
 #include "network_manager.hpp"
 #include "drawable.hpp"
+#include "controller.hpp"
 
 namespace control
 {
@@ -29,10 +29,10 @@ namespace core
 class client_player : public game_object, public drawable
 {
 public:
-    client_player(std::shared_ptr<client_world_manager> manager_,
+    client_player(client_world_manager &manager_,
            smart::fit_smart_ptr<presentation::renderer> renderer_,
            smart::fit_smart_ptr<control::controller> controller_,
-           std::shared_ptr<core::client_maze> maze_,
+           smart::fit_smart_ptr<core::client_maze> maze_,
            smart::fit_smart_ptr<networking::network_manager> network_manager_,
            int id_,
            int posx_, int posy_,
@@ -50,9 +50,9 @@ public:
     void load_image() override;
 
 private:
-    std::shared_ptr<core::client_world_manager> manager;
+    core::client_world_manager &manager;
     smart::fit_smart_ptr<control::controller> controller;
-    std::shared_ptr<core::client_maze> maze;
+    smart::fit_smart_ptr<core::client_maze> maze;
     smart::fit_smart_ptr<networking::network_manager> network_manager;
     bool perform_rotation {false};
     char direction;

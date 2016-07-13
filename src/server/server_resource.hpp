@@ -2,7 +2,6 @@
 #define SERVER_RESOURCE_HPP
 
 #include <string>
-#include <memory>
 #include "../common/logger.hpp"
 #include "../common/game_object.hpp"
 

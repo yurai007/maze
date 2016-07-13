@@ -16,7 +16,6 @@ int main(int, char*[])
     smart::ut_fit_smart_ptr fit_tests;
     fit_tests.run_all();
     smart_sct::test_case();
-
     server_sct::test_cases();
 
     std::cout << "All tests passed\n";

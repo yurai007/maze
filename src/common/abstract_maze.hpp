@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <mutex>
-#include <memory>
 #include "game_object.hpp"
 #include "maze_loader.hpp"
 #include "smart_ptr.hpp"
@@ -16,7 +15,6 @@ class abstract_maze : public game_object
 {
 public:
     abstract_maze(smart::fit_smart_ptr<core::maze_loader> loader);
-    abstract_maze(std::shared_ptr<core::maze_loader> loader);
 
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;

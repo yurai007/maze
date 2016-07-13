@@ -1,7 +1,6 @@
 #ifndef MESSAGE_DISPATCHER_HPP
 #define MESSAGE_DISPATCHER_HPP
 
-#include <memory>
 #include <cassert>
 #include <string>
 #include <functional>

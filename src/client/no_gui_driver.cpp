@@ -18,7 +18,7 @@ int no_gui_driver::run(const std::string &ip_address)
                                                                                     dummy_controller,
                                                                                     network_manager);
 
-    world_manager = std::make_shared<core::client_world_manager>(game_objects_factory,
+    world_manager = smart::smart_make_shared<core::client_world_manager>(game_objects_factory,
                                                                       network_manager,
                                                                       true);
 

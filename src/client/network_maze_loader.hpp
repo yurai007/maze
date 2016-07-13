@@ -1,7 +1,6 @@
 #ifndef NETWORK_MAZE_LOADER_HPP
 #define NETWORK_MAZE_LOADER_HPP
 
-#include <memory>
 #include "../common/maze_loader.hpp"
 #include "../common/smart_ptr.hpp"
 #include "../client/client.hpp"

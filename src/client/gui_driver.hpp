@@ -1,7 +1,6 @@
 #ifndef GUI_DRIVER_HPP
 #define GUI_DRIVER_HPP
 
-#include <memory>
 #include "abstract_driver.hpp"
 #include "client_world_manager.hpp"
 #include "renderer.hpp"

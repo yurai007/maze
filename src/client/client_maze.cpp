@@ -25,7 +25,7 @@ void client_maze::draw(int active_player_x, int active_player_y)
 
     if (!is_visible)
         return;
-    if (!active_player)
+    if (active_player == nullptr)
         return;
 
     auto pos = active_player->get_position();
@@ -78,7 +78,7 @@ void client_maze::load()
     renderer->load_image_and_register("brick", "../../../data/brick.bmp");
 }
 
-void client_maze::attach_active_player(std::shared_ptr<client_player> player)
+void client_maze::attach_active_player(smart::fit_smart_ptr<client_player> player)
 {
     active_player = player;
 }

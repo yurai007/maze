@@ -73,9 +73,35 @@ using namespace boost::asio;
 
    4. Problem with resource cleanup in server_world_manager::tick_all.
 
-   TO DO: I need polymorphism (for upcasting), dynamic_pointer_cast and enable_shared_from_this.
-          Without this I can't use my smart_ptr.hpp
+   REPLACING SHARED_PTR BY FIT_SMART_PTR CONT:
 
+   Server plan:
+
+   Done.
+
+   Client plan:
+
+   0. Shared_from_this and dynamic_pointer_cast are not supported by my fir_smart_ptr.
+   1. Grouping object by types in vectors or sth like that to avoid checking and downcasting
+      by dynamic_pointer_cast?
+   2. Shared_from_this is only needed if we wrap passing object in shared_ptr.
+      Shared_from_this() may be removed from make_player and make_enemy. Lifetime of world_manager
+      is longer then players and enemies lifetime so in client_player/client_enemy:
+
+      shared_ptr
+
+      std::shared_ptr<core::client_world_manager> manager;
+
+      may be replaced by reference
+
+      core::client_world_manager &manager;
+
+   Common plan:
+
+   1. std::dynamic_pointer_cast<client_maze>(maze); so because of lack of
+      dynamic_pointer_cast abstract_maze must use this fucking shared_ptr but...
+   2. Some mess with abstract_maze on client side. Replace abstract_maze by client_maze and
+      downcasting may be removed
 */
 
 class server_driver

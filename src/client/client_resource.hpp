@@ -2,7 +2,6 @@
 #define CLIENT_RESOURCE_HPP
 
 #include <string>
-#include <memory>
 #include "../common/game_object.hpp"
 #include "drawable.hpp"
 

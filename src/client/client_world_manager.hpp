@@ -20,7 +20,7 @@ public:
     }
 };
 
-class client_world_manager : public std::enable_shared_from_this<client_world_manager>
+class client_world_manager //: public std::enable_shared_from_this<client_world_manager>
 {
 public:
     client_world_manager(smart::fit_smart_ptr<client_game_objects_factory> objects_factory_,
@@ -50,21 +50,21 @@ private:
     void make_resource(const std::string &name, int posx, int posy);
 
     void add_enemy(int posx, int posy, int id);
-    void load_image_if_not_automatic(std::shared_ptr<drawable> object);
+    void load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object);
     // assumption that only one player disappeard which clearly can be wrong
     int remove_absent_player(networking::messages::get_players_data_response &players_data);
     // same as above. Assumption that only one new at time
-    std::shared_ptr<drawable> make_external_player(int id, int posx, int posy);
+    smart::fit_smart_ptr<drawable> make_external_player(int id, int posx, int posy);
 
     static const char *bool_to_string(bool x)
     {
         return "false\0true"+6*x;
     }
 
-    std::shared_ptr<core::client_maze> maze {nullptr};
-    std::vector<std::shared_ptr<client_player>> players;
-    std::vector<std::shared_ptr<client_enemy>> enemies;
-    std::vector<std::shared_ptr<client_resource>> resources;
+    smart::fit_smart_ptr<core::client_maze> maze {nullptr};
+    std::vector<smart::fit_smart_ptr<client_player>> players;
+    std::vector<smart::fit_smart_ptr<client_enemy>> enemies;
+    std::vector<smart::fit_smart_ptr<client_resource>> resources;
 
     smart::fit_smart_ptr<client_game_objects_factory> objects_factory;
     smart::fit_smart_ptr<networking::network_manager> network_manager {nullptr};

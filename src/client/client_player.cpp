@@ -8,10 +8,10 @@
 namespace core
 {
 
-client_player::client_player(std::shared_ptr<client_world_manager> manager_,
+client_player::client_player(client_world_manager &manager_,
                              smart::fit_smart_ptr<presentation::renderer> renderer_,
                              smart::fit_smart_ptr<control::controller> controller_,
-                             std::shared_ptr<core::client_maze> maze_,
+                             smart::fit_smart_ptr<core::client_maze> maze_,
                              smart::fit_smart_ptr<networking::network_manager> network_manager_,
                              int id_, int posx_, int posy_, bool active_, bool automatic_)
     : game_object(posx_, posy_),
@@ -65,8 +65,7 @@ void client_player::active_tick()
 
 void client_player::unactive_tick()
 {
-    assert(manager != nullptr);
-    const auto new_position = manager->get_player_position(id);
+    const auto new_position = manager.get_player_position(id);
     direction = 0;
     if (get_position() == new_position)
         return;

@@ -1,9 +1,12 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
+#include <vector>
 
 #include "ut_smart_ptr.hpp"
-#include "../common/smart_ptr.hpp"
+
+// ref: http://web.archive.org/web/20131210001207/http://thomas-sanchez.net/computer-sciences
+// /2011/08/15/what-every-c-programmer-should-know-the-hard-part/
 
 namespace smart
 {
@@ -259,8 +262,35 @@ struct Derived2 : public Base
 
 class IncompleteType;
 
-void ut_smart_ptr::test_case_polymorphism()
+struct base_vptr
 {
+    size_t **vptr;
+};
+
+void ut_smart_ptr::dump_vtable(size_t **vptr, unsigned n)
+{
+    std::cout << "v-ptr: " << vptr << "\n";
+    size_t *vtable = (size_t*)((vptr));
+    for (unsigned i = 0; i < n;i++)
+        std::cout << "v-table[" << i << "]: " <<  std::hex << vtable[i] << "\n";
+}
+
+void ut_smart_ptr::test_case_simple_polymorphism()
+{
+    // just plain pointer
+    Base *ptr1 = new Derived1();
+    base_vptr *ptr1_vptr = (base_vptr*)(ptr1);
+    std::cout <<"\n";
+    dump_vtable(ptr1_vptr->vptr, 3);
+
+    assert(ptr1->get_name() == "Derived1");
+
+    Base *ptr2 = new Derived2();
+    assert(ptr2->get_name() == "Derived2");
+
+    delete ptr2;
+    delete ptr1;
+
     // just shared_ptr
     std::shared_ptr<Base> p1 = std::make_shared<Derived1>();
     assert(p1->get_name() == "Derived1");
@@ -300,6 +330,154 @@ void ut_smart_ptr::test_case_polymorphism()
     //helper_lambda(smart_make_shared<void>());
 }
 
+struct game_object
+{
+    virtual void tick(unsigned short tick_counter) = 0;
+    virtual ~game_object() = default;
+
+    std::string game_object_buffer;
+};
+
+struct client_player : public game_object, public drawable
+{
+    void tick(unsigned short) override {game_object_buffer = "client_player.tick";}
+    void draw(int , int ) override
+        {drawable_buffer = "client_player.draw";}
+    void load_image() override {drawable_buffer = "client_player.load_image";}
+};
+
+struct client_enemy : public game_object, public drawable
+{
+    void tick(unsigned short) override {game_object_buffer = "client_enemy.tick";}
+    void load_image() override {drawable_buffer = "client_enemy.load_image";}
+    void draw(int , int ) override
+        {drawable_buffer = "client_enemy.draw";}
+};
+
+void ut_smart_ptr::some_dummy_helper__plain(drawable* object)
+{
+    assert(typeid(*object) == typeid(client_player));
+    assert(object->drawable_buffer == "");
+
+    object->load_image();
+
+    auto buffer = object->drawable_buffer;
+    assert(buffer == "client_player.load_image");
+}
+
+void ut_smart_ptr::some_dummy_helper__smart_ptr(smart::smart_ptr<client_player> object)
+{
+    assert(typeid(*object) == typeid(client_player));
+    assert(object->drawable_buffer == "");
+
+    object->load_image();
+
+    auto buffer = object->drawable_buffer;
+    assert(buffer == "client_player.load_image");
+}
+
+using vtable_drawable = void (*)(drawable*);
+
+void ut_smart_ptr::some_dummy_helper__plain_vptr_magic(drawable* object)
+{
+    assert(typeid(*object) == typeid(client_player));
+    assert(object->drawable_buffer == "");
+
+    base_vptr *ptr1_vptr = (base_vptr*)(object);
+    size_t *vtable = (size_t*)((ptr1_vptr->vptr));
+    vtable_drawable ptr = (vtable_drawable)vtable[0];
+
+    ptr(object);
+
+    auto buffer = object->drawable_buffer;
+    assert(buffer == "client_player.load_image");
+}
+
+
+void ut_smart_ptr::test_case__little_more_advanced_polymorphism__plain()
+{
+    std::cout << "\nStart " << __FUNCTION__ << "\n";
+    std::vector<client_player*> players;
+
+    players.push_back(new client_player());
+    players.push_back(new client_player());
+    players.push_back(new client_player());
+
+    for (auto &player : players)
+    {
+        assert(typeid(*player) == typeid(client_player));
+        some_dummy_helper__plain(player);
+    }
+
+    for (auto &player : players)
+    {
+        delete player;
+    }
+
+    std::cout << __FUNCTION__ << " verdict: OK\n";
+}
+
+void ut_smart_ptr::test_case__little_more_advanced_polymorphism__smart_ptr()
+{
+    std::cout << "\nStart " << __FUNCTION__ << "\n";
+    std::vector<smart::smart_ptr<client_player>> players;
+
+    players.push_back(smart::smart_ptr<client_player>(new client_player()));
+    players.push_back(smart::smart_ptr<client_player>(new client_player()));
+    players.push_back(smart::smart_ptr<client_player>(new client_player()));
+
+    for (auto &player : players)
+    {
+        assert(typeid(*player.get()) == typeid(client_player));
+        some_dummy_helper__smart_ptr(player);
+    }
+
+    std::cout << __FUNCTION__ << " verdict: OK\n";
+}
+
+void ut_smart_ptr::some_dummy_helper__fit_magic_and_workaround(smart::fit_smart_ptr<drawable> object)
+{
+    assert(typeid(*object.get()) == typeid(client_player));
+    assert(object->drawable_buffer == "");
+
+    // notice we need extra offset here to jump to vptr2
+    base_vptr *ptr2_vptr = (base_vptr*)((char*)object.get() + sizeof(game_object));
+    size_t *vtable = (size_t*)((ptr2_vptr->vptr));
+    vtable_drawable ptr = (vtable_drawable)vtable[0];
+
+    ptr(object.get());
+
+    std::string buffer = object->drawable_buffer;
+    assert(buffer == "client_player.load_image");
+}
+
+void ut_smart_ptr::test_case__little_more_advanced_polymorphism__fit()
+{
+    std::cout << "\nStart " << __FUNCTION__ << "\n";
+    std::vector<fit_smart_ptr<client_player>> players;
+
+    players.push_back(smart_make_shared<client_player>());
+    players.push_back(smart_make_shared<client_player>());
+    players.push_back(smart_make_shared<client_player>());
+
+    // This is the tale of one assembler instruction - add rdx, 0x20 :)
+    // I need vptr2 (drawable), not vptr1 (game_object) !
+    // So I need some workaround - add offset myself
+    // Hipothesis is that - in fit_smart_ptr we miss information about pointer type (T* -> void*)
+    //        so compiler has no idea about dynamic binding and doesn't generate extra code
+    //        So far it worked only because vptr location is on the beginning :)
+    // Smart_ptr with default_storage_policy holds T* explicitly so offset is added by compiler
+    // and calling load_image works as expected
+
+    for (auto &player : players)
+    {
+        assert(typeid(*player.get()) == typeid(client_player));
+        some_dummy_helper__fit_magic_and_workaround(player);
+    }
+
+    std::cout << __FUNCTION__ << " verdict: OK\n";
+}
+
 void ut_smart_ptr::run_all()
 {
     std::cout << "Running ut_smart_ptr tests...\n";
@@ -312,7 +490,10 @@ void ut_smart_ptr::run_all()
     rvalue_references_reminder();
     test_case_move_semantics();
 
-    test_case_polymorphism();
+    test_case_simple_polymorphism();
+    test_case__little_more_advanced_polymorphism__plain();
+    test_case__little_more_advanced_polymorphism__smart_ptr();
+    test_case__little_more_advanced_polymorphism__fit();
     std::cout << "All ut_smart_ptr tests passed\n";
 }
 

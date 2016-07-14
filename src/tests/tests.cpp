@@ -5,6 +5,7 @@
 #include "sct_smart_ptr_tests.hpp"
 #include "ut_smart_ptr.hpp"
 #include "ut_fit_smart_ptr.hpp"
+#include "sct_custom_transport.hpp"
 
 int main(int, char*[])
 {
@@ -17,6 +18,7 @@ int main(int, char*[])
     fit_tests.run_all();
     smart_sct::test_case();
     server_sct::test_cases();
+    echo_server_component_tests::tests();
 
     std::cout << "All tests passed\n";
     return 0;

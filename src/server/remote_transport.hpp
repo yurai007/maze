@@ -1,7 +1,6 @@
 #ifndef REMOTE_TRANSPORT_HPP
 #define REMOTE_TRANSPORT_HPP
 
-#include <memory>
 #include "../common/byte_buffer.hpp"
 #include "server.hpp"
 

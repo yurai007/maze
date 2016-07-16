@@ -73,15 +73,42 @@ using namespace boost::asio;
 
    4. Problem with resource cleanup in server_world_manager::tick_all.
 
-   TO DO: I need polymorphism (for upcasting), dynamic_pointer_cast and enable_shared_from_this.
-          Without this I can't use my smart_ptr.hpp
+   REPLACING SHARED_PTR BY FIT_SMART_PTR CONT:
 
+   Server plan:
+
+   Done.
+
+   Client plan:
+
+   0. Shared_from_this and dynamic_pointer_cast are not supported by my fir_smart_ptr.
+   1. Grouping object by types in vectors or sth like that to avoid checking and downcasting
+      by dynamic_pointer_cast?
+   2. Shared_from_this is only needed if we wrap passing object in shared_ptr.
+      Shared_from_this() may be removed from make_player and make_enemy. Lifetime of world_manager
+      is longer then players and enemies lifetime so in client_player/client_enemy:
+
+      shared_ptr
+
+      std::shared_ptr<core::client_world_manager> manager;
+
+      may be replaced by reference
+
+      core::client_world_manager &manager;
+
+   Common plan:
+
+   1. std::dynamic_pointer_cast<client_maze>(maze); so because of lack of
+      dynamic_pointer_cast abstract_maze must use this fucking shared_ptr but...
+   2. Some mess with abstract_maze on client side. Replace abstract_maze by client_maze and
+      downcasting may be removed
 */
 
 class server_driver
 {
 public:
-    server_driver()
+    server_driver(bool pause_for_test)
+        : pause_mode(pause_for_test)
     {
         assert(world_manager != nullptr);
     }
@@ -93,7 +120,8 @@ public:
 
         try
         {
-            timer.async_wait([this](auto error_code){ this->tick(error_code); });
+            if (!pause_mode)
+                timer.async_wait([this](auto error_code){ this->tick(error_code); });
             server.init(world_manager->get_maze(), world_manager);
             server.run();
         }
@@ -113,22 +141,16 @@ private:
         timer.async_wait([this](auto error_code){ this->tick(error_code); });
     }
 
+    bool pause_mode;
     networking::game_server server;
     boost::posix_time::milliseconds interval {1};
     deadline_timer timer {server.get_io_service(), interval};
-
-//    std::shared_ptr<core::server_game_objects_factory> game_objects_factory
-//        {std::make_shared<core::server_game_objects_factory>()};
-
-//    std::shared_ptr<core::server_world_manager> world_manager
-//        {std::make_shared<core::server_world_manager>(game_objects_factory)};
 
     smart::fit_smart_ptr<core::server_game_objects_factory> game_objects_factory
         {smart::smart_make_shared<core::server_game_objects_factory>()};
 
     smart::fit_smart_ptr<core::server_world_manager> world_manager
         {smart::smart_make_shared<core::server_world_manager>(game_objects_factory)};
-
 };
 
 using namespace networking::messages;
@@ -136,9 +158,18 @@ using namespace networking::messages;
 int main(int argc, char** argv)
 {
     if (argc > 1)
-        logger_.log("Arg: %s", argv[1]);
-
-    server_driver driver;
+    {
+        logger_.log("Arguments: mode = %s", argv[1]);
+        const std::string mode(argv[1]);
+        if (mode != "pause-for-test")
+        {
+            logger_.log("Usage: ./maze_server [mode]");
+            return 0;
+        }
+        server_driver driver(true);
+        driver.run();
+    }
+    server_driver driver(false);
     driver.run();
     return 0;
 }

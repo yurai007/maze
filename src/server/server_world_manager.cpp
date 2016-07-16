@@ -39,7 +39,7 @@ void server_world_manager::load_all()
 void server_world_manager::tick_all()
 {
     static unsigned short tick_counter = 0;
-    logger_.log("server_world_manager: started tick with id = %d", tick_counter);
+    logger_.log_debug("server_world_manager: started tick with id = %d", tick_counter);
 
     maze->tick(tick_counter);
 
@@ -70,7 +70,7 @@ void server_world_manager::tick_all()
 //            resources.pop_back();
 //        }
 
-    logger_.log("server_world_manager: finished tick with id = %d", tick_counter);
+    logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
 }
 

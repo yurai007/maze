@@ -2,6 +2,9 @@
 #include "client_game_objects_factory.hpp"
 #include "network_maze_loader.hpp"
 
+#include "renderer.hpp"
+#include "controller.hpp"
+
 no_gui_auto_driver::no_gui_auto_driver(int players_number_)
     : players_number(players_number_)
 {
@@ -10,22 +13,28 @@ no_gui_auto_driver::no_gui_auto_driver(int players_number_)
 int no_gui_auto_driver::run(const std::string &ip_address)
 {
     assert(players_number <= 1500);
-    std::vector<std::shared_ptr<networking::client>> clients(players_number);
-    std::vector<std::shared_ptr<networking::network_manager>> network_managers(players_number);
-    std::vector<std::shared_ptr<core::client_game_objects_factory>> factories(players_number);
+    std::vector<smart::fit_smart_ptr<networking::client>> clients(players_number);
+    std::vector<smart::fit_smart_ptr<networking::network_manager>> network_managers(players_number);
+    std::vector<smart::fit_smart_ptr<core::client_game_objects_factory>> factories(players_number);
 
     for (int i = 0; i < players_number; i++)
     {
-        clients[i] = std::make_shared<networking::client>(ip_address);;
-        network_managers[i] = std::make_shared<networking::network_manager>(clients[i]);
-        factories[i] = std::make_shared<core::client_game_objects_factory>(nullptr,
-                                                                           nullptr,
+        clients[i] = smart::smart_make_shared<networking::client>(ip_address);;
+        network_managers[i] = smart::smart_make_shared<networking::network_manager>(clients[i]);
+
+        // workaraound
+        smart::fit_smart_ptr<presentation::renderer> dummy_renderer(nullptr);
+        smart::fit_smart_ptr<control::controller>  dummy_controller(nullptr);
+
+        factories[i] = smart::smart_make_shared<core::client_game_objects_factory>(dummy_renderer,
+                                                                           dummy_controller,
                                                                            network_managers[i]);
-        world_managers.push_back(std::make_shared<core::client_world_manager>(factories[i],
+        world_managers.push_back(smart::smart_make_shared<core::client_world_manager>(factories[i],
                                                                               network_managers[i],
                                                                               true));
 
-        world_managers.back()->make_maze(std::make_shared<networking::network_maze_loader>(clients[i]));
+        world_managers.back()->make_maze(smart::smart_make_shared<networking::network_maze_loader>(
+                                             clients[i]));
         world_managers.back()->load_all();
     }
 

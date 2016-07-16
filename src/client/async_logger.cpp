@@ -36,6 +36,7 @@ void async_logger::run()
 
 void async_logger::fast_log(bool in_place, const char *string, ...)
 {
+    (void)in_place;
     if (!on)
         return;
     char *current_pos = buffer;

@@ -32,8 +32,6 @@
 *.files
 *.includes
 log.txt
-
 maze_client
 maze_server
-tests
 

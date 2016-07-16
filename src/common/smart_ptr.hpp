@@ -195,7 +195,7 @@ protected:
         common_ptr = nullptr;
     }
 
-    pointer_type get_ptr() const
+    inline pointer_type get_ptr() const
     {
         return (pointer_type)((size_t*)(common_ptr) + 1*(common_ptr != 0));
     }
@@ -249,7 +249,7 @@ private:
 
 
 template <class T,
-          template <class T> class storage = default_storage_policy
+          template <class U> class storage = default_storage_policy
           >
 class smart_ptr : public storage<T>
 {
@@ -329,7 +329,7 @@ public:
         return *this->get_ptr();
     }
 
-    T* operator->() const
+    inline T* operator->() const
     {
         return this->get_ptr();
     }

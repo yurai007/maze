@@ -1,3 +1,4 @@
+#include <numeric>
 #include "client_player.hpp"
 #include "renderer.hpp"
 #include "client_maze.hpp"
@@ -7,12 +8,12 @@
 namespace core
 {
 
-client_player::client_player(std::shared_ptr<client_world_manager> manager_,
-                             std::shared_ptr<presentation::renderer> renderer_,
-                             std::shared_ptr<control::controller> controller_,
-                             std::shared_ptr<core::client_maze> maze_,
-                             std::shared_ptr<networking::network_manager> network_manager_, int id_,
-                             int posx_, int posy_, bool active_, bool automatic_)
+client_player::client_player(client_world_manager &manager_,
+                             smart::fit_smart_ptr<presentation::renderer> renderer_,
+                             smart::fit_smart_ptr<control::controller> controller_,
+                             smart::fit_smart_ptr<core::client_maze> maze_,
+                             smart::fit_smart_ptr<networking::network_manager> network_manager_,
+                             int id_, int posx_, int posy_, bool active_, bool automatic_)
     : game_object(posx_, posy_),
       drawable(renderer_),
       manager(manager_),
@@ -47,7 +48,15 @@ void client_player::active_tick()
         perform_rotation = true;
     else
         perform_rotation = false;
-    controller->reset_direction();
+
+    if (controller->is_space_on())
+    {
+        fireball_x6 = 6*posx;
+        fireball_y6 = 6*posy;
+        fireball_direction = rotation;
+    }
+
+    controller->reset();
     old_direction = direction;
 
     if ((oldx != posx) || (oldy != posy))
@@ -56,8 +65,7 @@ void client_player::active_tick()
 
 void client_player::unactive_tick()
 {
-    assert(manager != nullptr);
-    const auto new_position = manager->get_player_position(id);
+    const auto new_position = manager.get_player_position(id);
     direction = 0;
     if (get_position() == new_position)
         return;
@@ -151,7 +159,15 @@ int client_player::get_id() const
 void client_player::load_image()
 {
     assert(renderer != nullptr);
-    renderer->load_image_and_register("player" + std::to_string(id), "../../../data/player.bmp");
+    // TO DO: check this - every player has own image, why?
+    unsigned color_id = 1;
+    if (!active || automatic)
+    {
+        color_id = 1 + rand()%6;
+    }
+
+    renderer->load_image_and_register("player" + std::to_string(id), "../../../data/player"
+                                      + std::to_string(color_id) + ".bmp");
 }
 
 void client_player::tick(unsigned short tick_counter)
@@ -181,6 +197,7 @@ void client_player::draw(int active_player_x, int active_player_y)
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d180);
         if (direction == 'U')
             renderer->rotate_image(image_name, presentation::clockwise_rotation::d360);
+        rotation = direction;
     }
     const int half_width = 50/2;
     const int half_height = 50/2;
@@ -195,6 +212,36 @@ void client_player::draw(int active_player_x, int active_player_y)
         if (player_x >= 0 && player_y >= 0)
             renderer->draw_image(image_name, 30*player_x, 30*player_y);
     }
+
+    if (0 < fireball_x6 && (fireball_x6/6) < 1024
+            && 0 < fireball_y6 && (fireball_y6/6) < 768)
+    {
+        int dx = 0, dy = 0;
+        if (fireball_direction == 'L')
+        {
+            fireball_x6 -= 2; dx = 15;
+        }
+        else
+            if (fireball_direction == 'R')
+            {
+                fireball_x6 += 2; dx = 45;
+            }
+            else
+                if (fireball_direction == 'U')
+                {
+                    fireball_y6 -= 2; dx = 15;
+                }
+                else
+                    if (fireball_direction == 'D')
+                    {
+                        fireball_y6 += 2; dx = 15; dy = 30;
+                    }
+
+        const int real_fireball_x = (fireball_x6/6) + half_width - active_player_x;
+        const int real_fireball_y = (fireball_y6/6) + half_height - active_player_y;
+
+        renderer->draw_circle(30*real_fireball_x + dx, 30*real_fireball_y + 15 + dy);
+    };
 }
 
 }

@@ -4,7 +4,7 @@
 namespace networking
 {
 
-network_maze_loader::network_maze_loader(std::shared_ptr<client> maze_client)
+network_maze_loader::network_maze_loader(smart::fit_smart_ptr<client> maze_client)
     : m_maze_client(maze_client)
 {
 }

@@ -21,12 +21,6 @@ abstract_maze::abstract_maze(smart::fit_smart_ptr<maze_loader> loader)
 {
 }
 
-abstract_maze::abstract_maze(std::shared_ptr<core::maze_loader> loader)
-    : game_object(INT_MAX, INT_MAX),
-      m_loader2(loader)
-{
-}
-
 bool abstract_maze::is_field_filled(int column, int row) const
 {
     std::lock_guard<std::mutex> lock(maze_mutex);
@@ -122,9 +116,6 @@ void abstract_maze::update_content()
     std::vector<std::string> temporary_content;
     if (m_loader != nullptr)
          temporary_content = m_loader->load();
-    else
-    if (m_loader2 != nullptr)
-         temporary_content = m_loader2->load();
     else
         assert(false);
 

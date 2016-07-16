@@ -2,7 +2,7 @@
 
 namespace networking
 {
-network_manager::network_manager(std::shared_ptr<networking::client> client_)
+network_manager::network_manager(smart::fit_smart_ptr<networking::client> client_)
     : client(client_)
 {
     assert(client != nullptr);

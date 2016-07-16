@@ -2,6 +2,7 @@
 #include <ctime>
 #include <algorithm>
 #include <array>
+#include <numeric>
 #include "../common/logger.hpp"
 #include "server_enemy.hpp"
 #include "server_maze.hpp"
@@ -73,7 +74,7 @@ void server_enemy::tick(unsigned short tick_counter)
         posy++;
     }
 
-    logger_.log("server_enemy: id = %d, position changed = {%d, %d} -> {%d, %d}",
+    logger_.log_debug("server_enemy: id = %d, position changed = {%d, %d} -> {%d, %d}",
                 id, oldx, oldy, posx, posy);
 }
 

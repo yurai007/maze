@@ -3,6 +3,7 @@
 
 #include "async_logger.hpp"
 #include "../common/messages.hpp"
+#include "../common/smart_ptr.hpp"
 #include "client.hpp"
 
 namespace networking
@@ -11,7 +12,7 @@ namespace networking
 class network_manager
 {
 public:
-    network_manager(std::shared_ptr<networking::client> client_);
+    network_manager(smart::fit_smart_ptr<networking::client> client_);
     messages::get_enemies_data_response get_enemies_data_from_network(int player_id);
     messages::get_players_data_response get_players_data_from_network(int player_id);
     int get_id_data_from_network();
@@ -20,7 +21,7 @@ public:
     void shut_down_client(int player_id);
 
 private:
-    std::shared_ptr<networking::client> client;
+    smart::fit_smart_ptr<networking::client> client;
 };
 
 }

@@ -1,11 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <set>
-#include <memory>
 #include <boost/asio.hpp>
 #include "connection.hpp"
 #include "../common/logger.hpp"
+#include "../common/smart_ptr.hpp"
 
 /*
         *  TCP echo server
@@ -45,27 +44,27 @@ class server
 {
 public:
     server(short port);
-    void add_dispatcher(std::shared_ptr<message_dispatcher> dispatcher);
+    void add_dispatcher(smart::fit_smart_ptr<message_dispatcher> dispatcher);
     void run();
     void stop();
-    void remove_connection(std::shared_ptr<connection> connection_);
+    void remove_connection(unsigned connection_id);
     void send_on_current_connection(const serialization::byte_buffer &data);
     void dispatch_msg_from_buffer(serialization::byte_buffer &buffer);
     io_service &get_io_service();
 
-    std::shared_ptr<connection> current_connection {nullptr};
+    unsigned current_connection {0};
 
 private:
     void register_handler_for_listening();
-    void handle_accept(std::shared_ptr<connection> new_connection,
+    void handle_accept(smart::fit_smart_ptr<connection> new_connection,
                      const boost::system::error_code& error);
     void handle_stop();
 
     io_service m_io_service;
     tcp::acceptor acceptor;
     boost::asio::signal_set m_signals;
-    std::shared_ptr<message_dispatcher> m_dispatcher;
-    std::set<std::shared_ptr<connection>> connections;
+    smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
+    std::vector<smart::fit_smart_ptr<connection>> connections;
 };
 
 }

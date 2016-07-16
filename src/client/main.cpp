@@ -35,7 +35,7 @@
  * WTF?? Emplace_back problem in world_manager::add_enemy and enemy::id.
    I had to replace emplace_back to push_back.
 
- * there was (buggy??) make_shared in run for auto client =  std::make_shared<networking::client>(ip_address);
+ * there was (buggy??) make_shared in run for auto client =  smart::smart_make_shared<networking::client>(ip_address);
 
  * I must cheat gtkmm/gui_driver that I haven't any arguments. Otherwise error from gtkmm:
     GLib-GIO-CRITICAL **: This application can not open files.

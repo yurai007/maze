@@ -72,6 +72,7 @@ void test_case_non_integral_types()
 
 void test_cases()
 {
+    std::cout << "Running ut_byte_buffer tests...\n";
     test_case_integral_types();
     test_case_non_integral_types();
     std::cout << "All byte_buffer UT passed\n";

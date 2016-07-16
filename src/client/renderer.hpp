@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <tuple>
-#include <memory>
 
 #include <gtkmm/application.h>
 #include <gtkmm/window.h>
@@ -37,12 +36,12 @@ enum class clockwise_rotation
     d90, d180, d270, d360
 };
 
-class renderer : public Gtk::DrawingArea,
-                 public std::enable_shared_from_this<renderer>
+class renderer : public Gtk::DrawingArea
 {
 public:
     renderer();
-    void set_world(std::shared_ptr<core::client_world_manager> world_manager_);
+    void set_world(smart::fit_smart_ptr<core::client_world_manager> world_manager_);
+    void draw_circle(int pos_x, int pos_y);
     void draw_image(const std::string &image_name, int pos_x, int pos_y);
     void rotate_image(const std::string &image_name, clockwise_rotation rotation);
     void load_image_and_register(const std::string &image_name, const std::string &path);
@@ -51,12 +50,13 @@ public:
 private:
     void deffered_draw_image(const std::string &image_name, int pos_x, int pos_y);
     bool on_timeout();
+    void dummy_circle(const Cairo::RefPtr<Cairo::Context>& cairo_context, int posx, int posy);
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context) override;
 
     std::unordered_map<std::string, Glib::RefPtr<Gdk::Pixbuf>> name_to_image;
     std::vector<std::tuple<std::string, int, int>> buffer_calls;
 
-    std::shared_ptr<core::client_world_manager> world_manager {nullptr};
+    smart::fit_smart_ptr<core::client_world_manager> world_manager {nullptr};
 };
 
 }

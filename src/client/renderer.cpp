@@ -1,7 +1,6 @@
 #include "renderer.hpp"
 #include <iostream>
 #include <cassert>
-#include <memory>
 #include "async_logger.hpp"
 
 namespace presentation
@@ -16,9 +15,15 @@ renderer::renderer()
     #endif
 }
 
-void renderer::set_world(std::shared_ptr<core::client_world_manager> world_manager_)
+void renderer::set_world(smart::fit_smart_ptr<core::client_world_manager> world_manager_)
 {
     world_manager = world_manager_;
+}
+
+void renderer::draw_circle(int pos_x, int pos_y)
+{
+    // TO DO: just hack
+    deffered_draw_image("circle", pos_x, pos_y);
 }
 
 void renderer::draw_image(const std::string &image_name, int pos_x, int pos_y)
@@ -89,6 +94,19 @@ bool renderer::on_timeout()
     return true;
 }
 
+void renderer::dummy_circle(const Cairo::RefPtr<Cairo::Context>& cairo_context, int posx, int posy)
+{
+    cairo_context->save();
+    cairo_context->translate(posx, posy);
+    cairo_context->scale(8, 8);
+    cairo_context->arc(0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+
+    cairo_context->set_source_rgba(1.0, 0.0, 0.0, 1.0);
+    cairo_context->fill_preserve();
+    cairo_context->restore();
+    cairo_context->stroke();
+}
+
 bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
 {
     if (world_manager != nullptr)
@@ -102,9 +120,16 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
     {
         const auto &image_name =  std::get<0>(arguments);
         const auto &posx = std::get<1>(arguments);
-        const auto &posy = std::get<2>(arguments);
-        Gdk::Cairo::set_source_pixbuf(cairo_context, name_to_image[image_name], posx, posy);
-        cairo_context->paint();
+        const auto &posy = std::get<2>(arguments) - 350;
+        if (image_name == "circle")
+        {
+            dummy_circle(cairo_context, posx, posy);
+        }
+        else
+        {
+            Gdk::Cairo::set_source_pixbuf(cairo_context, name_to_image[image_name], posx, posy);
+            cairo_context->paint();
+        }
     }
     buffer_calls.clear();
     return true;

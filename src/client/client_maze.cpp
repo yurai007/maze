@@ -5,8 +5,9 @@
 namespace core
 {
 
-client_maze::client_maze(std::shared_ptr<presentation::renderer> renderer_,
-                         std::shared_ptr<maze_loader> loader, bool visible)
+client_maze::client_maze(smart::fit_smart_ptr<presentation::renderer> renderer_,
+                         smart::fit_smart_ptr<maze_loader> loader,
+                         bool visible)
     : abstract_maze(loader),
       drawable(renderer_),
       is_visible(visible)
@@ -24,7 +25,7 @@ void client_maze::draw(int active_player_x, int active_player_y)
 
     if (!is_visible)
         return;
-    if (!active_player)
+    if (active_player == nullptr)
         return;
 
     auto pos = active_player->get_position();
@@ -55,7 +56,7 @@ void client_maze::load()
     if (!is_visible)
     {
         std::lock_guard<std::mutex> lock(maze_mutex);
-        content = m_loader2->load();
+        content = m_loader->load();
         logger_.log("client_maze: content was load");
         logger_.log_debug("client_maze: content: ");
 
@@ -67,7 +68,7 @@ void client_maze::load()
     std::lock_guard<std::mutex> lock(maze_mutex);
     assert(renderer != nullptr);
 
-    content = m_loader2->load();
+    content = m_loader->load();
     logger_.log("client_maze: content was load");
     logger_.log_debug("client_maze: content: ");
 
@@ -77,12 +78,12 @@ void client_maze::load()
     renderer->load_image_and_register("brick", "../../../data/brick.bmp");
 }
 
-void client_maze::attach_active_player(std::shared_ptr<client_player> player)
+void client_maze::attach_active_player(smart::fit_smart_ptr<client_player> player)
 {
     active_player = player;
 }
 
-std::shared_ptr<presentation::renderer> client_maze::get_renderer() const
+smart::fit_smart_ptr<presentation::renderer> client_maze::get_renderer() const
 {
     return renderer;
 }

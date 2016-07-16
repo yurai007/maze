@@ -1,5 +1,6 @@
 #include <memory>
 #include <cassert>
+#include <iostream>
 
 #include "ut_fit_smart_ptr.hpp"
 #include "../common/smart_ptr.hpp"
@@ -290,6 +291,7 @@ void test_case_constructor_no_make_shared()
 
 void ut_fit_smart_ptr::run_all()
 {
+    std::cout << "Running ut_fit_smart_ptr tests...\n";
     test_case_constructor_destructor();
     test_case_make_shared();
     test_case_dereference();
@@ -299,6 +301,7 @@ void ut_fit_smart_ptr::run_all()
     test_case_comparisions();
     test_case_move_semantics();
     test_case_constructor_no_make_shared();
+    std::cout << "All ut_fit_smart_ptr tests passed\n";
 }
 
 }

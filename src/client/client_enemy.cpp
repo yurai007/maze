@@ -7,9 +7,9 @@
 namespace core
 {
 
-client_enemy::client_enemy(std::shared_ptr<client_world_manager> manager_,
-                           std::shared_ptr<presentation::renderer> renderer_,
-                           std::shared_ptr<core::client_maze> maze_,
+client_enemy::client_enemy(client_world_manager &manager_,
+                           smart::fit_smart_ptr<presentation::renderer> renderer_,
+                           smart::fit_smart_ptr<core::client_maze> maze_,
                            int posx_, int posy_, int id_)
     : game_object(posx_, posy_),
       drawable(renderer_),
@@ -17,7 +17,6 @@ client_enemy::client_enemy(std::shared_ptr<client_world_manager> manager_,
       maze(maze_),
       id(id_)
 {
-    assert(manager != nullptr);
 }
 
 void client_enemy::load_image()
@@ -27,7 +26,7 @@ void client_enemy::load_image()
 
 void client_enemy::tick(unsigned short )
 {
-    auto new_position = manager->get_enemy_position(id);
+    auto new_position = manager.get_enemy_position(id);
     direction = 0;
     if (get_position() == new_position)
         return;

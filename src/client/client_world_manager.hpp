@@ -20,7 +20,7 @@ public:
     }
 };
 
-class client_world_manager //: public std::enable_shared_from_this<client_world_manager>
+class client_world_manager
 {
 public:
     client_world_manager(smart::fit_smart_ptr<client_game_objects_factory> objects_factory_,
@@ -35,15 +35,22 @@ public:
     void make_maze(smart::fit_smart_ptr<maze_loader> loader);
     void shut_down_client();
 
+    unsigned player_cash {0};
+
 private:
+
+    static std::string map_field_to_resource_name(const char field);
 
     networking::messages::get_enemies_data_response get_enemies_data_from_network();
     networking::messages::get_players_data_response get_players_data_from_network();
+    networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
 
     void register_player_and_load_external_players_and_enemies_data();
-    void load_images_for_drawables() ;
-    void handle_external_players_and_enemies();
+    void load_images_for_drawables();
+    // this method is needed for filling/updating all game_object containers like: players,
+    // resources, etc. Then if all game_object containers are up-to-date we may tick
+    void handle_external_dynamic_game_objects();
 
     void make_enemy(int posx, int posy);
     void make_player(int posx, int posy);
@@ -51,7 +58,7 @@ private:
 
     void add_enemy(int posx, int posy, int id);
     void load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object);
-    // assumption that only one player disappeard which clearly can be wrong
+    // assumption that only one player disappeared which clearly can be wrong
     int remove_absent_player(networking::messages::get_players_data_response &players_data);
     // same as above. Assumption that only one new at time
     smart::fit_smart_ptr<drawable> make_external_player(int id, int posx, int posy);
@@ -82,6 +89,7 @@ private:
     int external_player_posx {INT_MAX};
     int external_player_posy {INT_MAX};
     unsigned short tick_counter {0};
+
 };
 
 }

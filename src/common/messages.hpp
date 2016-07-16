@@ -279,6 +279,105 @@ struct get_id_response
 	int player_id;
 };
 
+struct get_resources_data
+{
+    get_resources_data() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+
+    static char message_id()
+    {
+        return 11;
+    }
+    std::string content {"resources"};
+};
+
+struct get_resources_data_response
+{
+    get_resources_data_response() = default;
+
+    get_resources_data_response(const std::vector<int> &resources_data)
+        : content(resources_data)
+    {
+    }
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_int_vector(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_int_vector();
+    }
+
+    static char message_id()
+    {
+        return 12;
+    }
+
+    std::vector<int> content; //[type, posx, posy]
+};
+
+struct fireball_triggered
+{
+    int player_id, pos_x, pos_y;
+    char direction;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_int(player_id);
+        buffer.put_int(pos_x);
+        buffer.put_int(pos_y);
+        buffer.put_char(direction);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        player_id = buffer.get_int();
+        pos_x = buffer.get_int();
+        pos_y = buffer.get_int();
+        direction = buffer.get_char();
+    }
+
+    // hey, this ugly expicit numbers may be for sure replaced by automatic metaprogramming
+    // some kind of type container + size of this container?
+    static char message_id()
+    {
+        return 13;
+    }
+};
+
+struct fireball_triggered_response
+{
+    fireball_triggered_response() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+
+    static char message_id()
+    {
+        return 14;
+    }
+
+    std::string content {"OK"};
+};
+
 }
 
 }

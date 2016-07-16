@@ -14,4 +14,9 @@ void server_resource::tick(unsigned short)
 {
 }
 
+std::string server_resource::get_name() const
+{
+    return name;
+}
+
 }

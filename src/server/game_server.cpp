@@ -44,32 +44,7 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 		manager->repair_if_uncorrect_enemies();
 		messages::get_enemies_data_response response(manager->get_enemies_data());
 
-		logger_.log("game_server: get_enemies_data before sending. Content dump:");
-		size_t i = 0;
-		for (; i < response.content.size(); i += 3)
-		{
-			if (i != 0 && (i % 30 == 0))
-				logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-					response.content[i+2]);
-			else
-				logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-					response.content[i+2]);
-		}
-		if ((i-3)%30 != 0)
-			logger_.log_in_place("\n");
-		sender.send(response);
-		logger_.log("game_server: send get_enemies_data_response");
-	});
-
-	dispatcher->add_handler(
-				[&](messages::get_players_data &)
-	{
-		logger_.log("game_server: recieved get_players_data");
-
-		manager->repair_if_uncorrect_players();
-		messages::get_players_data_response response(manager->get_players_data());
-
-//		logger_.log("game_server: get_players_data before sending. Content dump:");
+//		logger_.log("game_server: get_enemies_data before sending. Content dump:");
 //		size_t i = 0;
 //		for (; i < response.content.size(); i += 3)
 //		{
@@ -82,10 +57,32 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 //		}
 //		if ((i-3)%30 != 0)
 //			logger_.log_in_place("\n");
+		sender.send(response);
+		logger_.log("game_server: send get_enemies_data_response");
+	});
+
+	dispatcher->add_handler(
+				[&](messages::get_players_data &)
+	{
+		logger_.log("game_server: recieved get_players_data");
+
+		manager->repair_if_uncorrect_players();
+		messages::get_players_data_response response(manager->get_players_data());
 
 		sender.send(response);
 		logger_.log("game_server: send get_players_data_response");
 	});
+
+    dispatcher->add_handler(
+                [&](messages::get_resources_data &)
+    {
+        logger_.log("game_server: recieved get_resources_data");
+
+        messages::get_resources_data_response response(manager->get_resources_data());
+
+        sender.send(response);
+        logger_.log("game_server: send get_resources_data_response");
+    });
 
 	dispatcher->add_handler(
 				[&](messages::get_id &)
@@ -105,6 +102,13 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 		logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
 		manager->shutdown_player(msg.player_id);
 	});
+
+    dispatcher->add_handler(
+                [&](messages::fireball_triggered &msg)
+    {
+        logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
+        manager->allocate_data_for_new_fireball(msg.player_id, msg.pos_x, msg.pos_y, msg.direction);
+    });
 
 	main_server.add_dispatcher(dispatcher);
 }

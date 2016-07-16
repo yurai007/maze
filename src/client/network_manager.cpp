@@ -59,6 +59,19 @@ messages::get_players_data_response network_manager::get_players_data_from_netwo
     return response;
 }
 
+messages::get_resources_data_response network_manager::get_resources_data_from_network()
+{
+    messages::get_resources_data request;
+    client->send_request(request);
+
+    auto response = client->read_get_resources_data_response();
+
+    logger_.log_debug("client_world_manager: get_resources_data was load");
+
+    assert(response.content.size() % 3 == 0);
+    return response;
+}
+
 int network_manager::get_id_data_from_network()
 {
     messages::get_id request;

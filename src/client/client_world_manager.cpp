@@ -63,7 +63,7 @@ void client_world_manager::tick_all()
 {
     assert(maze != nullptr);
     logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
-    handle_external_players_and_enemies();
+    handle_external_dynamic_game_objects();
 
     maze->tick(tick_counter);
 
@@ -75,14 +75,16 @@ void client_world_manager::tick_all()
         if (resource != nullptr)
         {
             resource->tick(tick_counter);
-            auto position = resource->get_position();
-            const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
+            const auto position = resource->get_position();
+            const int x = std::get<0>(position);
+            const int y = std::get<1>(position);
+            const char field = maze->get_field(x, y);
 
             if ( field != 'G' && field != 'M' && field != 'S' && field != 'W' && field != 's')
             {
                 resource = nullptr;
                 logger_.log("client_world_manager: removed resource from positon = {%d, %d}",
-                            std::get<0>(position), std::get<1>(position));
+                            x, y);
             }
         }
 
@@ -120,6 +122,17 @@ void client_world_manager::draw_all()
             player->draw(player_x, player_y);
 }
 
+std::string client_world_manager::map_field_to_resource_name(const char field)
+{
+    static const std::unordered_map<char, std::string> field_to_resource_name =
+    {
+        {'G', "gold"}, {'M', "mercury"}, {'S', "stone"}, {'W', "wood"}, {'s', "sulfur"}
+    };
+    const auto name_it = field_to_resource_name.find(field);
+    assert(name_it != field_to_resource_name.end());
+    return name_it->second;
+}
+
 networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
 {
     return network_manager->get_enemies_data_from_network(player_id);
@@ -128,6 +141,11 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
 networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
 {
     return network_manager->get_players_data_from_network(player_id);
+}
+
+networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
+{
+    return network_manager->get_resources_data_from_network();
 }
 
 int client_world_manager::get_id_data_from_network()
@@ -169,7 +187,6 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
     logger_.log("client_world_manager%d: build position_to_enemy_id map", player_id);
 }
 
-// TO DO: In case of fit_smart_ptr bug I used workaround - inlining content of this method
 void client_world_manager::load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object)
 {
     if (!automatic_players)
@@ -261,7 +278,7 @@ void client_world_manager::load_images_for_drawables()
     position_to_player_id.clear();
 }
 
-void client_world_manager::handle_external_players_and_enemies()
+void client_world_manager::handle_external_dynamic_game_objects()
 {
     assert(maze != nullptr);
     maze->update_content();
@@ -327,6 +344,32 @@ void client_world_manager::handle_external_players_and_enemies()
         int y = enemies_data.content[i+2];
         enemy_id_to_position[id] = std::make_pair(x, y);
     }
+
+    // TO DO: handle resources
+    auto resources_data = get_resources_data_from_network();
+
+    for (size_t i = 0; i < resources_data.content.size(); i += 3)
+    {
+        char resource_type = (char)resources_data.content[i];
+        int x = resources_data.content[i+1];
+        int y = resources_data.content[i+2];
+        const char field = maze->get_field(x, y);
+
+        // TO DO:
+        if (field == ' ')
+        {
+            // new resource
+            make_resource(map_field_to_resource_name(resource_type), x, y);
+            // load_image_if_not_automatic(new_resource); <-- not sure if needed here
+        }
+        else
+        {
+            // if not -> problem, maybe because of sync
+            assert(field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's');
+        }
+    }
+
+
     logger_.log("client_world_manager%d: updated maze content and maps with positions", player_id);
 }
 

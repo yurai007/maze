@@ -29,4 +29,11 @@ smart::fit_smart_ptr<server_resource> server_game_objects_factory::create_server
     return smart::smart_make_shared<server_resource>(name, posx, posy);
 }
 
+smart::fit_smart_ptr<server_fireball> server_game_objects_factory::create_server_fireball(
+        int player_id, int posx, int posy, char direction)
+{
+    (void)player_id;
+    return smart::smart_make_shared<server_fireball>(posx, posy, direction);
+}
+
 }

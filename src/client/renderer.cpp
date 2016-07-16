@@ -127,6 +127,7 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
         }
         else
         {
+            assert(name_to_image.find(image_name) != name_to_image.end());
             Gdk::Cairo::set_source_pixbuf(cairo_context, name_to_image[image_name], posx, posy);
             cairo_context->paint();
         }

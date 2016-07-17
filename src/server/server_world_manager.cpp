@@ -41,9 +41,6 @@ void server_world_manager::tick_all()
 {
     static unsigned short tick_counter = 0;
     logger_.log_debug("server_world_manager: started tick with id = %d", tick_counter);
-    //logger_.log("server_world_manager: resources number = %d", resources.size());
-    if (resources.size() < 20)
-        generate_resources(5);
 
     maze->tick(tick_counter);
 
@@ -81,6 +78,9 @@ void server_world_manager::tick_all()
             std::swap(resource, resources.back());
             resources.pop_back();
         }
+
+    if (resources.size() < 60)
+        generate_resources(10);
 
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
@@ -216,7 +216,7 @@ void server_world_manager::update_player_position(
         int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   (*player_id_to_position)[player_id] = std::make_pair(newx, newy);
+   (*player_id_to_position)[player_id] = {newx, newy};
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()

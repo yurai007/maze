@@ -83,6 +83,7 @@ void client_world_manager::tick_all()
             if ( field != 'G' && field != 'M' && field != 'S' && field != 'W' && field != 's')
             {
                 resource = nullptr;
+                resources_pos.erase({x, y});
                 logger_.log("client_world_manager: removed resource from positon = {%d, %d}",
                             x, y);
             }
@@ -165,7 +166,7 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
         int y = players_data.content[i+2];
         position_to_player_id[std::make_pair(x, y)] = id;
 
-        player_id_to_position[id] = std::make_pair(x, y);
+        player_id_to_position[id] = {x, y};
 
         if (id == player_id)
         {
@@ -300,7 +301,7 @@ void client_world_manager::handle_external_dynamic_game_objects()
             auto new_external_player = make_external_player(id, x, y);
             load_image_if_not_automatic(new_external_player);
         }
-        player_id_to_position[id] = std::make_pair(x, y);
+        player_id_to_position[id] = {x, y};
     }
 
     int active_player_id = -1;
@@ -342,34 +343,31 @@ void client_world_manager::handle_external_dynamic_game_objects()
         int id = enemies_data.content[i];
         int x = enemies_data.content[i+1];
         int y = enemies_data.content[i+2];
-        enemy_id_to_position[id] = std::make_pair(x, y);
+        enemy_id_to_position[id] = {x, y};
     }
 
-    // TO DO: handle resources
     auto resources_data = get_resources_data_from_network();
-
     for (size_t i = 0; i < resources_data.content.size(); i += 3)
     {
         char resource_type = (char)resources_data.content[i];
         int x = resources_data.content[i+1];
         int y = resources_data.content[i+2];
-        const char field = maze->get_field(x, y);
 
-        // TO DO:
-        if (field == ' ')
+        if (resources_pos.find({x, y}) == resources_pos.end())
         {
-            // new resource
-            make_resource(map_field_to_resource_name(resource_type), x, y);
-            // load_image_if_not_automatic(new_resource); <-- not sure if needed here
-        }
-        else
-        {
-            // if not -> problem, maybe because of sync
-            assert(field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's');
+             make_resource(map_field_to_resource_name(resource_type), x, y);
+             char field = maze->get_field(x, y);
+             if (field == ' ')
+             {
+                 // problem: get_chunk_response and get_resource_response NOT in-sync
+                 logger_.log("client_world_manager%d: resources NOT in-sync for {%d, %d}", player_id,
+                             x, y);
+                 maze->set_field(x, y, resource_type);
+                 field = resource_type;
+             }
+             //assert(field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's');
         }
     }
-
-
     logger_.log("client_world_manager%d: updated maze content and maps with positions", player_id);
 }
 
@@ -449,6 +447,7 @@ smart::fit_smart_ptr<drawable> client_world_manager::make_external_player(int id
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)
 {
+    resources_pos.insert({posx, posy});
     resources.push_back(objects_factory->create_client_resource(name, posx, posy));
     logger_.log("client_world_manager%d: added %s on position = {%d, %d}",
                 player_id, name.c_str(), posx, posy);

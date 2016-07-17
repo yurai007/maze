@@ -7,8 +7,29 @@
 #include "ut_fit_smart_ptr.hpp"
 #include "sct_custom_transport.hpp"
 
+namespace networking
+{
+
+namespace messages
+{
+
+unsigned verify::counter = 0;
+
+void verify_messages()
+{
+    // not unique
+    boost::mpl::for_each<registered_messages>(verify());
+}
+
+}
+}
+
 int main(int, char*[])
 {
+    std::cout << "Running messages verification...\n";
+    networking::messages::verify_messages();
+    std::cout << "Messages verification passed\n";
+
     byte_buffer_ut::test_cases();
     thread_safe_queue_sct::test_case();
 

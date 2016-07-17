@@ -2,6 +2,7 @@
 #define CLIENT_WORLD_MANAGER_HPP
 
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <map>
 #include "network_manager.hpp"
@@ -79,6 +80,7 @@ private:
     std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_player_id;
     std::map<int, std::pair<int, int>> player_id_to_position;
+    std::unordered_set<std::pair<int, int>, hash_pair_helper> resources_pos;
 
     int player_id {0};
     int player_posx {INT_MAX};

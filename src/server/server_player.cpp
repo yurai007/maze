@@ -52,7 +52,7 @@ void server_player::update_player_position(
         int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   (*positions_cache)[player_id] = std::make_pair(newx, newy);
+   (*positions_cache)[player_id] = {newx, newy};
 }
 
 std::pair<int, int> server_player::get_player_position(

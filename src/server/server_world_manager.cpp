@@ -7,7 +7,8 @@
 namespace core
 {
 
-server_world_manager::server_world_manager(smart::fit_smart_ptr<server_game_objects_factory> objects_factory_)
+server_world_manager::server_world_manager(smart::fit_smart_ptr<server_game_objects_factory>
+                                           objects_factory_)
     : objects_factory(objects_factory_)
 {
     assert(objects_factory != nullptr);
@@ -49,6 +50,14 @@ void server_world_manager::tick_all()
     for (auto &enemy : enemies)
         tick_and_move(enemy, tick_counter);
 
+    // last resource is not nullptr
+    int n = resources.size() - 1;
+    while (n >= 0 && resources[n] == nullptr)
+    {
+        resources.pop_back();
+        n--;
+    }
+
     for (auto &resource : resources)
         if (resource != nullptr)
         {
@@ -62,13 +71,16 @@ void server_world_manager::tick_all()
                             std::get<0>(position), std::get<1>(position));
             }
         }
-// TO DO: this cleanup is broken if resource.back() == null
-//    for (auto &resource : resources)
-//        if (resource == nullptr)
-//        {
-//            std::swap(resource, resources.back());
-//            resources.pop_back();
-//        }
+
+    for (auto &resource : resources)
+        if (resource == nullptr)
+        {
+            std::swap(resource, resources.back());
+            resources.pop_back();
+        }
+
+    if (resources.size() < 60)
+        generate_resources(10);
 
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
@@ -96,7 +108,6 @@ std::vector<int> server_world_manager::get_enemies_data() const
 std::vector<int> server_world_manager::get_players_data() const
 {
     std::vector<int> players_data;
-
     for (const auto &player : players)
     {
         if (player->is_alive())
@@ -108,6 +119,19 @@ std::vector<int> server_world_manager::get_players_data() const
         }
     }
     return players_data;
+}
+
+std::vector<int> server_world_manager::get_resources_data() const
+{
+    std::vector<int> result;
+    for (auto &resource : resources)
+    {
+        const auto position = resource->get_position();
+        result.push_back(map_resource_name_to_type(resource->get_name()));
+        result.push_back(std::get<0>(position));
+        result.push_back(std::get<1>(position));
+    }
+    return result;
 }
 
 smart::fit_smart_ptr<server_maze> server_world_manager::get_maze() const
@@ -132,6 +156,37 @@ int server_world_manager::allocate_data_for_new_player()
 
     maze->set_field(posx, posy, 'P');
     return player->get_id();
+}
+
+void server_world_manager::allocate_data_for_new_fireball(int player_id, int posx, int posy,
+                                                         char direction)
+{
+    assert(direction == 'L' || direction == 'R' || direction == 'U' || direction == 'D');
+    assert(maze->get_field(posx, posy) == 'P');
+
+    make_fireball(player_id, posx, posy, direction);
+    maze->set_field(posx, posy, direction);
+}
+
+void server_world_manager::generate_resources(unsigned resources_number)
+{
+    const int size = maze->size();
+    const std::array<char, 5> resources = {'G', 'M', 'S', 'W', 's'};
+
+    logger_.log("server_world_manager: new resources will be generated");
+
+    for (unsigned i = 0; i < resources_number; i++)
+    {
+        unsigned n = rand()%5;
+        unsigned posx = 0, posy = 0;
+        while (maze->get_field(posx, posy) != ' ')
+        {
+            posx = rand()%size;
+            posy = rand()%size;
+        }
+        make_resource(map_field_to_resource_name(resources[n]), posx, posy);
+        maze->set_field(posx, posy, resources[n]);
+    }
 }
 
 void server_world_manager::shutdown_player(int id)
@@ -161,7 +216,7 @@ void server_world_manager::update_player_position(
         int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   (*player_id_to_position)[player_id] = std::make_pair(newx, newy);
+   (*player_id_to_position)[player_id] = {newx, newy};
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()
@@ -203,7 +258,14 @@ void server_world_manager::repair_if_uncorrect_players()
     }
 }
 
-std::string server_world_manager::map_field_to_resource_name(const char field) const
+void server_world_manager::make_fireball(int player_id, int posx, int posy, char direction)
+{
+    fireballs.push_back(objects_factory->create_server_fireball(player_id, posx, posy, direction));
+    logger_.log("server_world_manager: added fireball with direction = '%c'' on position = {%d, %d}",
+                direction, posx, posy);
+}
+
+std::string server_world_manager::map_field_to_resource_name(const char field)
 {
     static const std::unordered_map<char, std::string> field_to_resource_name =
     {
@@ -212,6 +274,17 @@ std::string server_world_manager::map_field_to_resource_name(const char field) c
     const auto name_it = field_to_resource_name.find(field);
     assert(name_it != field_to_resource_name.end());
     return name_it->second;
+}
+
+char server_world_manager::map_resource_name_to_type(const std::string &name)
+{
+    static const std::unordered_map<std::string, char> resource_name_to_field =
+    {
+        {"gold", 'G'}, {"mercury", 'M'}, {"stone", 'S'}, {"wood", 'W'}, {"sulfur", 's'}
+    };
+    const auto field_it = resource_name_to_field.find(name);
+    assert(field_it != resource_name_to_field.end());
+    return field_it->second;
 }
 
  // TO DO: why passsing by reference is not ok for shared_ptr - unknown conversion ??

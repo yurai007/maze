@@ -676,11 +676,12 @@ void stress_test__2k_clients_increased_size_requests()
         client_requests[i] = "Hello world from client = " + std::to_string(i) + " *";
     }
 
-    const auto client_send_handler = [&client_requests](auto &connection_buffer, const int client_id)
+    const auto client_send_handler = [&client_requests]
+            (auto &connection_buffer, const int client_id)
     {
         //const std::string request = "Hello world from client = " + std::to_string(client_id) + " !";
 
-        assert(client_requests[client_id].size() <= max_buffer_size);
+        assert(client_requests[client_id].size() <= 10000);
         auto last = std::copy(client_requests[client_id].begin(), client_requests[client_id].end(),
                               connection_buffer.begin());
 

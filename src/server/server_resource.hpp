@@ -14,6 +14,7 @@ public:
     server_resource(const std::string &name_,
              int posx_, int posy_);
     void tick(unsigned short) override;
+    std::string get_name() const;
 
 private:
     std::string name;

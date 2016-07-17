@@ -8,6 +8,7 @@
 #include "server_resource.hpp"
 #include "server_enemy.hpp"
 #include "server_maze.hpp"
+#include "server_fireball.hpp"
 
 namespace core
 {
@@ -24,6 +25,8 @@ public:
     smart::fit_smart_ptr<server_enemy> create_server_enemy(int posx, int posy);
     smart::fit_smart_ptr<server_resource> create_server_resource(const std::string &name,
                                                             int posx, int posy);
+    smart::fit_smart_ptr<server_fireball> create_server_fireball(int player_id,
+                                                            int posx, int posy, char direction);
 private:
     smart::fit_smart_ptr<core::server_maze> maze_;
 };

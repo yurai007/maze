@@ -60,7 +60,16 @@ void client_player::active_tick()
     old_direction = direction;
 
     if ((oldx != posx) || (oldy != posy))
+    {
+        const char field = maze->get_field(posx, posy);
+        if ( field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's')
+        {
+            // this resource was taken by me
+            manager.player_cash++;
+            logger_.log("client_player: player cash: %u", manager.player_cash);
+        }
         network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
+    }
 }
 
 void client_player::unactive_tick()

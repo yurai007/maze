@@ -52,8 +52,8 @@ struct get_chunk : public message_numerator<get_chunk>
     unsigned ld_x, ld_y, ru_x, ru_y;
 
     get_chunk() = default;
-    get_chunk(unsigned ld_x, unsigned ld_y, unsigned ru_x, unsigned ru_y) :
-        ld_x(ld_x), ld_y(ld_y), ru_x(ru_x), ru_y(ru_y) {}
+    get_chunk(unsigned ld_xx, unsigned ld_yy, unsigned ru_xx, unsigned ru_yy) :
+        ld_x(ld_xx), ld_y(ld_yy), ru_x(ru_xx), ru_y(ru_yy) {}
 
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
@@ -99,8 +99,8 @@ struct position_changed : public message_numerator<position_changed>
 	int player_id, old_x, old_y, new_x, new_y;
 
     position_changed() = default;
-    position_changed(int player_id, int old_x, int old_y, int new_x, int new_y)
-        : player_id(player_id), old_x(old_x), old_y(old_y), new_x(new_x), new_y(new_y) {}
+    position_changed(int player_id_, int old_xx, int old_yy, int new_xx, int new_yy)
+        : player_id(player_id_), old_x(old_xx), old_y(old_yy), new_x(new_xx), new_y(new_yy) {}
 
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{
@@ -228,7 +228,7 @@ struct get_players_data_response : public message_numerator<get_players_data_res
 struct client_shutdown : public message_numerator<client_shutdown>
 {
 	client_shutdown() = default;
-    client_shutdown(int player_id) : player_id(player_id) {}
+    client_shutdown(int player_id_) : player_id(player_id_) {}
 
 	void serialize_to_buffer(serialization::byte_buffer &buffer) const
 	{

@@ -10,6 +10,7 @@
 #include "../common/messages.hpp"
 #include "../common/byte_buffer.hpp"
 #include "../common/thread_safe_queue.hpp"
+#include "../common/abstract_maze.hpp"
 
 
 /* This is asynchronous client
@@ -29,6 +30,7 @@ using boost::asio::ip::tcp;
 using namespace boost::process;
 using namespace boost::process::initializers;
 using namespace networking;
+using namespace core;
 
 child *global_server_process = nullptr;
 
@@ -72,6 +74,34 @@ char recv_and_deserialize(T &response_msg, unsigned expected_msg_size)
     char msg_type = serialized_msg.get_char();
     response_msg.deserialize_from_buffer(serialized_msg);
     return msg_type;
+}
+
+void test_abstract_maze_conversions()
+{
+    assert(abstract_maze::to_extended('P', 0) == 0);
+    assert(abstract_maze::to_extended('P', 1) == (1<<3));
+    assert(abstract_maze::to_extended('P', 123) == (123<<3));
+    assert(abstract_maze::to_extended('P', (1<<13)-1) == ((1<<13)<<3)-(1<<3));
+
+    assert(abstract_maze::to_extended('M', 0) == 10);
+    assert(abstract_maze::to_extended('M', 1) == ((1<<6) | 10));
+    assert(abstract_maze::to_extended('M', 123) == ((123<<6) | 10));
+    assert(abstract_maze::to_extended('M', (1<<10)-1) == ((((1<<10)-1)<<6) | 10));
+
+    char p = 'P', m = 'M', x = 'X', space = ' ', f = 'F';
+    unsigned short id1 = 123, id2 = (1<<13)-1, id3 = (1<<10)-1, id4 = 0;
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(p, id1)) == std::tie(p, id1));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(p, id2)) == std::tie(p, id2));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(m, id1)) == std::tie(m, id1));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(m, id3)) == std::tie(m, id3));
+
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(x, id4)) == std::tie(x, id4));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(space, id4)) == std::tie(space, id4));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(f, id1)) == std::tie(f, id1));
+    assert(abstract_maze::to_normal(abstract_maze::to_extended(f, id2)) == std::tie(f, id2));
+
+    // TO DO: whole strs from test_get_chunk_response*
+    std::cout << __FUNCTION__ << ":     ok\n";
 }
 
 void test_get_chunk_response1()
@@ -242,6 +272,8 @@ void resolve_handler(const boost::system::error_code &error_code,
 
 void test_cases()
 {
+    test_abstract_maze_conversions();
+
     try
     {
         std::cout << "Running sct_server tests...\n";

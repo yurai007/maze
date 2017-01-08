@@ -102,6 +102,10 @@ using namespace boost::asio;
       dynamic_pointer_cast abstract_maze must use this fucking shared_ptr but...
    2. Some mess with abstract_maze on client side. Replace abstract_maze by client_maze and
       downcasting may be removed
+
+   Added extra protectors and ASan:
+        CXXFALGS += -fsanitize-recover=address
+        ASAN_OPTIONS=halt_on_error=0 ./maze_server
 */
 
 class server_driver

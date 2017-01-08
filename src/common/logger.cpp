@@ -75,6 +75,7 @@ void logger::internal_log(bool in_place, const char *string, ...)
     va_start (args, string);
     int return_code = vsnprintf (current_pos, max_line_size, string, args);
     assert(return_code >= 0);
+    assert(return_code <= max_line_size);
     va_end (args);
 
     if (write_to_file)

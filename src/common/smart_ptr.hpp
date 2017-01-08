@@ -265,12 +265,12 @@ public:
         this->reset_storage();
     }
 
-    explicit smart_ptr(T *ptr)
+    explicit smart_ptr(T *ptr_)
     {
         static_assert(storage<T>::has_support_for_constructors,
                       "storage has no support for constructors. Please use make_shared");
-        this->set_ptr(ptr);
-        this->reset_counter(ptr);
+        this->set_ptr(ptr_);
+        this->reset_counter(ptr_);
     }
 
     smart_ptr(const smart_ptr &other)

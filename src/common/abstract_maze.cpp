@@ -23,43 +23,39 @@ abstract_maze::abstract_maze(smart::fit_smart_ptr<maze_loader> loader)
 
 bool abstract_maze::is_field_filled(int column, int row) const
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     if (!((0 <= column) && (column < static_cast<int>(content.size()) )))
         return true;
-    if (!((0 <= row) && (row < static_cast<int>(content[column].size()) )))
+    if (!((0 <= row) && (row < static_cast<int>(column_size(0)) )))
         return true;
-    if ( content[column][row] == 'G' || content[column][row] == 'W' || content[column][row] == 'M'
-         || content[column][row] == 's' || content[column][row] == 'S')
+    auto field = get_field(column, row);
+    if ( field == 'G' || field == 'W' || field == 'M' || field == 's' || field == 'S')
         return false;
-    return content[column][row] != ' ';
+    return field != ' ';
 }
 
 char abstract_maze::get_field(int column, int row) const
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     assert((0 <= column) && (column < static_cast<int>(content.size()) ));
-    assert((0 <= row) && (row < static_cast<int>(content[column].size()) ));
-    return content[column][row];
+    assert((0 <= row) && (row < static_cast<int>(column_size(0)) ));
+    unsigned short orig_field = content[column][2*row] | (content[column][2*row+1]<<8);
+    return std::get<0>(to_normal(orig_field));
 }
 
 void abstract_maze::set_field(int column, int row, char field)
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     const int size = static_cast<int>(content.size());
     assert((0 <= column) && (column < size));
     assert((0 <= row) && (row < size));
     assert(field == 'P' || field == 'E' || field == 'G' || field == 'W' || field == 'M'
-           || field == 's' || field == 'S');
-    content[column][row] = field;
+           || field == 's' || field == 'S' || field == ' ');
+    auto out_field = to_extended(field, 0);
+    content[column][2*row] = out_field & 0xFF;
+    content[column][2*row+1] = (out_field >> 8);
 }
 
 std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
                                          unsigned rightupper_x, unsigned rightupper_y) const
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
     // IV cw
     assert(leftdown_x < content.size() );
     assert(leftdown_x <= rightupper_x);
@@ -67,7 +63,10 @@ std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
     const unsigned length = rightupper_x - leftdown_x + 1;
     std::string result;
     for (size_t i = rightupper_y; i <= leftdown_y; i++)
-        result += content[i].substr(leftdown_x, length);
+    {
+        auto sub_column = content[i].substr(2*leftdown_x, 2*length);
+        result += to_normal(sub_column);
+    }
     return result;
 }
 
@@ -79,15 +78,14 @@ void abstract_maze::move_field(const std::tuple<int, int> old_pos,
     int column = std::get<0>(old_pos);
     int row = std::get<1>(old_pos);
 
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     const int size = static_cast<int>(content.size());
     assert((0 <= column) && (column < size));
     assert((0 <= row) && (row < size));
     assert((0 <= new_column) && (new_column < size));
     assert((0 <= new_row) && (new_row < size));
-    content[new_column][new_row] = content[column][row];
-    content[column][row] = ' ';
+
+    set_field(new_column, new_row, get_field(column, row));
+    set_field(column, row, ' ');
 }
 
 void abstract_maze::reset_field(const std::tuple<int, int> pos)
@@ -95,51 +93,37 @@ void abstract_maze::reset_field(const std::tuple<int, int> pos)
     int column = std::get<0>(pos);
     int row = std::get<1>(pos);
 
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     const int size = static_cast<int>(content.size());
     assert((0 <= column) && (column < size));
     assert((0 <= row) && (row < size));
-    content[column][row] = ' ';
+    set_field(column, row, ' ');
 }
 
 int abstract_maze::size() const
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
     return content.size();
+}
+
+int abstract_maze::column_size(int column) const
+{
+    return content[column].size()/2;
 }
 
 void abstract_maze::update_content()
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
-    std::vector<std::string> temporary_content;
-    if (m_loader != nullptr)
-         temporary_content = m_loader->load();
-    else
-        assert(false);
-
-//    for (size_t i = 0; i < temporary_content.size(); i++)
-//    {
-//        if (temporary_content[i] != content[i])
-//            logger_.log("row %d: %s", i, temporary_content[i].c_str());
-//    }
-    content = temporary_content;
-//    logger_.log("abstract_maze: content was load");
+    assert(m_loader != nullptr);
+    content = m_loader->load();
 }
 
 void abstract_maze::verify() const
 {
-    std::lock_guard<std::mutex> lock(maze_mutex);
-
     for (size_t i = 0; i < content.size(); i++)
     {
-        assert(content[i].size() == 60);
+        assert(column_size(i) == 60);
     }
 }
 
 void abstract_maze::tick(unsigned short)
 {
 }
-
 }

@@ -12,6 +12,7 @@ client_maze::client_maze(smart::fit_smart_ptr<presentation::renderer> renderer_,
       drawable(renderer_),
       is_visible(visible)
 {
+    assert(m_loader != nullptr);
 }
 
 void client_maze::load_image()
@@ -39,13 +40,12 @@ void client_maze::draw(int active_player_x, int active_player_y)
         for (int column = x - half_width; column < x + half_width; column++)
         {
             if (0 <= column && column < static_cast<int>(content.size()))
-                if (0 <= row && row < static_cast<int>(content[column].size()))
+                if (0 <= row && row < static_cast<int>(column_size(column)))
                     if (is_field_filled(column, row))
                     {
                         const int posx = (column - (x - half_width)) * brick_size;
                         const int posy = (row - (y - half_height)) * brick_size;
 
-                        std::lock_guard<std::mutex> lock(maze_mutex);
                         renderer->draw_image("brick", posx, posy);
                     }
         }
@@ -53,29 +53,18 @@ void client_maze::draw(int active_player_x, int active_player_y)
 
 void client_maze::load()
 {
-    if (!is_visible)
-    {
-        std::lock_guard<std::mutex> lock(maze_mutex);
-        content = m_loader->load();
-        logger_.log("client_maze: content was load");
-        logger_.log_debug("client_maze: content: ");
-
-        for (size_t i = 0; i < content.size(); i++)
-            logger_.log_debug("row %d: %s", i, content[i].c_str());
-        return;
-    }
-
-    std::lock_guard<std::mutex> lock(maze_mutex);
-    assert(renderer != nullptr);
-
     content = m_loader->load();
     logger_.log("client_maze: content was load");
-    logger_.log_debug("client_maze: content: ");
+    logger_.log("client_maze: content: ");
 
     for (size_t i = 0; i < content.size(); i++)
-        logger_.log_debug("row %d: %s", i, content[i].c_str());
+        logger_.log("row %d: %s", i, content[i].c_str());
 
-    renderer->load_image_and_register("brick", "../../../data/brick.bmp");
+    if (is_visible)
+    {
+        assert(renderer != nullptr);
+        renderer->load_image_and_register("brick", "../../../data/brick.bmp");
+    }
 }
 
 void client_maze::attach_active_player(smart::fit_smart_ptr<client_player> player)

@@ -12,7 +12,7 @@ class server_maze : public abstract_maze
 public:
     server_maze(smart::fit_smart_ptr<core::maze_loader> loader);
 
-    void load() override;
+    void load();
 };
 
 }

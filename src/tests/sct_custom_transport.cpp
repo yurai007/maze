@@ -87,7 +87,7 @@
   OLD TO DO:
    - I have no idea why ./tests sometimes hang on async_read and sometimes not.
 	 Wireshark may help. Under wireshark we can see that server get all data but not all data are send back.
-	 On localhost MCU = 65536.
+     On localhost MTU = 65536.
 
    - valgrind reports 1068 allocs for stress_test__2k_clients.
 	 But it should be only 266 on custom_transport level. Check it.
@@ -125,6 +125,15 @@
 
  * problem is only reproducable for many (~4k) clients. I can reproduce it for minimal_epoll
    without any traffic so it has sth to do with connect <-> accept I guess
+
+   Seems problem is solved. Root cause - small port numbers. After tweaking:
+
+   sudo sysctl -w net.ipv4.ip_local_port_range="1025 65535"
+   cat /etc/security/limits.conf
+        * - nofile 999999
+   cat /proc/net/sockstat
+
+   Seems it works as expected
 
  * boost::asio::buffer is just lightweight wrapper on passing buffer. There is no copying here!
    Just a pointer to data!
@@ -308,8 +317,8 @@ private:
 
 			boost::asio::async_write(sockets[client_id],
                                      boost::asio::buffer(connection_buffers[client_id], size),
-                                     [this, client_id](auto error_code, auto bytes_transferred){
-                                         this->write_handler(error_code, bytes_transferred, client_id);});
+                                     [this, client_id](auto error_code_, auto bytes_transferred){
+                                         this->write_handler(error_code_, bytes_transferred, client_id);});
 		}
         else
         {
@@ -327,8 +336,8 @@ private:
 
             boost::asio::async_read(sockets[client_id],
                                     boost::asio::buffer(connection_buffers[client_id], bytes_transferred),
-                                    [this, client_id](auto error, auto bytes){
-                                        this->read_handler(error, bytes, client_id);});
+                                    [this, client_id](auto error_, auto bytes){
+                                        this->read_handler(error_, bytes, client_id);});
 		}
 		else
         {
@@ -351,8 +360,8 @@ private:
             auto id = client_id-1;
             boost::asio::async_write(sockets[client_id-1],
                     boost::asio::buffer(connection_buffers[client_id-1], size),
-                    [this, id](auto error_code, auto bytes_transferred){
-                            this->write_handler(error_code, bytes_transferred, id);});
+                    [this, id](auto error_code_, auto bytes_transferred){
+                            this->write_handler(error_code_, bytes_transferred, id);});
 		}
 		else
 		{
@@ -368,7 +377,7 @@ private:
 		{
 			for (auto &socket : sockets)
 				socket.async_connect(*endpoint_iterator,
-                                    [this](auto error_code){this->connect_handler(error_code);});
+                                    [this](auto error_code_){this->connect_handler(error_code_);});
 		}
 		else
 		{
@@ -729,6 +738,8 @@ void tests()
     stress_test__increased_size_big_requests();
 
     stress_test__one_big_request_async();
+    stress_test__4k_clients();
+    stress_test__2k_clients_increased_size_requests();
 
     terminate(server_process);
 	logger_.log("All tests passed");

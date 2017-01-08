@@ -64,8 +64,8 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
                         msg_length + sizeof_msg_size, remaining_bytes);
 
             socket.async_read_some(buffer(&data_buffer.m_byte_buffer[read_so_far_bytes], remaining_bytes),
-                                   [this](const auto &error, size_t bytes){
-                                                                this->handle_read(error, bytes); });
+                                   [this](const auto &error_, size_t bytes){
+                                                                this->handle_read(error_, bytes); });
         }
         else
         {
@@ -89,8 +89,8 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
         logger_.log("connection with id = %d: sent %d B", socket.native_handle(),
                                      bytes_transferred);
         socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                                 [this](const auto &error, size_t bytes){
-                                                                this->handle_read(error, bytes); });
+                                 [this](const auto &error_, size_t bytes){
+                                                                this->handle_read(error_, bytes); });
     }
     else
     {

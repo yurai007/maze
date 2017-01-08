@@ -17,7 +17,7 @@ public:
 
     void load_image() override;
     void draw(int active_player_x, int active_player_y) override;
-    void load() override;
+    void load();
     void attach_active_player(smart::fit_smart_ptr<client_player> player);
 
     smart::fit_smart_ptr<presentation::renderer> get_renderer() const;

@@ -106,6 +106,9 @@ using namespace boost::asio;
    Added extra protectors and ASan:
         CXXFALGS += -fsanitize-recover=address
         ASAN_OPTIONS=halt_on_error=0 ./maze_server
+
+   TODO:
+    * replace Boost.Asio by reactor in server class
 */
 
 class server_driver

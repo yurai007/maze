@@ -18,8 +18,9 @@ tcp::socket& connection::get_socket()
 
 void connection::start()
 {
-    socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                       [this](const auto &error, size_t bytes){ this->handle_read(error, bytes); });
+    read_buf.read_at_least_one_byte(socket, &data_buffer.m_byte_buffer[0], serialization::max_size,
+                      [this](const auto &error, auto bytes){ this->process(error, bytes);
+                 });
 }
 
 void connection::stop()
@@ -27,26 +28,15 @@ void connection::stop()
     socket.close();
 }
 
-void connection::send(const serialization::byte_buffer &data)
-{
-    data_buffer = data;
-    async_write(socket,
-                buffer(&data_buffer.m_byte_buffer[0], data_buffer.offset),
-                [this](const auto &error, size_t bytes){ this->handle_write(error, bytes); });
-}
-
 // TCP doesn't ensure that 1 x send N bytes == 1 x recv N bytes
-void connection::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
+void connection::process(const error_type& error, size_t bytes_transferred)
 {
     if (!error)
     {
-        m_server.current_connection = id;
         unsigned short msg_length = 0;
-
         if (remaining_bytes == 0)
         {
-            memcpy(&msg_length, &data_buffer.m_byte_buffer[0], sizeof(msg_length));
-
+            memcpy(&msg_length, &data_buffer.m_byte_buffer[0], sizeof msg_length);
             remaining_bytes =  msg_length + sizeof_msg_size - bytes_transferred;
             read_so_far_bytes = bytes_transferred;
         }
@@ -58,44 +48,50 @@ void connection::handle_read(const boost::system::error_code& error, size_t byte
 
         if (remaining_bytes > 0)
         {
-            logger_.log("connection with id = %d: recieved %d B and expected %d B. "
+            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. "
                         "Waiting for next %d B",
                         socket.native_handle(), bytes_transferred,
                         msg_length + sizeof_msg_size, remaining_bytes);
 
-            socket.async_read_some(buffer(&data_buffer.m_byte_buffer[read_so_far_bytes], remaining_bytes),
-                                   [this](const auto &error_, size_t bytes){
-                                                                this->handle_read(error_, bytes); });
+            read_buf.read_at_least_one_byte(socket,
+                          &data_buffer.m_byte_buffer[read_so_far_bytes],
+                          remaining_bytes,
+                          [this](const auto &error_, auto bytes){
+                                  this->process(error_, bytes);
+                     });
         }
         else
         {
-            logger_.log("connection with id = %d: recieved %d B and expected %d B. Got full msg",
+            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. Got full msg",
                         socket.native_handle(), bytes_transferred, bytes_transferred);
 
             data_buffer.offset = sizeof_msg_size;
-            m_server.dispatch_msg_from_buffer(data_buffer);
+            auto data_out = m_server.m_dispatcher->dispatch_req_get_resp(data_buffer);
+            data_buffer = data_out;
+
+            write_buf.write_all(socket, &data_buffer.m_byte_buffer[0], data_buffer.offset,
+                            [this](const auto &error_, auto bytes_transferred_)
+                            {
+                                   if (!error_)
+                                   {
+                                       logger_.log_debug("connection with id = %d: sent %d B",
+                                                         socket.native_handle(),
+                                                         bytes_transferred_);
+
+                                       read_buf.read_at_least_one_byte(socket,
+                                                    &data_buffer.m_byte_buffer[0],
+                                                    serialization::max_size,
+                                                    [this](const auto &_error, auto bytes){
+                                                            this->process(_error, bytes);
+                                               });
+                                   }
+                                   else
+                                       m_server.remove_connection(id);
+                        });
         }
     }
     else
-    {
         m_server.remove_connection(id);
-    }
-}
-
-void connection::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
-{
-    if (!error)
-    {
-        logger_.log("connection with id = %d: sent %d B", socket.native_handle(),
-                                     bytes_transferred);
-        socket.async_read_some(buffer(data_buffer.m_byte_buffer, serialization::max_size),
-                                 [this](const auto &error_, size_t bytes){
-                                                                this->handle_read(error_, bytes); });
-    }
-    else
-    {
-        m_server.remove_connection(id);
-    }
 }
 
 }

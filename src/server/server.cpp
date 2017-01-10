@@ -52,18 +52,6 @@ void server::remove_connection(unsigned connection_id)
     connections.pop_back();
 }
 
-void server::send_on_current_connection(const serialization::byte_buffer
-                                        &data)
-{
-    connections[current_connection]->send(data);
-}
-
-void server::dispatch_msg_from_buffer(serialization::byte_buffer
-                                      &buffer)
-{
-    m_dispatcher->dispatch_msg_from_buffer(buffer);
-}
-
 io_service &server::get_io_service()
 {
     return m_io_service;

@@ -5,6 +5,7 @@
 #include "connection.hpp"
 #include "../common/logger.hpp"
 #include "../common/smart_ptr.hpp"
+#include "../common/message_dispatcher.hpp"
 
 /*
         *  TCP echo server
@@ -31,14 +32,40 @@
 
      * Response time is about 1us.
      * I run 200k clients and it is no problem, I assume 400k is possible as for epoll
+
+
+     * From server to generic server (with ReactorPolicy)
+     * On the beginning I should align this XYZ server to HTTP (Seastar) server??
+       (WHere XYZ = my own protocol a'la HTTP :)
+       Need for some generic socket, buffer, error_code, signals, etc.
+
+       Reactor should take:
+        - signal handler for signals
+        - handlers for events on socket
+        - timer handler for periodic action
+
+     * current_connection -> &socket or just port
+     * more templates like Protocol + concepts for more readable compilation errors?
+
+     * I need own timer in my reactor (is it possible on epoll with <1ms res?),
+       after this I may remove server.get_io_service() in main.cpp and Boost.Asio on server side
+       completly
+
+     * Alignment to Seastar HTTP:
+       1. Remove sender.send(response); from handlers passing by add_handler
+          to dispatcher.
+          Handler should somehow return generic msg which will be send only
+          in server.
+       2. Then we will be allowed to remove ugly send_on_current_connection/
+          current_connection.
+       3. read_buf, write_buf, generic socket
+       4. generic error_type (from Policy) + movement to header
 */
 
 namespace networking
 {
 
 constexpr static int sizeof_msg_size = sizeof(unsigned short);
-
-class message_dispatcher;
 
 class server
 {
@@ -48,11 +75,8 @@ public:
     void run();
     void stop();
     void remove_connection(unsigned connection_id);
-    void send_on_current_connection(const serialization::byte_buffer &data);
-    void dispatch_msg_from_buffer(serialization::byte_buffer &buffer);
     io_service &get_io_service();
-
-    unsigned current_connection {0};
+    smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
 
 private:
     void register_handler_for_listening();
@@ -63,7 +87,7 @@ private:
     io_service m_io_service;
     tcp::acceptor acceptor;
     boost::asio::signal_set m_signals;
-    smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
+
     std::vector<smart::fit_smart_ptr<connection>> connections;
 };
 

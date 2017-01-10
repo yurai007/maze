@@ -5,7 +5,6 @@
 
 #include "server_maze.hpp"
 #include "server.hpp"
-#include "remote_transport.hpp"
 #include "server_world_manager.hpp"
 
 namespace networking
@@ -25,7 +24,6 @@ public:
 
 private:
     server main_server {port_number};
-    remote_transport::sender sender {main_server};
 };
 
 }

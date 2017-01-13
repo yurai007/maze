@@ -46,10 +46,22 @@ void server_maze::load()
     logger_.log("server_maze: Counters: P=%u, E=%u, X=%u, ' '=%u, F=%u, R=%u",
                       counters[0], counters[1], counters[2], counters[3], counters[4], counters[5]);
 
-    logger_.log("server_maze: Extended content:");
+    logger_.log_debug("server_maze: Extended content focused on enemies:");
 
     for (size_t i = 0; i < content.size(); i++)
-        logger_.log("column %d: %s", i, content[i].c_str());
+    {
+        std::string column = "";
+        for (size_t j = 0; j < column_size(i); j++)
+        {
+            auto field = get_field(i, j);
+            auto id = get_id(i, j);
+            if (field == 'E' && id < 10)
+                column += std::to_string(id)[0];
+            else
+                column += field;
+        }
+        logger_.log_debug("row %d: %s", i, column.c_str());
+    }
 }
 
 }

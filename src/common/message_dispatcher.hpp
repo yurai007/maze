@@ -113,22 +113,6 @@ struct dispatcher
         return {};
     }
 
-//    optional<Ret> operator()(
-//            serialization::byte_buffer &buffer)
-//    {
-//        typedef typename std::remove_reference<Arg>::type Msg;
-//        int id = buffer.m_byte_buffer[buffer.offset];
-
-//        if (id == Msg::message_id())
-//        {
-//            Msg msg;
-//            buffer.offset++;
-//            msg.deserialize_from_buffer(buffer);
-//            return {handler(msg)};
-//        }
-//        return {};
-//    }
-
 private:
     std::function<Ret(Arg)> handler;
 };

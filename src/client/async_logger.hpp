@@ -62,7 +62,7 @@ private:
     bool on;
     const bool write_to_file, write_date, debug_on_here;
     bool opened {false};
-    constexpr static int max_line_size = 128;
+    constexpr static int max_line_size = 600;
     char buffer[max_line_size];
     FILE * file_proxy = nullptr;
 

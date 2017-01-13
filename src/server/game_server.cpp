@@ -19,8 +19,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 					msg.ru_x, msg.ru_y);
 		messages::get_chunk_response response(maze->get_chunk(msg.ld_x, msg.ld_y,
 															  msg.ru_x, msg.ru_y));
-        //sender.send(response);
-        //logger_.log("game_server: send get_chunk_response");
         return response;
 	});
 
@@ -32,9 +30,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 
 		manager->update_player_position(msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
 		messages::position_changed_response response;
-
-        //sender.send(response);
-        //logger_.log("game_server: send position_changed_response");
         return response;
 	});
 
@@ -45,22 +40,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 
 		manager->repair_if_uncorrect_enemies();
 		messages::get_enemies_data_response response(manager->get_enemies_data());
-
-//		logger_.log("game_server: get_enemies_data before sending. Content dump:");
-//		size_t i = 0;
-//		for (; i < response.content.size(); i += 3)
-//		{
-//			if (i != 0 && (i % 30 == 0))
-//				logger_.log_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-//					response.content[i+2]);
-//			else
-//				logger_.log_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-//					response.content[i+2]);
-//		}
-//		if ((i-3)%30 != 0)
-//			logger_.log_in_place("\n");
-        //sender.send(response);
-        //logger_.log("game_server: send get_enemies_data_response");
         return response;
 	});
 
@@ -71,9 +50,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 
 		manager->repair_if_uncorrect_players();
 		messages::get_players_data_response response(manager->get_players_data());
-
-        //sender.send(response);
-        //logger_.log("game_server: send get_players_data_response");
         return response;
 	});
 
@@ -82,11 +58,7 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
     {
         logger_.log("game_server: recieved get_resources_data");
 
-        messages::get_resources_data_response response(manager
-->get_resources_data());
-
-        //sender.send(response);
-        //logger_.log("game_server: send get_resources_data_response");
+        messages::get_resources_data_response response(manager->get_resources_data());
         return response;
     });
 
@@ -98,8 +70,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 		response.player_id = manager->allocate_data_for_new_player();
 
 		logger_.log("player_id = %d", response.player_id);
-        //sender.send(response);
-        //logger_.log("game_server: send get_id_response");
         return response;
 	});
 

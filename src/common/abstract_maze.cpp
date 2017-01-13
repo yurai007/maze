@@ -35,10 +35,14 @@ bool abstract_maze::is_field_filled(int column, int row) const
 
 char abstract_maze::get_field(int column, int row) const
 {
-    assert((0 <= column) && (column < static_cast<int>(content.size()) ));
-    assert((0 <= row) && (row < static_cast<int>(column_size(0)) ));
-    unsigned short orig_field = content[column][2*row] | (content[column][2*row+1]<<8);
+    auto orig_field = get_extended_field(column, row);
     return std::get<0>(to_normal(orig_field));
+}
+
+unsigned short abstract_maze::get_id(int column, int row) const
+{
+    auto orig_field = get_extended_field(column, row);
+    return std::get<1>(to_normal(orig_field));
 }
 
 void abstract_maze::set_field(int column, int row, char field)
@@ -65,7 +69,7 @@ std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
     for (size_t i = rightupper_y; i <= leftdown_y; i++)
     {
         auto sub_column = content[i].substr(2*leftdown_x, 2*length);
-        result += to_normal(sub_column);
+        result += sub_column;
     }
     return result;
 }
@@ -84,8 +88,11 @@ void abstract_maze::move_field(const std::tuple<int, int> old_pos,
     assert((0 <= new_column) && (new_column < size));
     assert((0 <= new_row) && (new_row < size));
 
-    set_field(new_column, new_row, get_field(column, row));
-    set_field(column, row, ' ');
+    set_extended_field(new_column, new_row, get_extended_field(column, row));
+    set_extended_field(column, row, to_extended(' ', 0));
+
+//    set_field(new_column, new_row, get_field(column, row));
+//    set_field(column, row, ' ');
 }
 
 void abstract_maze::reset_field(const std::tuple<int, int> pos)
@@ -125,5 +132,20 @@ void abstract_maze::verify() const
 
 void abstract_maze::tick(unsigned short)
 {
+}
+
+unsigned short abstract_maze::get_extended_field(int column, int row) const
+{
+    assert((0 <= column) && (column < static_cast<int>(content.size()) ));
+    assert((0 <= row) && (row < static_cast<int>(column_size(0)) ));
+    return content[column][2*row] | (content[column][2*row+1]<<8);
+}
+
+void abstract_maze::set_extended_field(int column, int row, unsigned short field)
+{
+    assert((0 <= column) && (column < static_cast<int>(content.size()) ));
+    assert((0 <= row) && (row < static_cast<int>(column_size(0)) ));
+    content[column][2*row] = field & 0xFF;
+    content[column][2*row+1] = (field >> 8);
 }
 }

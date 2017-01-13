@@ -136,7 +136,22 @@ std::string client_world_manager::map_field_to_resource_name(const char field)
 
 networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
 {
-    return network_manager->get_enemies_data_from_network(player_id);
+    auto msg_network = network_manager->get_enemies_data_from_network(player_id);
+
+    logger_.log_debug("client_world_manager: enemies data from maze");
+
+    for (int row = 0; row < maze->size(); row++)
+        for (int column = 0; column < maze->size(); column++)
+        {
+            const char field = maze->get_field(column, row);
+            if (field == 'E')
+            {
+                auto id =  maze->get_id(column, row);
+                logger_.log_debug("{%d, %d, %d}", id, column, row);
+            }
+        }
+
+    return msg_network;
 }
 
 networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()

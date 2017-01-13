@@ -55,10 +55,27 @@ void client_maze::load()
 {
     content = m_loader->load();
     logger_.log("client_maze: content was load");
-    logger_.log("client_maze: content: ");
+    logger_.log_debug("client_maze: extended content: ");
 
     for (size_t i = 0; i < content.size(); i++)
-        logger_.log("row %d: %s", i, content[i].c_str());
+        logger_.log_debug("row %d: %s", i, content[i].c_str());
+
+    logger_.log_debug("client_maze: Extended content focused on enemies:");
+
+    for (size_t i = 0; i < content.size(); i++)
+    {
+        std::string column = "";
+        for (size_t j = 0; j < column_size(i); j++)
+        {
+            auto field = get_field(i, j);
+            auto id = get_id(i, j);
+            if (field == 'E' && id < 10)
+                column += std::to_string(id)[0];
+            else
+                column += field;
+        }
+        logger_.log_debug("row %d: %s", i, column.c_str());
+    }
 
     if (is_visible)
     {

@@ -21,6 +21,7 @@ public:
 
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
+    unsigned short get_id(int column, int row) const;
     void set_field(int column, int row, char field);
 
     std::string get_chunk(unsigned leftdown_x, unsigned leftdown_y,
@@ -110,6 +111,9 @@ public:
     }
 
 protected:
+    unsigned short get_extended_field(int column, int row) const;
+    void set_extended_field(int column, int row, unsigned short field);
+
     std::vector<std::string> content;
     smart::fit_smart_ptr<core::maze_loader> m_loader {nullptr};
 };

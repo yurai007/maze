@@ -55,8 +55,14 @@ void server_maze::load()
         {
             auto field = get_field(i, j);
             auto id = get_id(i, j);
-            if (field == 'E' && id < 10)
-                column += std::to_string(id)[0];
+            if (field == 'E')
+            {
+                assert(id <= 58);
+                if (id < 10)
+                    column += std::to_string(id)[0];
+                else
+                    column += field;
+            }
             else
                 column += field;
         }

@@ -28,7 +28,7 @@ void server_world_manager::load_all()
                 make_player(column, row, false);
             else
                 if (field == 'E')
-                    make_enemy(column, row);
+                    make_enemy(column, row, maze->get_id(column, row));
                 else
                     if (field != 'X' && field != ' ')
                         make_resource(map_field_to_resource_name(field), column, row);
@@ -311,10 +311,10 @@ void server_world_manager::load_maze_from_file()
     maze->load();
 }
 
-void server_world_manager::make_enemy(int posx, int posy)
+void server_world_manager::make_enemy(int posx, int posy, int id)
 {
     assert(maze != nullptr);
-    enemies.push_back(objects_factory->create_server_enemy(posx, posy));
+    enemies.push_back(objects_factory->create_server_enemy(posx, posy, id));
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }
 

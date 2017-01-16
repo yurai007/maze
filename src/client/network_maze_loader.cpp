@@ -31,8 +31,8 @@ std::vector<std::string> network_maze_loader::load()
 
         const auto response = m_maze_client->read_get_chunk_response();
 
-        logger_.log_debug("response.content size = %zu", response.content.size());
-        logger_.log_debug("response.content %d: %s", i, response.content.c_str());
+//        logger_.log_debug("response.content size = %zu", response.content.size());
+//        logger_.log_debug("response.content %d: %s", i, response.content.c_str());
 
         for (unsigned j = 0; j < rows_number; j++)
         {

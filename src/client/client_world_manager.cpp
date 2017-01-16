@@ -136,9 +136,8 @@ std::string client_world_manager::map_field_to_resource_name(const char field)
 
 networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
 {
-    auto msg_network = network_manager->get_enemies_data_from_network(player_id);
-
     logger_.log_debug("client_world_manager: enemies data from maze");
+    networking::messages::get_enemies_data_response msg_network;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -147,7 +146,11 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
             if (field == 'E')
             {
                 auto id =  maze->get_id(column, row);
-                logger_.log_debug("{%d, %d, %d}", id, column, row);
+
+                logger_.log_debug("A.{%d, %d, %d}", id, column, row);
+                msg_network.content.push_back(id);
+                msg_network.content.push_back(column);
+                msg_network.content.push_back(row);
             }
         }
 
@@ -407,12 +410,8 @@ void client_world_manager::shut_down_client()
 
 void client_world_manager::make_enemy(int posx, int posy)
 {
-    if (position_to_enemy_id.find(std::make_pair(posx, posy)) != position_to_enemy_id.end())
-        add_enemy(posx, posy, position_to_enemy_id[std::make_pair(posx, posy)]);
-    else
-    {
-        //assert(false);
-    }
+    auto id = maze->get_id(posx, posy);
+    add_enemy(posx, posy, id);
 }
 
 void client_world_manager::make_player(int posx, int posy)

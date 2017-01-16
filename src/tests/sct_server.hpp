@@ -88,6 +88,10 @@ void test_abstract_maze_conversions()
     assert(abstract_maze::to_extended('M', 123) == ((123<<6) | 10));
     assert(abstract_maze::to_extended('M', (1<<10)-1) == ((((1<<10)-1)<<6) | 10));
 
+    assert(abstract_maze::to_extended('E', 0) == 1);
+    assert(abstract_maze::to_extended('E', 1) == ((1<<3) | 1));
+    assert(abstract_maze::to_extended('E', 123) == ((123<<3) | 1));
+
     char p = 'P', m = 'M', x = 'X', space = ' ', f = 'F';
     unsigned short id1 = 123, id2 = (1<<13)-1, id3 = (1<<10)-1, id4 = 0;
     assert(abstract_maze::to_normal(abstract_maze::to_extended(p, id1)) == std::tie(p, id1));
@@ -99,6 +103,19 @@ void test_abstract_maze_conversions()
     assert(abstract_maze::to_normal(abstract_maze::to_extended(space, id4)) == std::tie(space, id4));
     assert(abstract_maze::to_normal(abstract_maze::to_extended(f, id1)) == std::tie(f, id1));
     assert(abstract_maze::to_normal(abstract_maze::to_extended(f, id2)) == std::tie(f, id2));
+
+    char e = 'E';
+    unsigned short id5 = 1;
+    assert(abstract_maze::to_normal(((1<<3) | 1)) == std::tie(e, id5));
+    assert(abstract_maze::to_normal(((123<<3) | 1)) == std::tie(e, id1));
+
+    std::string str1 = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE";
+    unsigned short counter = 0;
+    auto str2 = abstract_maze::to_extended(str1, [&counter](auto field){
+        return (field == 'E')? counter++ :0;
+    });
+    auto str3 = abstract_maze::to_normal(str2);
+    assert(str1 == str3);
 
     // TO DO: whole strs from test_get_chunk_response*
     std::cout << __FUNCTION__ << ":     ok\n";
@@ -115,10 +132,11 @@ void test_get_chunk_response1()
     std::cout << "Sent get_chunk request to server\n";
 
     messages::get_chunk_response response_msg;
-    char msg_type = recv_and_deserialize(response_msg, 11);
+    char msg_type = recv_and_deserialize(response_msg, 19);
 
     ext_assert((int)msg_type == messages::get_chunk_response::message_id());
-    ext_assert(response_msg.content == "X XX");
+    std::string normal_chunk = abstract_maze::to_normal(response_msg.content);
+    ext_assert(normal_chunk == "X XX");
     std::cout << "Recieved get_chunk_response from server\n";
 }
 
@@ -136,7 +154,8 @@ void test_get_chunk_response2()
     char msg_type = recv_and_deserialize(response_msg, 21);
 
     ext_assert((int)msg_type == messages::get_chunk_response::message_id());
-    ext_assert(response_msg.content == "X      XXXXXX ");
+    std::string normal_chunk = abstract_maze::to_normal(response_msg.content);
+    ext_assert(normal_chunk == "X      XXXXXX ");
     std::cout << "Recieved get_chunk_response from server\n";
 }
 
@@ -154,7 +173,8 @@ void test_get_chunk_response3()
     char msg_type = recv_and_deserialize(response_msg, 67);
 
     ext_assert((int)msg_type == messages::get_chunk_response::message_id());
-    ext_assert(response_msg.content == "      X  X   W     EXX       E      X   XX XXXXXXXXXXXXX   X");
+    std::string normal_chunk = abstract_maze::to_normal(response_msg.content);
+    ext_assert(normal_chunk == "      X  X   W     EXX       E      X   XX XXXXXXXXXXXXX   X");
 
     std::cout << "Recieved get_chunk_response from server\n";
 }

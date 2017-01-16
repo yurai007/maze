@@ -41,7 +41,7 @@ private:
     void tick_and_move(smart::fit_smart_ptr<game_object> some_game_object, unsigned short tick_counter);
 
     void load_maze_from_file();
-    void make_enemy(int posx, int posy);
+    void make_enemy(int posx, int posy, int id);
     smart::fit_smart_ptr<server_player> make_player(int posx, int posy, bool alive);
     void make_resource(const std::string &name, int posx, int posy);
     void make_fireball(int player_id, int posx, int posy, char direction);

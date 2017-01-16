@@ -109,6 +109,10 @@ using namespace boost::asio;
 
    TODO:
     * replace Boost.Asio by reactor in server class
+
+
+   * Be careful with coversions between signed and unsigned types. Look at bug in
+     abstract_maze::get_extended_field (overflow for signed char < 0 to unsigned short)
 */
 
 class server_driver

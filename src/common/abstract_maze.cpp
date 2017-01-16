@@ -138,7 +138,9 @@ unsigned short abstract_maze::get_extended_field(int column, int row) const
 {
     assert((0 <= column) && (column < static_cast<int>(content.size()) ));
     assert((0 <= row) && (row < static_cast<int>(column_size(0)) ));
-    return content[column][2*row] | (content[column][2*row+1]<<8);
+    unsigned char high = content[column][2*row+1];
+    unsigned char low = content[column][2*row];
+    return (unsigned short)(high)<<8 | low;;
 }
 
 void abstract_maze::set_extended_field(int column, int row, unsigned short field)

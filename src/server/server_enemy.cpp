@@ -11,16 +11,17 @@ namespace core
 {
 
 server_enemy::server_enemy(smart::fit_smart_ptr<core::server_maze> maze_,
-             int posx_, int posy_)
+             int posx_, int posy_, int _id)
     : game_object(posx_, posy_),
       maze(maze_),
-      id(0)
+      id(_id)
 {
-    static int id_generator = 0;
-    if (id_generator == 0)
+    static bool once = true;
+    if (once)
+    {
         srand(time(NULL));
-    id_generator++;
-    id = id_generator;
+        once = false;
+    }
 }
 
 int server_enemy::get_id() const

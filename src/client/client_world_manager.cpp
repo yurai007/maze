@@ -134,10 +134,10 @@ std::string client_world_manager::map_field_to_resource_name(const char field)
     return name_it->second;
 }
 
-networking::messages::get_enemies_data_response client_world_manager::get_enemies_data_from_network()
+std::vector<int> client_world_manager::get_enemies()
 {
     logger_.log_debug("client_world_manager: enemies data from maze");
-    networking::messages::get_enemies_data_response msg_network;
+    std::vector<int> enemies_data;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -148,13 +148,13 @@ networking::messages::get_enemies_data_response client_world_manager::get_enemie
                 auto id =  maze->get_id(column, row);
 
                 logger_.log_debug("A.{%d, %d, %d}", id, column, row);
-                msg_network.content.push_back(id);
-                msg_network.content.push_back(column);
-                msg_network.content.push_back(row);
+                enemies_data.push_back(id);
+                enemies_data.push_back(column);
+                enemies_data.push_back(row);
             }
         }
 
-    return msg_network;
+    return enemies_data;
 }
 
 networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
@@ -193,17 +193,6 @@ void client_world_manager::register_player_and_load_external_players_and_enemies
         }
     }
     logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
-
-    auto enemies_data = get_enemies_data_from_network();
-
-    for (size_t i = 0; i < enemies_data.content.size(); i += 3)
-    {
-        int id = enemies_data.content[i];
-        int x = enemies_data.content[i+1];
-        int y = enemies_data.content[i+2];
-        position_to_enemy_id[std::make_pair(x, y)] = id;
-    }
-    logger_.log("client_world_manager%d: build position_to_enemy_id map", player_id);
 }
 
 void client_world_manager::load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object)
@@ -292,8 +281,6 @@ void client_world_manager::load_images_for_drawables()
                 resource->load_image();
         }
     }
-
-    position_to_enemy_id.clear();
     position_to_player_id.clear();
 }
 
@@ -354,13 +341,13 @@ void client_world_manager::handle_external_dynamic_game_objects()
             }
     }
 
-    auto enemies_data = get_enemies_data_from_network();
+    auto enemies_data = get_enemies();
 
-    for (size_t i = 0; i < enemies_data.content.size(); i += 3)
+    for (size_t i = 0; i < enemies_data.size(); i += 3)
     {
-        int id = enemies_data.content[i];
-        int x = enemies_data.content[i+1];
-        int y = enemies_data.content[i+2];
+        int id = enemies_data[i];
+        int x = enemies_data[i+1];
+        int y = enemies_data[i+2];
         enemy_id_to_position[id] = {x, y};
     }
 

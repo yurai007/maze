@@ -107,12 +107,12 @@ using namespace boost::asio;
         CXXFALGS += -fsanitize-recover=address
         ASAN_OPTIONS=halt_on_error=0 ./maze_server
 
-   TODO:
-    * replace Boost.Asio by reactor in server class
-
 
    * Be careful with coversions between signed and unsigned types. Look at bug in
      abstract_maze::get_extended_field (overflow for signed char < 0 to unsigned short)
+
+   TO DO1: remove get_enemies_data, and after that get_players_data and get_resources_data
+   TO DO2: replace Boost.Asio by Reactor in server class
 */
 
 class server_driver

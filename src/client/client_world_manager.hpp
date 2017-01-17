@@ -42,7 +42,7 @@ private:
 
     static std::string map_field_to_resource_name(const char field);
 
-    networking::messages::get_enemies_data_response get_enemies_data_from_network();
+    std::vector<int> get_enemies();
     networking::messages::get_players_data_response get_players_data_from_network();
     networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
@@ -76,7 +76,7 @@ private:
 
     smart::fit_smart_ptr<client_game_objects_factory> objects_factory;
     smart::fit_smart_ptr<networking::network_manager> network_manager {nullptr};
-    std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_enemy_id;
+
     std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
     std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_player_id;
     std::map<int, std::pair<int, int>> player_id_to_position;

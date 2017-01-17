@@ -111,7 +111,7 @@ int abstract_maze::size() const
     return content.size();
 }
 
-int abstract_maze::column_size(int column) const
+size_t abstract_maze::column_size(int column) const
 {
     return content[column].size()/2;
 }

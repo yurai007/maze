@@ -31,7 +31,7 @@ public:
                     const std::tuple<int, int> new_pos);
     void reset_field(const std::tuple<int, int> pos);
     int size() const;
-    int column_size(int column) const;
+    size_t column_size(int column) const;
     void update_content();
     void verify() const;
     virtual ~abstract_maze() = default;

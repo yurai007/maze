@@ -18,8 +18,6 @@ struct get_chunk;
 struct get_chunk_response;
 struct position_changed;
 struct position_changed_response;
-struct get_enemies_data;
-struct get_enemies_data_response;
 struct get_players_data;
 struct get_players_data_response;
 struct client_shutdown;
@@ -31,7 +29,7 @@ struct fireball_triggered;
 struct fireball_triggered_response;
 
 using registered_messages = boost::mpl::vector<get_chunk, get_chunk_response, position_changed,
-    position_changed_response, get_enemies_data, get_enemies_data_response, get_players_data,
+    position_changed_response, get_players_data,
     get_players_data_response, client_shutdown, get_id, get_id_response, get_resources_data,
     get_resources_data_response, fireball_triggered, fireball_triggered_response>;
 
@@ -137,53 +135,6 @@ struct position_changed_response : public message_numerator<position_changed_res
 	}
 
 	std::string content {"OK"};
-};
-
-struct get_enemies_data : public message_numerator<get_enemies_data>
-{
-	get_enemies_data() = default;
-
-	get_enemies_data(int player_id_)
-		: player_id(player_id_)
-	{
-	}
-
-	void serialize_to_buffer(serialization::byte_buffer &buffer) const
-	{
-		buffer.put_string(content);
-		buffer.put_int(player_id);
-	}
-
-	void deserialize_from_buffer(serialization::byte_buffer &buffer)
-	{
-		content = buffer.get_string();
-		player_id = buffer.get_int();
-	}
-
-	std::string content{"enemies"};
-	int player_id;
-};
-
-struct get_enemies_data_response : public message_numerator<get_enemies_data_response>
-{
-	get_enemies_data_response() = default;
-
-	get_enemies_data_response(const std::vector<int> &enemies_data)
-		: content(enemies_data)
-	{
-	}
-
-	void serialize_to_buffer(serialization::byte_buffer &buffer) const
-	{
-		buffer.put_int_vector(content);
-	}
-
-	void deserialize_from_buffer(serialization::byte_buffer &buffer)
-	{
-		content = buffer.get_int_vector();
-	}
-
-	std::vector<int> content; //[id, posx, posy]
 };
 
 struct get_players_data : public message_numerator<get_players_data>

@@ -179,35 +179,35 @@ void test_get_chunk_response3()
     std::cout << "Recieved get_chunk_response from server\n";
 }
 
-// get_enemies_data::player_id is not used on server side at all
-void test_get_enemies_data_response()
-{
-    static_assert(!std::is_pod<messages::get_enemies_data>::value, "Sizeof on non-POD is msg size");
+//// get_enemies_data::player_id is not used on server side at all
+//void test_get_enemies_data_response()
+//{
+//    static_assert(!std::is_pod<messages::get_enemies_data>::value, "Sizeof on non-POD is msg size");
 
-    std::cout << "Running test_get_enemies_data_response1\n";
-    messages::get_enemies_data request_msg(123);
-    unsigned short request_msg_size = request_msg.content.size() + sizeof(int);
+//    std::cout << "Running test_get_enemies_data_response1\n";
+//    messages::get_enemies_data request_msg(123);
+//    unsigned short request_msg_size = request_msg.content.size() + sizeof(int);
 
-    serialize_and_send(request_msg, request_msg_size);
-    std::cout << "Sent get_enemies_data request to server\n";
+//    serialize_and_send(request_msg, request_msg_size);
+//    std::cout << "Sent get_enemies_data request to server\n";
 
-    messages::get_enemies_data_response response_msg;
-    char msg_type = recv_and_deserialize(response_msg, 715);
+//    messages::get_enemies_data_response response_msg;
+//    char msg_type = recv_and_deserialize(response_msg, 715);
 
-    ext_assert((int)msg_type == messages::get_enemies_data_response::message_id());
-    std::vector<int> expected_enemies_data =
-    {1, 34, 0, 2, 26, 1, 3, 9, 2, 4, 42, 6, 5, 21, 7, 6, 12, 9, 7, 51, 9, 8, 35, 10, 9, 39, 10,
-    10, 41, 10, 11, 46, 10, 12, 56, 10, 13, 9, 11, 14, 17, 11, 15, 32, 11, 16, 2, 12, 17, 14, 12,
-    18, 53, 12, 19, 50, 13, 20, 2, 15, 21, 8, 15, 22, 29, 16, 23, 41, 18, 24, 11, 19, 25, 46, 19,
-    26, 29, 21, 27, 55, 21, 28, 32, 22, 29, 55, 24, 30, 6, 25, 31, 16, 25, 32, 10, 28, 33, 16, 28,
-    34, 27, 29, 35, 14, 30, 36, 53, 30, 37, 59, 33, 38, 38, 34, 39, 41, 34, 40, 20, 36, 41, 24, 36,
-    42, 5, 37, 43, 38, 42, 44, 42, 42, 45, 29, 43, 46, 32, 43, 47, 55, 47, 48, 1, 51, 49, 14, 51,
-    50, 16, 51, 51, 53, 51, 52, 23, 52, 53, 27, 52, 54, 32, 52, 55, 36, 52, 56, 41, 52, 57, 9, 53,
-    58, 44, 54, 59, 3, 57};
+//    ext_assert((int)msg_type == messages::get_enemies_data_response::message_id());
+//    std::vector<int> expected_enemies_data =
+//    {1, 34, 0, 2, 26, 1, 3, 9, 2, 4, 42, 6, 5, 21, 7, 6, 12, 9, 7, 51, 9, 8, 35, 10, 9, 39, 10,
+//    10, 41, 10, 11, 46, 10, 12, 56, 10, 13, 9, 11, 14, 17, 11, 15, 32, 11, 16, 2, 12, 17, 14, 12,
+//    18, 53, 12, 19, 50, 13, 20, 2, 15, 21, 8, 15, 22, 29, 16, 23, 41, 18, 24, 11, 19, 25, 46, 19,
+//    26, 29, 21, 27, 55, 21, 28, 32, 22, 29, 55, 24, 30, 6, 25, 31, 16, 25, 32, 10, 28, 33, 16, 28,
+//    34, 27, 29, 35, 14, 30, 36, 53, 30, 37, 59, 33, 38, 38, 34, 39, 41, 34, 40, 20, 36, 41, 24, 36,
+//    42, 5, 37, 43, 38, 42, 44, 42, 42, 45, 29, 43, 46, 32, 43, 47, 55, 47, 48, 1, 51, 49, 14, 51,
+//    50, 16, 51, 51, 53, 51, 52, 23, 52, 53, 27, 52, 54, 32, 52, 55, 36, 52, 56, 41, 52, 57, 9, 53,
+//    58, 44, 54, 59, 3, 57};
 
-    ext_assert(expected_enemies_data == response_msg.content);
-    std::cout << "Recieved get_enemies_data response from server\n";
-}
+//    ext_assert(expected_enemies_data == response_msg.content);
+//    std::cout << "Recieved get_enemies_data response from server\n";
+//}
 
 void test_get_id_response()
 {
@@ -263,7 +263,7 @@ void connect_handler(const boost::system::error_code &error_code)
         test_get_chunk_response1();
         test_get_chunk_response2();
         test_get_chunk_response3();
-        test_get_enemies_data_response();
+        // test_get_enemies_data_response();
         test_get_id_response();
         test_get_id_response_and_client_shutdown();
 

@@ -33,15 +33,15 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
         return response;
 	});
 
-	dispatcher->add_handler(
-				[&](messages::get_enemies_data &msg)
-	{
-		logger_.log("game_server: recieved get_enemies_data from player = %d", msg.player_id);
+//	dispatcher->add_handler(
+//				[&](messages::get_enemies_data &msg)
+//	{
+//		logger_.log("game_server: recieved get_enemies_data from player = %d", msg.player_id);
 
-		manager->repair_if_uncorrect_enemies();
-		messages::get_enemies_data_response response(manager->get_enemies_data());
-        return response;
-	});
+//		manager->repair_if_uncorrect_enemies();
+//		messages::get_enemies_data_response response(manager->get_enemies_data());
+//        return response;
+//	});
 
 	dispatcher->add_handler(
 				[&](messages::get_players_data &)

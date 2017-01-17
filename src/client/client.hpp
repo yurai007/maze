@@ -33,11 +33,6 @@ public:
         send(msg);
     }
 
-    void send_request(messages::get_enemies_data &msg)
-    {
-        send(msg);
-    }
-
     void send_request(messages::get_resources_data &msg)
     {
         send(msg);
@@ -66,11 +61,6 @@ public:
     messages::position_changed_response read_position_changed_response()
     {
         return read<messages::position_changed_response>();
-    }
-
-    messages::get_enemies_data_response read_get_enemies_data_response()
-    {
-        return read<messages::get_enemies_data_response>();
     }
 
     messages::get_players_data_response read_get_players_data_response()

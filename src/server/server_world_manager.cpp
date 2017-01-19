@@ -94,6 +94,7 @@ void server_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
 
 std::vector<int> server_world_manager::get_players_data() const
 {
+    // only for verification purpose
     std::unordered_map<int, std::pair<int, int>> players_map;
 
     for (int row = 0; row < maze->size(); row++)
@@ -106,7 +107,6 @@ std::vector<int> server_world_manager::get_players_data() const
                 players_map[id] = {column, row};
             }
         }
-
 
     std::vector<int> players_data;
     for (const auto &player : players)
@@ -182,7 +182,7 @@ void server_world_manager::allocate_data_for_new_fireball(int player_id, int pos
 void server_world_manager::generate_resources(unsigned resources_number)
 {
     const int size = maze->size();
-    const std::array<char, 5> resources = {'G', 'M', 'S', 'W', 's'};
+    const std::array<char, 5> resource_type = {'G', 'M', 'S', 'W', 's'};
 
     logger_.log("server_world_manager: new resources will be generated");
 
@@ -195,8 +195,8 @@ void server_world_manager::generate_resources(unsigned resources_number)
             posx = rand()%size;
             posy = rand()%size;
         }
-        make_resource(map_field_to_resource_name(resources[n]), posx, posy);
-        maze->set_field(posx, posy, resources[n]);
+        make_resource(map_field_to_resource_name(resource_type[n]), posx, posy);
+        maze->set_field(posx, posy, resource_type[n]);
     }
 }
 
@@ -227,7 +227,18 @@ void server_world_manager::update_player_position(
         int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   (*player_id_to_position)[player_id] = {newx, newy};
+   auto old_field = maze->get_field(oldx, oldy);
+   assert(old_field == 'P');
+   //auto new_field = maze->get_field(newx, newy);
+   //assert(new_field != 'X' && new_field != 'E' && new_field != 'P');
+   maze->move_field({oldx, oldy}, {newx, newy});
+
+   for (auto &player : players)
+       if (player->get_id() == player_id)
+       {
+            player->update_player_position(oldx, oldy, newx, newy);
+            break;
+       }
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()
@@ -332,8 +343,7 @@ void server_world_manager::make_enemy(int posx, int posy, int id)
 smart::fit_smart_ptr<server_player> server_world_manager::make_player(int posx, int posy,
                                                                       bool alive, int id)
 {
-    players.push_back(objects_factory->create_server_player(player_id_to_position,
-                                                                     posx, posy, alive, id));
+    players.push_back(objects_factory->create_server_player(posx, posy, alive, id));
     logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
     return players.back();
 }

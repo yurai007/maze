@@ -15,6 +15,7 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 	dispatcher->add_handler(
 				[&](messages::get_chunk &msg)
 	{
+        manager->repair_if_uncorrect_enemies();
 		logger_.log("game_server: recieved get_chunk for [%u,%u] [%u,%u]", msg.ld_x, msg.ld_y,
 					msg.ru_x, msg.ru_y);
 		messages::get_chunk_response response(maze->get_chunk(msg.ld_x, msg.ld_y,

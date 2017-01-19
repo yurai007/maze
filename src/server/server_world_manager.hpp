@@ -46,9 +46,6 @@ private:
     void make_fireball(int player_id, int posx, int posy, char direction);
 
     smart::fit_smart_ptr<server_game_objects_factory> objects_factory;
-    smart::fit_smart_ptr<std::unordered_map<int, std::pair<int, int>>> player_id_to_position
-        {smart::smart_make_shared<std::unordered_map<int, std::pair<int, int>>>()};
-
     smart::fit_smart_ptr<core::server_maze> maze {nullptr};
     std::vector<smart::fit_smart_ptr<server_enemy>> enemies;
     std::vector<smart::fit_smart_ptr<server_player>> players;

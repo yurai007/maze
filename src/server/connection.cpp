@@ -48,10 +48,10 @@ void connection::process(const error_type& error, size_t bytes_transferred)
 
         if (remaining_bytes > 0)
         {
-            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. "
-                        "Waiting for next %d B",
-                        socket.native_handle(), bytes_transferred,
-                        msg_length + sizeof_msg_size, remaining_bytes);
+//            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. "
+//                        "Waiting for next %d B",
+//                        socket.native_handle(), bytes_transferred,
+//                        msg_length + sizeof_msg_size, remaining_bytes);
 
             read_buf.read_at_least_one_byte(socket,
                           &data_buffer.m_byte_buffer[read_so_far_bytes],
@@ -62,8 +62,8 @@ void connection::process(const error_type& error, size_t bytes_transferred)
         }
         else
         {
-            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. Got full msg",
-                        socket.native_handle(), bytes_transferred, bytes_transferred);
+//            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. Got full msg",
+//                        socket.native_handle(), bytes_transferred, bytes_transferred);
 
             data_buffer.offset = sizeof_msg_size;
             auto data_out = m_server.m_dispatcher->dispatch_req_get_resp(data_buffer);
@@ -74,9 +74,9 @@ void connection::process(const error_type& error, size_t bytes_transferred)
                             {
                                    if (!error_)
                                    {
-                                       logger_.log_debug("connection with id = %d: sent %d B",
-                                                         socket.native_handle(),
-                                                         bytes_transferred_);
+//                                       logger_.log_debug("connection with id = %d: sent %d B",
+//                                                         socket.native_handle(),
+//                                                         bytes_transferred_);
 
                                        read_buf.read_at_least_one_byte(socket,
                                                     &data_buffer.m_byte_buffer[0],

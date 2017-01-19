@@ -23,6 +23,7 @@ public:
     char get_field(int column, int row) const;
     unsigned short get_id(int column, int row) const;
     void set_field(int column, int row, char field);
+    void set_field(int column, int row, char field, int id);
 
     std::string get_chunk(unsigned leftdown_x, unsigned leftdown_y,
                                        unsigned rightupper_x, unsigned rightupper_y) const;

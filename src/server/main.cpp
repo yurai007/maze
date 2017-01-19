@@ -111,7 +111,7 @@ using namespace boost::asio;
    * Be careful with coversions between signed and unsigned types. Look at bug in
      abstract_maze::get_extended_field (overflow for signed char < 0 to unsigned short)
 
-   TO DO1: remove get_enemies_data, and after that get_players_data and get_resources_data
+   TO DO1: compare get_players_data with these in maze in server_world_manager. Remove get_resources_data
    TO DO2: replace Boost.Asio by Reactor in server class
 */
 

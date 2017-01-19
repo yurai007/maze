@@ -30,6 +30,10 @@ messages::get_players_data_response network_manager::get_players_data_from_netwo
         logger_.log_debug("\n");
     assert(response.content.size() % 3 == 0);
 
+
+
+
+
     return response;
 }
 
@@ -54,7 +58,7 @@ int network_manager::get_id_data_from_network()
     auto response = client->read_get_id_response();
 
     logger_.log("client_world_manager: player_id = %d", response.player_id);
-    assert(response.player_id > 0);
+    assert(response.player_id >= 0);
     return response.player_id;
 }
 

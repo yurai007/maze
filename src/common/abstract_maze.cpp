@@ -57,6 +57,18 @@ void abstract_maze::set_field(int column, int row, char field)
     content[column][2*row+1] = (out_field >> 8);
 }
 
+void abstract_maze::set_field(int column, int row, char field, int id)
+{
+    const int size = static_cast<int>(content.size());
+    assert((0 <= column) && (column < size));
+    assert((0 <= row) && (row < size));
+    assert(field == 'P' || field == 'E' || field == 'G' || field == 'W' || field == 'M'
+           || field == 's' || field == 'S' || field == ' ');
+    auto out_field = to_extended(field, id);
+    content[column][2*row] = out_field & 0xFF;
+    content[column][2*row+1] = (out_field >> 8);
+}
+
 std::string abstract_maze::get_chunk(unsigned leftdown_x, unsigned leftdown_y,
                                          unsigned rightupper_x, unsigned rightupper_y) const
 {
@@ -90,9 +102,6 @@ void abstract_maze::move_field(const std::tuple<int, int> old_pos,
 
     set_extended_field(new_column, new_row, get_extended_field(column, row));
     set_extended_field(column, row, to_extended(' ', 0));
-
-//    set_field(new_column, new_row, get_field(column, row));
-//    set_field(column, row, ' ');
 }
 
 void abstract_maze::reset_field(const std::tuple<int, int> pos)

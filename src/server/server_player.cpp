@@ -9,15 +9,13 @@ namespace core
 
 server_player::server_player(smart::fit_smart_ptr<core::server_maze> maze_,
                              smart::fit_smart_ptr<std::unordered_map<int, std::pair<int, int>>> player_id_to_pos,
-                             int posx_, int posy_, bool alive_)
+                             int posx_, int posy_, bool alive_, int id_)
     : game_object(posx_, posy_),
       maze(maze_),
       positions_cache(player_id_to_pos),
-      alive(alive_)
+      alive(alive_),
+      id(id_)
 {
-    static int id_generator = 0;
-    id_generator++;
-    id = id_generator;
     update_player_position(id, posx, posy, posx, posy);
 }
 

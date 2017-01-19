@@ -47,7 +47,6 @@ private:
     networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
 
-    void register_player_and_load_external_players_and_enemies_data();
     void load_images_for_drawables();
     // this method is needed for filling/updating all game_object containers like: players,
     // resources, etc. Then if all game_object containers are up-to-date we may tick

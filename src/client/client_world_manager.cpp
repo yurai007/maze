@@ -23,9 +23,29 @@ client_world_manager::client_world_manager(smart::fit_smart_ptr<client_game_obje
 
 void client_world_manager::load_all()
 {
-    logger_.log("client_world_manager: start loading");
-    register_player_and_load_external_players_and_enemies_data();
+    logger_.log("client_world_manager: start loading external players and enemies");
+    player_id = get_id_data_from_network();
 
+    auto players_data = get_players_data_from_network();
+
+    for (size_t i = 0; i < players_data.content.size(); i += 3)
+    {
+        int id = players_data.content[i];
+        int x = players_data.content[i+1];
+        int y = players_data.content[i+2];
+        position_to_player_id[std::make_pair(x, y)] = id;
+
+        player_id_to_position[id] = {x, y};
+
+        if (id == player_id)
+        {
+            player_posx = x;
+            player_posy = y;
+        }
+    }
+    logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
+
+    logger_.log("client_world_manager: start loading maze");
     assert(maze != nullptr);
     maze->load();
 
@@ -147,7 +167,7 @@ std::vector<int> client_world_manager::get_enemies()
             {
                 auto id =  maze->get_id(column, row);
 
-                logger_.log_debug("A.{%d, %d, %d}", id, column, row);
+                //logger_.log_debug("A.{%d, %d, %d}", id, column, row);
                 enemies_data.push_back(id);
                 enemies_data.push_back(column);
                 enemies_data.push_back(row);
@@ -157,9 +177,61 @@ std::vector<int> client_world_manager::get_enemies()
     return enemies_data;
 }
 
+//networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
+//{
+//    logger_.log_debug("client_world_manager: players data from maze");
+//    networking::messages::get_players_data_response players_data;
+
+//    for (int row = 0; row < maze->size(); row++)
+//        for (int column = 0; column < maze->size(); column++)
+//        {
+//            const char field = maze->get_field(column, row);
+//            if (field == 'P')
+//            {
+//                auto id =  maze->get_id(column, row);
+
+//                logger_.log_debug("{%d, %d, %d}", id, column, row);
+//                players_data.content.push_back(id);
+//                players_data.content.push_back(column);
+//                players_data.content.push_back(row);
+//            }
+//        }
+
+//    return players_data;
+//}
+
 networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
 {
-    return network_manager->get_players_data_from_network(player_id);
+    auto rep = network_manager->get_players_data_from_network(player_id);
+
+    std::unordered_map<int, std::pair<int, int>> players_map;
+
+    for (int row = 0; row < maze->size(); row++)
+        for (int column = 0; column < maze->size(); column++)
+        {
+            const char field = maze->get_field(column, row);
+            if (field == 'P')
+            {
+                auto id =  maze->get_id(column, row);
+                players_map[id] = {column, row};
+            }
+        }
+
+    logger_.log("client_world_manager: started verify");
+    for (size_t i = 0; i < rep.content.size(); i+= 3)
+    {
+        auto id = rep.content[i];
+
+        if (rep.content[i+1] != players_map[id].first ||
+                rep.content[i+2] != players_map[id].second)
+        {
+            logger_.log_debug("A.{%d, %d, %d}", id, rep.content[i+1], rep.content[i+2]);
+            logger_.log_debug("B.{%d, %d, %d}", id, players_map[id].first, players_map[id].second);
+        }
+    }
+    logger_.log("client_world_manager: stopped verify");
+
+    return rep;
 }
 
 networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
@@ -170,29 +242,6 @@ networking::messages::get_resources_data_response client_world_manager::get_reso
 int client_world_manager::get_id_data_from_network()
 {
     return network_manager->get_id_data_from_network();
-}
-
-void client_world_manager::register_player_and_load_external_players_and_enemies_data()
-{
-    player_id = get_id_data_from_network();
-    auto players_data = get_players_data_from_network();
-
-    for (size_t i = 0; i < players_data.content.size(); i += 3)
-    {
-        int id = players_data.content[i];
-        int x = players_data.content[i+1];
-        int y = players_data.content[i+2];
-        position_to_player_id[std::make_pair(x, y)] = id;
-
-        player_id_to_position[id] = {x, y};
-
-        if (id == player_id)
-        {
-            player_posx = x;
-            player_posy = y;
-        }
-    }
-    logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
 }
 
 void client_world_manager::load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object)
@@ -403,7 +452,7 @@ void client_world_manager::make_enemy(int posx, int posy)
 
 void client_world_manager::make_player(int posx, int posy)
 {
-    assert(player_id > 0);
+    assert(player_id >= 0);
     assert(player_posx < INT_MAX);
     assert(player_posy < INT_MAX);
 

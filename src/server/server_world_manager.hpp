@@ -17,10 +17,9 @@ class server_world_manager
 public:
     server_world_manager(smart::fit_smart_ptr<server_game_objects_factory> objects_factory_);
 
-    void load_all();
+    void load_all(smart::fit_smart_ptr<maze_loader> loader);
     void tick_all();
-    void make_maze(smart::fit_smart_ptr<maze_loader> loader);
-    std::vector<int> get_players_data() const;
+
     std::vector<int> get_resources_data() const;
     smart::fit_smart_ptr<core::server_maze> get_maze() const;
 
@@ -39,7 +38,7 @@ private:
     static char map_resource_name_to_type(const std::string &name);
     void tick_and_move(smart::fit_smart_ptr<game_object> some_game_object, unsigned short tick_counter);
 
-    void load_maze_from_file();
+    void make_maze(smart::fit_smart_ptr<maze_loader> loader);
     void make_enemy(int posx, int posy, int id);
     smart::fit_smart_ptr<server_player> make_player(int posx, int posy, bool alive, int id);
     void make_resource(const std::string &name, int posx, int posy);

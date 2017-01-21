@@ -43,7 +43,7 @@ private:
     static std::string map_field_to_resource_name(const char field);
 
     std::vector<int> get_enemies();
-    networking::messages::get_players_data_response get_players_data_from_network();
+    std::vector<int> get_players();
     networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
 
@@ -59,7 +59,7 @@ private:
     void add_enemy(int posx, int posy, int id);
     void load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object);
     // assumption that only one player disappeared which clearly can be wrong
-    int remove_absent_player(networking::messages::get_players_data_response &players_data);
+    int remove_absent_player(std::vector<int> &players_data);
     // same as above. Assumption that only one new at time
     smart::fit_smart_ptr<drawable> make_external_player(int id, int posx, int posy);
 

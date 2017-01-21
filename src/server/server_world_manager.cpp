@@ -15,11 +15,11 @@ server_world_manager::server_world_manager(smart::fit_smart_ptr<server_game_obje
     logger_.log("server_world_manager: started");
 }
 
-void server_world_manager::load_all()
+void server_world_manager::load_all(smart::fit_smart_ptr<maze_loader> loader)
 {
     logger_.log("server_world_manager: start loading");
 
-    load_maze_from_file();
+    make_maze(loader);
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
         {
@@ -86,57 +86,52 @@ void server_world_manager::tick_all()
     tick_counter++;
 }
 
-void server_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
-{
-    maze = objects_factory->create_server_maze(loader);
-    logger_.log("server_world_manager: added maze");
-}
+//std::vector<int> server_world_manager::get_players_data() const
+//{
+//    // only for verification purpose
+//    std::unordered_map<int, std::pair<int, int>> players_map;
 
-std::vector<int> server_world_manager::get_players_data() const
-{
-    // only for verification purpose
-    std::unordered_map<int, std::pair<int, int>> players_map;
+//    for (int row = 0; row < maze->size(); row++)
+//        for (int column = 0; column < maze->size(); column++)
+//        {
+//            const char field = maze->get_field(column, row);
+//            if (field == 'P')
+//            {
+//                auto id =  maze->get_id(column, row);
+//                players_map[id] = {column, row};
+//            }
+//        }
 
-    for (int row = 0; row < maze->size(); row++)
-        for (int column = 0; column < maze->size(); column++)
-        {
-            const char field = maze->get_field(column, row);
-            if (field == 'P')
-            {
-                auto id =  maze->get_id(column, row);
-                players_map[id] = {column, row};
-            }
-        }
+//    std::vector<int> players_data;
+//    for (const auto &player : players)
+//    {
+//        if (player->is_alive())
+//        {
+//            const auto position = player->get_position();
+//            players_data.push_back(player->get_id());
+//            players_data.push_back(std::get<0>(position));
+//            players_data.push_back(std::get<1>(position));
 
-    std::vector<int> players_data;
-    for (const auto &player : players)
-    {
-        if (player->is_alive())
-        {
-            const auto position = player->get_position();
-            players_data.push_back(player->get_id());
-            players_data.push_back(std::get<0>(position));
-            players_data.push_back(std::get<1>(position));
+//            auto id = player->get_id();
 
-            auto id = player->get_id();
+//            if (std::get<0>(position) != players_map[id].first ||
+//                    std::get<1>(position) != players_map[id].second)
+//            {
+//                logger_.log_debug("A.{%d, %d, %d}", id, std::get<0>(position), std::get<1>(position));
+//                logger_.log_debug("B.{%d, %d, %d}", id, players_map[id].first, players_map[id].second);
+//            }
+//        }
+//    }
 
-            if (std::get<0>(position) != players_map[id].first ||
-                    std::get<1>(position) != players_map[id].second)
-            {
-                logger_.log_debug("A.{%d, %d, %d}", id, std::get<0>(position), std::get<1>(position));
-                logger_.log_debug("B.{%d, %d, %d}", id, players_map[id].first, players_map[id].second);
-            }
-        }
-    }
-
-    return players_data;
-}
+//    return players_data;
+//}
 
 std::vector<int> server_world_manager::get_resources_data() const
 {
     std::vector<int> result;
     for (auto &resource : resources)
     {
+        assert(resource != nullptr);
         const auto position = resource->get_position();
         result.push_back(map_resource_name_to_type(resource->get_name()));
         result.push_back(std::get<0>(position));
@@ -147,7 +142,6 @@ std::vector<int> server_world_manager::get_resources_data() const
 
 smart::fit_smart_ptr<server_maze> server_world_manager::get_maze() const
 {
-    assert(maze != nullptr);
     return maze;
 }
 
@@ -280,6 +274,14 @@ void server_world_manager::repair_if_uncorrect_players()
     }
 }
 
+void server_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
+{
+    maze = objects_factory->create_server_maze(loader);
+    assert(maze != nullptr);
+    maze->load();
+    logger_.log("server_world_manager: added maze");
+}
+
 void server_world_manager::make_fireball(int player_id, int posx, int posy, char direction)
 {
     fireballs.push_back(objects_factory->create_server_fireball(player_id, posx, posy, direction));
@@ -327,15 +329,8 @@ void server_world_manager::tick_and_move(smart::fit_smart_ptr<game_object> some_
     }
 }
 
-void server_world_manager::load_maze_from_file()
-{
-    assert(maze != nullptr);
-    maze->load();
-}
-
 void server_world_manager::make_enemy(int posx, int posy, int id)
 {
-    assert(maze != nullptr);
     enemies.push_back(objects_factory->create_server_enemy(posx, posy, id));
     logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
 }

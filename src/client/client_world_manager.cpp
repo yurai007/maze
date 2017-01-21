@@ -26,13 +26,17 @@ void client_world_manager::load_all()
     logger_.log("client_world_manager: start loading external players and enemies");
     player_id = get_id_data_from_network();
 
-    auto players_data = get_players_data_from_network();
+    logger_.log("client_world_manager: start loading maze");
+    assert(maze != nullptr);
+    maze->load();
 
-    for (size_t i = 0; i < players_data.content.size(); i += 3)
+    auto players_data = get_players();
+
+    for (size_t i = 0; i < players_data.size(); i += 3)
     {
-        int id = players_data.content[i];
-        int x = players_data.content[i+1];
-        int y = players_data.content[i+2];
+        int id = players_data[i];
+        int x = players_data[i+1];
+        int y = players_data[i+2];
         position_to_player_id[std::make_pair(x, y)] = id;
 
         player_id_to_position[id] = {x, y};
@@ -44,10 +48,6 @@ void client_world_manager::load_all()
         }
     }
     logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
-
-    logger_.log("client_world_manager: start loading maze");
-    assert(maze != nullptr);
-    maze->load();
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -177,34 +177,11 @@ std::vector<int> client_world_manager::get_enemies()
     return enemies_data;
 }
 
-//networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
-//{
-//    logger_.log_debug("client_world_manager: players data from maze");
-//    networking::messages::get_players_data_response players_data;
-
-//    for (int row = 0; row < maze->size(); row++)
-//        for (int column = 0; column < maze->size(); column++)
-//        {
-//            const char field = maze->get_field(column, row);
-//            if (field == 'P')
-//            {
-//                auto id =  maze->get_id(column, row);
-
-//                logger_.log_debug("{%d, %d, %d}", id, column, row);
-//                players_data.content.push_back(id);
-//                players_data.content.push_back(column);
-//                players_data.content.push_back(row);
-//            }
-//        }
-
-//    return players_data;
-//}
-
-networking::messages::get_players_data_response client_world_manager::get_players_data_from_network()
+// must be sorted by id!
+std::vector<int> client_world_manager::get_players()
 {
-    auto rep = network_manager->get_players_data_from_network(player_id);
-
-    std::unordered_map<int, std::pair<int, int>> players_map;
+    logger_.log_debug("client_world_manager: players data from maze");
+    std::map<int, std::pair<int, int>> tmp_to_pos;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -213,25 +190,23 @@ networking::messages::get_players_data_response client_world_manager::get_player
             if (field == 'P')
             {
                 auto id =  maze->get_id(column, row);
-                players_map[id] = {column, row};
+                tmp_to_pos[id] = {column, row};
             }
         }
 
-    logger_.log("client_world_manager: started verify");
-    for (size_t i = 0; i < rep.content.size(); i+= 3)
+    std::vector<int> players_data;
+    auto player_it = tmp_to_pos.begin();
+    for (; player_it != tmp_to_pos.end(); ++player_it)
     {
-        auto id = rep.content[i];
-
-        if (rep.content[i+1] != players_map[id].first ||
-                rep.content[i+2] != players_map[id].second)
-        {
-            logger_.log_debug("A.{%d, %d, %d}", id, rep.content[i+1], rep.content[i+2]);
-            logger_.log_debug("B.{%d, %d, %d}", id, players_map[id].first, players_map[id].second);
-        }
+        auto id = player_it->first;
+        auto pos = player_it->second;
+        players_data.push_back(id);
+        players_data.push_back(pos.first);
+        players_data.push_back(pos.second);
+        logger_.log_debug("{%d, %d, %d}", id, pos.first, pos.second);
     }
-    logger_.log("client_world_manager: stopped verify");
 
-    return rep;
+    return players_data;
 }
 
 networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
@@ -253,20 +228,21 @@ void client_world_manager::load_image_if_not_automatic(smart::fit_smart_ptr<draw
     }
 }
 
-int client_world_manager::remove_absent_player(networking::messages::get_players_data_response
-                                               &players_data)
+// players_data must be sorted!
+int client_world_manager::remove_absent_player(std::vector<int> &players_data)
 {
     size_t current_pos = 0;
     int removed_player_id = 0;
+
     auto item = player_id_to_position.begin();
-    for (; (item != player_id_to_position.end()) &&
-         (current_pos <  players_data.content.size()); )
+    for (; (item != player_id_to_position.end()) && current_pos < players_data.size(); )
     {
-        if (players_data.content[current_pos] != item->first)
+        auto id = item->first;
+        if (players_data[current_pos] != id)
         {
             logger_.log("client_world_manager%d: removing player_id = %d from map",
-                        player_id, item->first);
-            removed_player_id = item->first;
+                        player_id, id);
+            removed_player_id = id;
             item = player_id_to_position.erase(item);
         }
         else
@@ -338,17 +314,17 @@ void client_world_manager::handle_external_dynamic_game_objects()
     assert(maze != nullptr);
     maze->update_content();
 
-    auto players_data = get_players_data_from_network();
+    auto players_data = get_players();
 
     logger_.log("client_world_manager%d: player_id_to_position.size() = %zu players.size() = %zu",
                 player_id, player_id_to_position.size(), players.size());
 
     // I may assume that id-s are in increasing order
-    for (size_t i = 0; i < players_data.content.size(); i += 3)
+    for (size_t i = 0; i < players_data.size(); i += 3)
     {
-        int id = players_data.content[i];
-        int x = players_data.content[i+1];
-        int y = players_data.content[i+2];
+        int id = players_data[i];
+        int x = players_data[i+1];
+        int y = players_data[i+2];
         if ((player_id_to_position.find(id) == player_id_to_position.end())
                 && (id != player_id))
         {

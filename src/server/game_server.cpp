@@ -34,16 +34,6 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
         return response;
 	});
 
-	dispatcher->add_handler(
-				[&](messages::get_players_data &)
-	{
-		logger_.log("game_server: recieved get_players_data");
-
-		manager->repair_if_uncorrect_players();
-		messages::get_players_data_response response(manager->get_players_data());
-        return response;
-	});
-
     dispatcher->add_handler(
                 [&](messages::get_resources_data &)
     {

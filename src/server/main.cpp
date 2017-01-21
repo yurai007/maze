@@ -126,8 +126,7 @@ public:
 
     int run()
     {
-        world_manager->make_maze(smart::smart_make_shared<core::file_maze_loader>());
-        world_manager->load_all();
+        world_manager->load_all(smart::smart_make_shared<core::file_maze_loader>());
 
         try
         {

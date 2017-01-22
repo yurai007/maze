@@ -5,13 +5,13 @@
 namespace networking
 {
 
-connection::connection(io_service& io_service, server &server_)
+connection::connection(connected_socket socket_, server &server_)
     : m_server(server_),
-      socket(io_service)
+      socket(std::move(socket_))
 {
 }
 
-tcp::socket& connection::get_socket()
+connected_socket& connection::get_socket()
 {
     return socket;
 }
@@ -29,7 +29,7 @@ void connection::stop()
 }
 
 // TCP doesn't ensure that 1 x send N bytes == 1 x recv N bytes
-void connection::process(const error_type& error, size_t bytes_transferred)
+void connection::process(const connected_socket::error_type& error, size_t bytes_transferred)
 {
     if (!error)
     {
@@ -48,11 +48,13 @@ void connection::process(const error_type& error, size_t bytes_transferred)
 
         if (remaining_bytes > 0)
         {
-//            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. "
-//                        "Waiting for next %d B",
-//                        socket.native_handle(), bytes_transferred,
-//                        msg_length + sizeof_msg_size, remaining_bytes);
-
+            if (server::debug)
+            {
+                logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. "
+                                  "Waiting for next %d B",
+                                  socket.native_handle(), bytes_transferred,
+                                  msg_length + sizeof_msg_size, remaining_bytes);
+            }
             read_buf.read_at_least_one_byte(socket,
                           &data_buffer.m_byte_buffer[read_so_far_bytes],
                           remaining_bytes,
@@ -62,9 +64,11 @@ void connection::process(const error_type& error, size_t bytes_transferred)
         }
         else
         {
-//            logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. Got full msg",
-//                        socket.native_handle(), bytes_transferred, bytes_transferred);
-
+            if (server::debug)
+            {
+                logger_.log_debug("connection with id = %d: recieved %d B and expected %d B. Got full msg",
+                                  socket.native_handle(), bytes_transferred, bytes_transferred);
+            }
             data_buffer.offset = sizeof_msg_size;
             auto data_out = m_server.m_dispatcher->dispatch_req_get_resp(data_buffer);
             data_buffer = data_out;
@@ -74,10 +78,12 @@ void connection::process(const error_type& error, size_t bytes_transferred)
                             {
                                    if (!error_)
                                    {
-//                                       logger_.log_debug("connection with id = %d: sent %d B",
-//                                                         socket.native_handle(),
-//                                                         bytes_transferred_);
-
+                                       if (server::debug)
+                                       {
+                                           logger_.log_debug("connection with id = %d: sent %d B",
+                                                             socket.native_handle(),
+                                                             bytes_transferred_);
+                                       }
                                        read_buf.read_at_least_one_byte(socket,
                                                     &data_buffer.m_byte_buffer[0],
                                                     serialization::max_size,

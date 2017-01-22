@@ -260,10 +260,10 @@ void connect_handler(const boost::system::error_code &error_code)
 {
     if (!error_code)
     {
-        test_get_chunk_response1();
-        test_get_chunk_response2();
-        test_get_chunk_response3();
-        // test_get_enemies_data_response();
+//        test_get_chunk_response1();
+//        test_get_chunk_response2();
+//        test_get_chunk_response3();
+//        test_get_enemies_data_response();
         test_get_id_response();
         test_get_id_response_and_client_shutdown();
 

@@ -31,6 +31,7 @@ using t_accept_handler = std::function<void(int error, connection_data *,
                                 const char *address, const char *port)>;
 using t_read_handler = std::function<void(int bytes_transferred, connection_data *)>;
 using t_write_handler = std::function<void(int bytes_transferred, connection_data *)>;
+using t_timer_handler = std::function<void(void *context)>;
 
 struct memory_pool;
 
@@ -42,17 +43,21 @@ public:
     void async_accept( t_accept_handler accept_handler );
     void async_read(t_read_handler read_handler, connection_data *connection);
     void async_write(t_write_handler write_handler, connection_data *connection);
+    void register_timer(t_timer_handler timer_handler, unsigned ms, void *context);
 
 private:
     t_accept_handler global_accept_handler {nullptr};
     t_read_handler global_read_handler {nullptr};
     t_write_handler global_write_handler {nullptr};
+    t_timer_handler global_timer_handler {nullptr};
+    void *timer_context {nullptr};
     int server_fd {0}, epoll_fd {0};
     epoll_event *events {nullptr};
 
     memory_pool *pool {nullptr};
     size_t connections {0};
     static volatile bool interrupted;
+    unsigned timeout_ms {0};
 
     constexpr static unsigned STARTLEN {512};
     constexpr static int MAXEVENTS {128};

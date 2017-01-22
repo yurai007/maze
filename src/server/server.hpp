@@ -60,12 +60,66 @@
           current_connection.
        3. read_buf, write_buf, generic socket
        4. generic error_type (from Policy) + movement to header
+
+   TO DO: use listener/aka reactor in server_driver
 */
 
 namespace networking
 {
 
 constexpr static int sizeof_msg_size = sizeof(unsigned short);
+
+class listener
+{
+public:
+    template<class Func>
+    listener(short port, Func func) :
+        _io_service(),
+        _acceptor(_io_service, tcp::endpoint(tcp::v4(), port)),
+        m_signals(_io_service)
+    {
+        m_signals.add(SIGINT);
+        m_signals.add(SIGTERM);
+       #if defined(SIGQUIT)
+        m_signals.add(SIGQUIT);
+       #endif
+        m_signals.async_wait(func);
+    }
+
+    template<class Func>
+    void listen(connected_socket &socket, Func func) {
+        _acceptor.async_accept(socket._socket, func);
+    }
+
+//    template<class Func>
+//    void add_timer_handler(Func timer_handler, unsigned ms) {
+//        interval = ms;
+//        timer = deadline_timer(_io_service, interval);
+//        timer.async_wait([this](auto error_code){ update_timer(timer_handler, error_code); });
+//    }
+
+//    template<class Func>
+//    void update_timer(Func timer_handler, const boost::system::error_code&)
+//    {
+//        timer_handler();
+//        timer.expires_at(timer.expires_at() + interval);
+//        timer.async_wait([this](auto error_code){ this->update_timer(timer_handler, error_code); });
+//    }
+
+    void close() { _acceptor.close(); }
+
+    void run()
+    {
+        _io_service.run();
+    }
+
+    io_service _io_service;
+    tcp::acceptor _acceptor;
+    boost::asio::signal_set m_signals;
+
+    boost::posix_time::milliseconds interval;
+    deadline_timer timer;
+};
 
 class server
 {
@@ -78,16 +132,12 @@ public:
     io_service &get_io_service();
     smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
 
+    static constexpr bool debug {false};
+
 private:
-    void register_handler_for_listening();
-    void handle_accept(smart::fit_smart_ptr<connection> new_connection,
-                     const boost::system::error_code& error);
-    void handle_stop();
+    void listen();
 
-    io_service m_io_service;
-    tcp::acceptor acceptor;
-    boost::asio::signal_set m_signals;
-
+    listener _listener;
     std::vector<smart::fit_smart_ptr<connection>> connections;
 };
 

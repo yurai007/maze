@@ -63,15 +63,18 @@ void reactor::run()
         .data = {.ptr = &server_fd}
     };
 
+    int timeout = (timeout_ms > 0)? timeout_ms : -1;
+
     while(!interrupted)
     {
-        int n = epoll_wait(epoll_fd, events, MAXEVENTS, -1);
+        int n = epoll_wait(epoll_fd, events, MAXEVENTS, timeout);
         assert(n >= 0 || (n == -1 && errno == EINTR));
 
         if (n == 0)
         {
-            logger_.log("Timeout");
-            assert(false);
+            assert(timeout > 0);
+            logger_.log("Timer");
+            global_timer_handler(timer_context);
         }
 
         for(int i = 0; i < n; i++)
@@ -158,7 +161,12 @@ void reactor::async_write( t_write_handler write_handler, connection_data *conne
     global_write_handler = write_handler;
 }
 
-
+void reactor::register_timer(t_timer_handler timer_handler, unsigned ms, void *context)
+{
+    timeout_ms = ms;
+    timer_context = context;
+    global_timer_handler = timer_handler;
+}
 
 void reactor::check_errors(const char *message, int result)
 {
@@ -392,7 +400,7 @@ void reactor::handle_accepting_connection(int server_fd)
 		global_accept_handler(error_code, connection, client_address, client_port);
 }
 
-void reactor::new_handle_accepting_connection(int server_fd, struct epoll_event &client_event,
+void reactor::new_handle_accepting_connection(int server_fd, struct epoll_event &,
                                             struct epoll_event &server_event)
 {
     sockaddr_in clientaddr;

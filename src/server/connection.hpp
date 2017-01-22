@@ -14,13 +14,34 @@ using ip::tcp;
 
 class server;
 
+class connected_socket
+{
+public:
+    connected_socket(tcp::socket socket)
+        : _socket(std::move(socket)) {}
+
+    tcp::socket _socket;
+
+    void close()
+    {
+        _socket.close();
+    }
+
+    int native_handle()
+    {
+        return _socket.native_handle();
+    }
+
+    using error_type = boost::system::error_code;
+};
+
 class input_stream
 {
 public:
     template<class Func>
-    void read_at_least_one_byte(tcp::socket &socket, void* dest, size_t bytes,
+    void read_at_least_one_byte(connected_socket &socket, void* dest, size_t bytes,
                                 Func func) {
-        socket.async_read_some(buffer(dest, bytes), func);
+        socket._socket.async_read_some(buffer(dest, bytes), func);
     }
 };
 
@@ -28,13 +49,11 @@ class output_stream
 {
 public:
     template<class Func>
-    void write_all(tcp::socket &socket, void* dest, size_t bytes,
+    void write_all(connected_socket &socket, void* dest, size_t bytes,
                    Func func) {
-        async_write(socket, buffer(dest, bytes), func);
+        async_write(socket._socket, buffer(dest, bytes), func);
     }
 };
-
-using error_type = boost::system::error_code;
 
 class connection
 {
@@ -42,18 +61,18 @@ public:
     connection(const connection&) = delete;
     connection& operator=(const connection&) = delete;
 
-    connection(io_service& io_service, server &server_);
-    tcp::socket& get_socket();
+    connection(connected_socket socket_, server &server_);
+    connected_socket &get_socket();
     void start();
     void stop();
     unsigned id {0};
 
 private:
 
-    void process(const error_type& error, size_t bytes_transferred);
+    void process(const connected_socket::error_type& error, size_t bytes_transferred);
 
     server &m_server;
-    tcp::socket socket;
+    connected_socket socket;
     input_stream read_buf;
     output_stream write_buf;
 

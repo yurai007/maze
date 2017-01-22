@@ -23,10 +23,9 @@ client_world_manager::client_world_manager(smart::fit_smart_ptr<client_game_obje
 
 smart::fit_smart_ptr<client_player> client_world_manager::find_player(int id)
 {
-    for (auto &player : players)
-        if (player != nullptr && player->get_id() == id)
-            return player;
-    assert(false);
+    auto player_it = id_to_player.find(id);
+    assert(player_it != id_to_player.end());
+    return player_it->second;
 }
 
 void client_world_manager::load_all()
@@ -78,7 +77,55 @@ void client_world_manager::tick_all()
     assert(maze != nullptr);
     maze->update_content();
 
-    handle_external_dynamic_game_objects();
+    auto players_data = get_players();
+
+    logger_.log("client_world_manager%d: id_to_player.size() = %zu",
+                player_id, id_to_player.size());
+
+    for (auto &player_node : players_data)
+    {
+        auto id = player_node.first;
+        auto x = player_node.second.first;
+        auto y = player_node.second.second;
+
+        if ((id_to_player.find(id) == id_to_player.end()) && (id != player_id))
+        {
+            auto new_player = make_external_player(id, x, y);
+            if (!automatic_players)
+            {
+                if (new_player != nullptr)
+                    new_player->load_image();
+            }
+        }
+        else
+            id_to_player[id]->new_tick(x, y);
+    }
+
+    remove_absent_player(players_data);
+    update_enemies();
+
+    auto resources_data = get_resources_data_from_network();
+    for (size_t i = 0; i < resources_data.content.size(); i += 3)
+    {
+        char resource_type = (char)resources_data.content[i];
+        int x = resources_data.content[i+1];
+        int y = resources_data.content[i+2];
+
+        if (resources_pos.find({x, y}) == resources_pos.end())
+        {
+             make_resource(map_field_to_resource_name(resource_type), x, y);
+             char field = maze->get_field(x, y);
+             if (field == ' ')
+             {
+                 // problem: get_chunk_response and get_resource_response NOT in-sync
+                 logger_.log("client_world_manager%d: resources NOT in-sync for {%d, %d}", player_id,
+                             x, y);
+                 maze->set_field(x, y, resource_type);
+                 field = resource_type;
+             }
+        }
+    }
+    logger_.log("client_world_manager%d: updated maze content and maps with positions", player_id);
 
     maze->tick(tick_counter);
 
@@ -101,7 +148,7 @@ void client_world_manager::tick_all()
         }
 
     // players on the end
-    for (auto &player_node : player_id_to_position)
+    for (auto &player_node : id_to_player)
         if (player_node.first != player_id)
         {
             auto player = find_player(player_node.first);
@@ -124,7 +171,8 @@ void client_world_manager::draw_all()
     assert(maze != nullptr);
 
     int player_x, player_y;
-    std::tie(player_x, player_y) = player_id_to_position[player_id];
+    auto &active_player = id_to_player[player_id];
+    std::tie(player_x, player_y) = active_player->get_position();
 
     maze->draw(player_x, player_y);
 
@@ -137,7 +185,7 @@ void client_world_manager::draw_all()
             resource->draw(player_x, player_y);
 
 
-    for (auto &player_node : player_id_to_position)
+    for (auto &player_node : id_to_player)
         if (player_node.first != player_id)
         {
             auto player = find_player(player_node.first);
@@ -210,13 +258,14 @@ int client_world_manager::get_id_data_from_network()
 }
 
 // players_data must be sorted!
+// id_to_player = id_to_player /
 int client_world_manager::remove_absent_player(std::map<int, std::pair<int, int>> &players_data)
 {
     auto player_it = players_data.begin();
     int removed_player_id = 0;
 
-    auto item = player_id_to_position.begin();
-    for (; (item != player_id_to_position.end()) && player_it != players_data.end(); )
+    auto item = id_to_player.begin();
+    for (; (item != id_to_player.end()) && player_it != players_data.end(); )
     {
         auto id = item->first;
         if (player_it->first != id)
@@ -224,7 +273,7 @@ int client_world_manager::remove_absent_player(std::map<int, std::pair<int, int>
             logger_.log("client_world_manager%d: removing player_id = %d from map",
                         player_id, id);
             removed_player_id = id;
-            item = player_id_to_position.erase(item);
+            item = id_to_player.erase(item);
         }
         else
         {
@@ -233,37 +282,31 @@ int client_world_manager::remove_absent_player(std::map<int, std::pair<int, int>
         }
     }
 
-    if (item != player_id_to_position.end())
+    if (item != id_to_player.end())
     {
         logger_.log("client_world_manager%d: removing player_id = %d from map",
                     player_id, item->first);
         removed_player_id = item->first;
-        player_id_to_position.erase(item);
+        id_to_player.erase(item);
     }
     return removed_player_id;
 }
 
 void client_world_manager::load_images_for_drawables()
 {
-    int active_player_id = -1;
-    for (size_t i = 0; i < players.size(); i++)
+    if (!automatic_players)
     {
-        auto player = players[i];
-        if (!automatic_players)
-        {
-            if (player != nullptr)
-                player->load_image();
-        }
+        for (auto &player_node : id_to_player)
+            if (player_node.first != player_id)
+            {
+                auto player = find_player(player_node.first);
+                if (player != nullptr)
+                    player->load_image();
+            }
+        auto player = find_player(player_id);
         if (player != nullptr)
-        {
-            if (player->get_id() == player_id)
-                active_player_id = i;
-        }
+            player->load_image();
     }
-
-    // I want active player to be on the end during ticking
-    assert(active_player_id >= 0);
-    std::swap(players[active_player_id], players.back());
 
     for (auto &enemy_node : id_to_enemy)
     {
@@ -283,91 +326,6 @@ void client_world_manager::load_images_for_drawables()
                 resource->load_image();
         }
     }
-}
-
-void client_world_manager::handle_external_dynamic_game_objects()
-{
-    auto players_data = get_players();
-
-    logger_.log("client_world_manager%d: player_id_to_position.size() = %zu players.size() = %zu",
-                player_id, player_id_to_position.size(), players.size());
-
-    for (auto &player_node : players_data)
-    {
-        auto id = player_node.first;
-        auto x = player_node.second.first;
-        auto y = player_node.second.second;
-
-        if ((player_id_to_position.find(id) == player_id_to_position.end())
-                && (id != player_id))
-        {
-            auto new_player = make_external_player(id, x, y);
-            if (!automatic_players)
-            {
-                if (new_player != nullptr)
-                    new_player->load_image();
-            }
-        }
-        else
-            player_id_to_position[id] = {x, y};
-    }
-
-    // I want active player to be on the end during ticking
-    int active_player_id = -1;
-    for (size_t i = 0; i < players.size(); i++)
-    {
-        auto player = players[i];
-        if (player != nullptr)
-        {
-            if (player->get_id() == player_id)
-                active_player_id = i;
-        }
-    }
-    assert(active_player_id >= 0);
-    std::swap(players[active_player_id], players.back());
-
-    int removed_player_id = remove_absent_player(players_data);
-
-    if (removed_player_id > 0)
-    {
-        for (auto &player : players)
-            if (player != nullptr)
-            {
-                if (player->get_id() == removed_player_id)
-                {
-                    player = nullptr;
-                    logger_.log("client_world_manager%d: removed player_id = %d from game_objects",
-                                player_id, removed_player_id);
-                    break;
-                }
-            }
-    }
-
-    update_enemies();
-
-    auto resources_data = get_resources_data_from_network();
-    for (size_t i = 0; i < resources_data.content.size(); i += 3)
-    {
-        char resource_type = (char)resources_data.content[i];
-        int x = resources_data.content[i+1];
-        int y = resources_data.content[i+2];
-
-        if (resources_pos.find({x, y}) == resources_pos.end())
-        {
-             make_resource(map_field_to_resource_name(resource_type), x, y);
-             char field = maze->get_field(x, y);
-             if (field == ' ')
-             {
-                 // problem: get_chunk_response and get_resource_response NOT in-sync
-                 logger_.log("client_world_manager%d: resources NOT in-sync for {%d, %d}", player_id,
-                             x, y);
-                 maze->set_field(x, y, resource_type);
-                 field = resource_type;
-             }
-             //assert(field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's');
-        }
-    }
-    logger_.log("client_world_manager%d: updated maze content and maps with positions", player_id);
 }
 
 void client_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
@@ -403,19 +361,19 @@ void client_world_manager::make_player(int posx, int posy)
     int id = maze->get_id(posx, posy);
     bool active = (id == player_id);
 
-    player_id_to_position[id] = {posx, posy};
-    players.push_back(objects_factory->create_client_player(
+    id_to_player[id] = objects_factory->create_client_player(
                                *this,
                                id,
                                posx,
                                posy,
                                active,
-                               automatic_players));
+                               automatic_players);
+    id_to_player[id]->new_tick(posx, posy);
 
     if (active)
     {
         assert(maze != nullptr);
-        maze->attach_active_player(players.back());
+        maze->attach_active_player(id_to_player[id]);
     }
 
     logger_.log("client_world_manager%d: added player on position = {%d, %d}. Active = %s, Automatic = %s",
@@ -424,18 +382,18 @@ void client_world_manager::make_player(int posx, int posy)
 
 smart::fit_smart_ptr<drawable> client_world_manager::make_external_player(int id, int posx, int posy)
 {
-    player_id_to_position[id] = {posx, posy};
-    players.push_back(objects_factory->create_client_player(
+    id_to_player[id] = objects_factory->create_client_player(
                                *this,
                                id,
                                posx,
                                posy,
                                false,
-                               automatic_players));
+                               automatic_players);
+    id_to_player[id]->new_tick(posx, posy);
     logger_.log("client_world_manager%d: added external player id = %d on position = {%d, %d}. "
                 "Active = false, Automatic = %s",
                 player_id, id, posx, posy, bool_to_string(automatic_players));
-    return players.back();
+    return id_to_player[id];
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)
@@ -444,13 +402,6 @@ void client_world_manager::make_resource(const std::string &name, int posx, int 
     resources.push_back(objects_factory->create_client_resource(name, posx, posy));
     logger_.log("client_world_manager%d: added %s on position = {%d, %d}",
                 player_id, name.c_str(), posx, posy);
-}
-
-std::tuple<int, int> client_world_manager::get_player_position(int id)
-{
-    // Here is the very often fail. Not sure if this assert is needed
-    //assert(player_id_to_position.find(id) != player_id_to_position.end());
-    return player_id_to_position[id];
 }
 
 }

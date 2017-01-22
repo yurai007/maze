@@ -45,11 +45,15 @@ public:
     bool is_active() const;
     int get_id() const;
 
+    void new_tick(int new_x, int new_y);
     void tick(unsigned short tick_counter) override;
+
     void draw(int active_player_x, int active_player_y) override;
     void load_image() override;
 
 private:
+
+
     core::client_world_manager &manager;
     smart::fit_smart_ptr<control::controller> controller;
     smart::fit_smart_ptr<core::client_maze> maze;
@@ -63,6 +67,8 @@ private:
     char rotation {0};
 
     bool active, automatic;
+
+    std::tuple<int, int> new_position;
 };
 
 }

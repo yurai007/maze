@@ -74,7 +74,6 @@ void client_player::active_tick()
 
 void client_player::unactive_tick()
 {
-    const auto new_position = manager.get_player_position(id);
     direction = 0;
     if (get_position() == new_position)
         return;
@@ -163,6 +162,11 @@ bool client_player::is_active() const
 int client_player::get_id() const
 {
     return id;
+}
+
+void client_player::new_tick(int new_x, int new_y)
+{
+    new_position = {new_x, new_y};
 }
 
 void client_player::load_image()

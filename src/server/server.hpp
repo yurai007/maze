@@ -117,8 +117,8 @@ public:
     tcp::acceptor _acceptor;
     boost::asio::signal_set m_signals;
 
-    boost::posix_time::milliseconds interval;
-    deadline_timer timer;
+//    boost::posix_time::milliseconds interval;
+//    deadline_timer timer;
 };
 
 class server

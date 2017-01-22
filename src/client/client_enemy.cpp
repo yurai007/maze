@@ -7,14 +7,10 @@
 namespace core
 {
 
-client_enemy::client_enemy(client_world_manager &manager_,
-                           smart::fit_smart_ptr<presentation::renderer> renderer_,
-                           smart::fit_smart_ptr<core::client_maze> maze_,
+client_enemy::client_enemy(smart::fit_smart_ptr<presentation::renderer> renderer_,
                            int posx_, int posy_, int id_)
     : game_object(posx_, posy_),
       drawable(renderer_),
-      manager(manager_),
-      maze(maze_),
       id(id_)
 {
 }
@@ -26,7 +22,6 @@ void client_enemy::load_image()
 
 void client_enemy::tick(unsigned short )
 {
-    auto new_position = manager.get_enemy_position(id);
     direction = 0;
     if (get_position() == new_position)
         return;
@@ -58,6 +53,12 @@ void client_enemy::tick(unsigned short )
     posx = new_x;
     posy = new_y;
     perform_rotation = true;
+}
+
+void client_enemy::new_tick(int new_x, int new_y)
+{
+    new_position = {new_x, new_y};
+    tick(0);
 }
 
 void client_enemy::draw(int active_player_x, int active_player_y)

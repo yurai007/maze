@@ -31,7 +31,6 @@ public:
     void load_all();
     void tick_all();
     void draw_all();
-    std::tuple<int, int> get_enemy_position(int id);
     std::tuple<int, int> get_player_position(int id);
     void make_maze(smart::fit_smart_ptr<maze_loader> loader);
     void shut_down_client();
@@ -42,8 +41,8 @@ private:
 
     static std::string map_field_to_resource_name(const char field);
 
-    std::vector<int> get_enemies();
-    std::vector<int> get_players();
+    void update_enemies();
+    std::map<int, std::pair<int, int> > get_players();
     networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
 
@@ -59,7 +58,7 @@ private:
     void add_enemy(int posx, int posy, int id);
     void load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object);
     // assumption that only one player disappeared which clearly can be wrong
-    int remove_absent_player(std::vector<int> &players_data);
+    int remove_absent_player(std::map<int, std::pair<int, int>> &players_data);
     // same as above. Assumption that only one new at time
     smart::fit_smart_ptr<drawable> make_external_player(int id, int posx, int posy);
 
@@ -70,14 +69,12 @@ private:
 
     smart::fit_smart_ptr<core::client_maze> maze {nullptr};
     std::vector<smart::fit_smart_ptr<client_player>> players;
-    std::vector<smart::fit_smart_ptr<client_enemy>> enemies;
     std::vector<smart::fit_smart_ptr<client_resource>> resources;
 
     smart::fit_smart_ptr<client_game_objects_factory> objects_factory;
     smart::fit_smart_ptr<networking::network_manager> network_manager {nullptr};
 
-    std::unordered_map<int, std::pair<int, int>> enemy_id_to_position;
-    std::unordered_map<std::pair<int, int>, int, hash_pair_helper> position_to_player_id;
+    std::map<int, smart::fit_smart_ptr<client_enemy>> id_to_enemy;
     std::map<int, std::pair<int, int>> player_id_to_position;
     std::unordered_set<std::pair<int, int>, hash_pair_helper> resources_pos;
 

@@ -30,24 +30,11 @@ void client_world_manager::load_all()
     assert(maze != nullptr);
     maze->load();
 
-    auto players_data = get_players();
+    player_id_to_position = get_players();
+    player_posx = player_id_to_position[player_id].first;
+    player_posy = player_id_to_position[player_id].second;
 
-    for (size_t i = 0; i < players_data.size(); i += 3)
-    {
-        int id = players_data[i];
-        int x = players_data[i+1];
-        int y = players_data[i+2];
-        position_to_player_id[std::make_pair(x, y)] = id;
-
-        player_id_to_position[id] = {x, y};
-
-        if (id == player_id)
-        {
-            player_posx = x;
-            player_posy = y;
-        }
-    }
-    logger_.log("client_world_manager%d: build position_to_player_id map", player_id);
+    logger_.log("client_world_manager%d: build player_id_to_position map", player_id);
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -83,13 +70,13 @@ void client_world_manager::tick_all()
 {
     assert(maze != nullptr);
     logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
+
+    assert(maze != nullptr);
+    maze->update_content();
+
     handle_external_dynamic_game_objects();
 
     maze->tick(tick_counter);
-
-    for (auto &enemy : enemies)
-        if (enemy != nullptr)
-            enemy->tick(tick_counter);
 
     for (auto &resource : resources)
         if (resource != nullptr)
@@ -130,9 +117,9 @@ void client_world_manager::draw_all()
     const int player_x = std::get<0>(active_player_pos), player_y = std::get<1>(active_player_pos);
     maze->draw(player_x, player_y);
 
-    for (auto &enemy : enemies)
-        if (enemy != nullptr)
-            enemy->draw(player_x, player_y);
+    for (auto &enemy : id_to_enemy)
+        if (enemy.second != nullptr)
+            enemy.second->draw(player_x, player_y);
 
     for (auto &resource : resources)
         if (resource != nullptr)
@@ -154,10 +141,9 @@ std::string client_world_manager::map_field_to_resource_name(const char field)
     return name_it->second;
 }
 
-std::vector<int> client_world_manager::get_enemies()
+void client_world_manager::update_enemies()
 {
-    logger_.log_debug("client_world_manager: enemies data from maze");
-    std::vector<int> enemies_data;
+    logger_.log_debug("client_world_manager: update enemies data from maze");
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -166,22 +152,18 @@ std::vector<int> client_world_manager::get_enemies()
             if (field == 'E')
             {
                 auto id =  maze->get_id(column, row);
-
-                //logger_.log_debug("A.{%d, %d, %d}", id, column, row);
-                enemies_data.push_back(id);
-                enemies_data.push_back(column);
-                enemies_data.push_back(row);
+                auto &enemy = id_to_enemy[id];
+                enemy->new_tick(column, row);
+                //logger_.log_debug("{%d, %d, %d}", id, column, row);
             }
         }
-
-    return enemies_data;
 }
 
 // must be sorted by id!
-std::vector<int> client_world_manager::get_players()
+std::map<int, std::pair<int, int>> client_world_manager::get_players()
 {
     logger_.log_debug("client_world_manager: players data from maze");
-    std::map<int, std::pair<int, int>> tmp_to_pos;
+    std::map<int, std::pair<int, int>> tmp_player_id_to_position;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -190,23 +172,11 @@ std::vector<int> client_world_manager::get_players()
             if (field == 'P')
             {
                 auto id =  maze->get_id(column, row);
-                tmp_to_pos[id] = {column, row};
+                tmp_player_id_to_position[id] = {column, row};
+                //logger_.log_debug("{%d, %d, %d}", id, column, row);
             }
         }
-
-    std::vector<int> players_data;
-    auto player_it = tmp_to_pos.begin();
-    for (; player_it != tmp_to_pos.end(); ++player_it)
-    {
-        auto id = player_it->first;
-        auto pos = player_it->second;
-        players_data.push_back(id);
-        players_data.push_back(pos.first);
-        players_data.push_back(pos.second);
-        logger_.log_debug("{%d, %d, %d}", id, pos.first, pos.second);
-    }
-
-    return players_data;
+    return tmp_player_id_to_position;
 }
 
 networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
@@ -229,16 +199,16 @@ void client_world_manager::load_image_if_not_automatic(smart::fit_smart_ptr<draw
 }
 
 // players_data must be sorted!
-int client_world_manager::remove_absent_player(std::vector<int> &players_data)
+int client_world_manager::remove_absent_player(std::map<int, std::pair<int, int>> &players_data)
 {
-    size_t current_pos = 0;
+    auto player_it = players_data.begin();
     int removed_player_id = 0;
 
     auto item = player_id_to_position.begin();
-    for (; (item != player_id_to_position.end()) && current_pos < players_data.size(); )
+    for (; (item != player_id_to_position.end()) && player_it != players_data.end(); )
     {
         auto id = item->first;
-        if (players_data[current_pos] != id)
+        if (player_it->first != id)
         {
             logger_.log("client_world_manager%d: removing player_id = %d from map",
                         player_id, id);
@@ -247,8 +217,8 @@ int client_world_manager::remove_absent_player(std::vector<int> &players_data)
         }
         else
         {
+            player_it++;
             item++;
-            current_pos += 3;
         }
     }
 
@@ -287,8 +257,9 @@ void client_world_manager::load_images_for_drawables()
     assert(active_player_id >= 0);
     std::swap(players[active_player_id], players.back());
 
-    for (auto &enemy : enemies)
+    for (auto &enemy_node : id_to_enemy)
     {
+        auto &enemy = enemy_node.second;
         assert(typeid(*enemy.get()) == typeid(client_enemy));
         if (!automatic_players)
         {
@@ -306,25 +277,21 @@ void client_world_manager::load_images_for_drawables()
                 resource->load_image();
         }
     }
-    position_to_player_id.clear();
 }
 
 void client_world_manager::handle_external_dynamic_game_objects()
 {
-    assert(maze != nullptr);
-    maze->update_content();
-
     auto players_data = get_players();
 
     logger_.log("client_world_manager%d: player_id_to_position.size() = %zu players.size() = %zu",
                 player_id, player_id_to_position.size(), players.size());
 
-    // I may assume that id-s are in increasing order
-    for (size_t i = 0; i < players_data.size(); i += 3)
+    for (auto &player_node : players_data)
     {
-        int id = players_data[i];
-        int x = players_data[i+1];
-        int y = players_data[i+2];
+        auto id = player_node.first;
+        auto x = player_node.second.first;
+        auto y = player_node.second.second;
+
         if ((player_id_to_position.find(id) == player_id_to_position.end())
                 && (id != player_id))
         {
@@ -366,15 +333,7 @@ void client_world_manager::handle_external_dynamic_game_objects()
             }
     }
 
-    auto enemies_data = get_enemies();
-
-    for (size_t i = 0; i < enemies_data.size(); i += 3)
-    {
-        int id = enemies_data[i];
-        int x = enemies_data[i+1];
-        int y = enemies_data[i+2];
-        enemy_id_to_position[id] = {x, y};
-    }
+    update_enemies();
 
     auto resources_data = get_resources_data_from_network();
     for (size_t i = 0; i < resources_data.content.size(); i += 3)
@@ -410,8 +369,8 @@ void client_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
 void client_world_manager::add_enemy(int posx, int posy, int id)
 {
     assert(maze != nullptr);
-    enemies.push_back(
-                objects_factory->create_client_enemy(*this, posx, posy, id));
+    assert(id_to_enemy.find(id) == id_to_enemy.end());
+    id_to_enemy[id] = objects_factory->create_client_enemy(posx, posy, id);
     logger_.log("client_world_manager%d: added enemy on position = {%d, %d}", player_id, posx, posy);
 }
 
@@ -431,11 +390,9 @@ void client_world_manager::make_player(int posx, int posy)
     assert(player_id >= 0);
     assert(player_posx < INT_MAX);
     assert(player_posy < INT_MAX);
+    assert(maze->get_field(posx, posy) == 'P');
 
-    auto player_pos = std::make_pair(posx, posy);
-    assert(position_to_player_id.find(player_pos) != position_to_player_id.end());
-
-    int id = position_to_player_id[player_pos];
+    int id = maze->get_id(posx, posy);
     bool active = (id == player_id);
 
     players.push_back(objects_factory->create_client_player(
@@ -477,12 +434,6 @@ void client_world_manager::make_resource(const std::string &name, int posx, int 
     resources.push_back(objects_factory->create_client_resource(name, posx, posy));
     logger_.log("client_world_manager%d: added %s on position = {%d, %d}",
                 player_id, name.c_str(), posx, posy);
-}
-
-std::tuple<int, int> client_world_manager::get_enemy_position(int id)
-{
-    assert(enemy_id_to_position.find(id) != enemy_id_to_position.end());
-    return enemy_id_to_position[id];
 }
 
 std::tuple<int, int> client_world_manager::get_player_position(int id)

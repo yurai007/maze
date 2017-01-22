@@ -39,6 +39,8 @@ public:
 
 private:
 
+    smart::fit_smart_ptr<client_player> find_player(int id);
+
     static std::string map_field_to_resource_name(const char field);
 
     void update_enemies();
@@ -56,7 +58,6 @@ private:
     void make_resource(const std::string &name, int posx, int posy);
 
     void add_enemy(int posx, int posy, int id);
-    void load_image_if_not_automatic(smart::fit_smart_ptr<drawable> object);
     // assumption that only one player disappeared which clearly can be wrong
     int remove_absent_player(std::map<int, std::pair<int, int>> &players_data);
     // same as above. Assumption that only one new at time
@@ -79,13 +80,7 @@ private:
     std::unordered_set<std::pair<int, int>, hash_pair_helper> resources_pos;
 
     int player_id {0};
-    int player_posx {INT_MAX};
-    int player_posy {INT_MAX};
     bool automatic_players {false};
-
-    int external_player_id {0};
-    int external_player_posx {INT_MAX};
-    int external_player_posy {INT_MAX};
     unsigned short tick_counter {0};
 
 };

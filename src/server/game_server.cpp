@@ -87,9 +87,9 @@ void game_server::stop()
 	main_server.stop();
 }
 
-io_service &game_server::get_io_service()
+asio_reactor &game_server::get_reactor()
 {
-	return main_server.get_io_service();
+    return main_server.get_reactor();
 }
 
 }

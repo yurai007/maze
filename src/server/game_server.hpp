@@ -7,6 +7,8 @@
 #include "server.hpp"
 #include "server_world_manager.hpp"
 
+#include "asio_reactor.hpp"
+
 namespace networking
 {
 
@@ -20,10 +22,10 @@ public:
               smart::fit_smart_ptr<core::server_world_manager> manager);
     void run();
     void stop();
-    io_service &get_io_service();
+    asio_reactor &get_reactor();
 
 private:
-    server main_server {port_number};
+    server<asio_reactor> main_server {port_number};
 };
 
 }

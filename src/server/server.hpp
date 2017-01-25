@@ -1,11 +1,14 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <boost/asio.hpp>
-#include "connection.hpp"
+#include <iostream>
+#include <csignal>
+#include <boost/lexical_cast.hpp>
+#include "../common/message_dispatcher.hpp"
 #include "../common/logger.hpp"
 #include "../common/smart_ptr.hpp"
-#include "../common/message_dispatcher.hpp"
+#include "connection.hpp"
+
 
 /*
         *  TCP echo server
@@ -61,84 +64,104 @@
        3. read_buf, write_buf, generic socket
        4. generic error_type (from Policy) + movement to header
 
-   TO DO: use listener/aka reactor in server_driver
 */
 
 namespace networking
 {
 
-constexpr static int sizeof_msg_size = sizeof(unsigned short);
-
-class listener
-{
-public:
-    template<class Func>
-    listener(short port, Func func) :
-        _io_service(),
-        _acceptor(_io_service, tcp::endpoint(tcp::v4(), port)),
-        m_signals(_io_service)
-    {
-        m_signals.add(SIGINT);
-        m_signals.add(SIGTERM);
-       #if defined(SIGQUIT)
-        m_signals.add(SIGQUIT);
-       #endif
-        m_signals.async_wait(func);
-    }
-
-    template<class Func>
-    void listen(connected_socket &socket, Func func) {
-        _acceptor.async_accept(socket._socket, func);
-    }
-
-//    template<class Func>
-//    void add_timer_handler(Func timer_handler, unsigned ms) {
-//        interval = ms;
-//        timer = deadline_timer(_io_service, interval);
-//        timer.async_wait([this](auto error_code){ update_timer(timer_handler, error_code); });
-//    }
-
-//    template<class Func>
-//    void update_timer(Func timer_handler, const boost::system::error_code&)
-//    {
-//        timer_handler();
-//        timer.expires_at(timer.expires_at() + interval);
-//        timer.async_wait([this](auto error_code){ this->update_timer(timer_handler, error_code); });
-//    }
-
-    void close() { _acceptor.close(); }
-
-    void run()
-    {
-        _io_service.run();
-    }
-
-    io_service _io_service;
-    tcp::acceptor _acceptor;
-    boost::asio::signal_set m_signals;
-
-//    boost::posix_time::milliseconds interval;
-//    deadline_timer timer;
-};
-
+template<class Reactor>
 class server
 {
 public:
-    server(short port);
-    void add_dispatcher(smart::fit_smart_ptr<message_dispatcher> dispatcher);
-    void run();
-    void stop();
-    void remove_connection(unsigned connection_id);
-    io_service &get_io_service();
-    smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
+    server(short port)
+          : _reactor(port, [this](auto, auto) { this->stop();})
+    {
+        listen();
+    }
+
+    void add_dispatcher(smart::fit_smart_ptr<message_dispatcher> dispatcher)
+    {
+        m_dispatcher = dispatcher;
+    }
+
+    void run()
+    {
+        _reactor.run();
+    }
+
+    void stop()
+    {
+        logger_.log("server: stopped listening");
+        _reactor.stop();
+        _reactor.close();
+
+        auto connections_it = connections.begin();
+        while (connections_it != connections.end())
+        {
+            auto connection = *connections_it;
+            connection->stop();
+            connections_it = connections.erase(connections_it);
+        }
+        connections.clear();
+    }
+
+    void remove_connection(unsigned connection_id)
+    {
+        std::swap(connections.back(), connections[connection_id]);
+        connections[connection_id]->id = connection_id;
+
+        auto connection_ = connections.back();
+        logger_.log("server: connection with id = %d was removed",
+                    connection_->get_socket().native_handle());
+        connection_->stop();
+
+        connections.pop_back();
+    }
+
+    Reactor &get_reactor()
+    {
+        return _reactor;
+    }
+
+    auto &get_dispatcher()
+    {
+        return m_dispatcher;
+    }
 
     static constexpr bool debug {false};
 
 private:
-    void listen();
+    void listen()
+    {
+        logger_.log("server: start listening");
+        auto socket = _reactor.get_socket();
+        auto new_connection = smart::smart_make_shared<connection<Reactor>>(std::move(socket), *this);
 
-    listener _listener;
-    std::vector<smart::fit_smart_ptr<connection>> connections;
+        new_connection->id = connections.size();
+        connections.push_back(new_connection);
+
+        _reactor.listen(
+                    new_connection->get_socket(),
+                    [this, new_connection](auto error) mutable {
+                            if (!error)
+                            {
+                                std::string endpoint = boost::lexical_cast<std::string>(
+                                                            new_connection->get_socket()._socket.remote_endpoint());
+                                logger_.log("server: accepted next connection from %s", endpoint.c_str());
+                                new_connection->start();
+                            }
+                            else
+                            {
+                                logger_.log("server: connection accepting failed");
+                                new_connection = nullptr;
+                            }
+                            this->listen();
+                    });
+    }
+
+    Reactor _reactor;
+    smart::fit_smart_ptr<message_dispatcher> m_dispatcher;
+    std::vector<smart::fit_smart_ptr<connection<Reactor>>> connections;
 };
 
 }

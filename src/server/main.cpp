@@ -1,5 +1,4 @@
 #include <thread>
-#include <boost/asio.hpp>
 
 #include "../common/maze_generator.hpp"
 #include "../common/logger.hpp"
@@ -9,8 +8,6 @@
 
 #include "server_world_manager.hpp"
 #include "game_server.hpp"
-
-using namespace boost::asio;
 
 /*
  * Great makefile tutorial:
@@ -131,7 +128,9 @@ public:
         try
         {
             if (!pause_mode)
-                timer.async_wait([this](auto error_code){ this->tick(error_code); });
+                server.get_reactor().add_timer_handler(1, [=](){
+                    world_manager->tick_all();
+                });
             server.init(world_manager->get_maze(), world_manager);
             server.run();
         }
@@ -144,17 +143,8 @@ public:
 
 private:
 
-    void tick(const boost::system::error_code&)
-    {
-        world_manager->tick_all();
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait([this](auto error_code){ this->tick(error_code); });
-    }
-
     bool pause_mode;
     networking::game_server server;
-    boost::posix_time::milliseconds interval {1};
-    deadline_timer timer {server.get_io_service(), interval};
 
     smart::fit_smart_ptr<core::server_game_objects_factory> game_objects_factory
         {smart::smart_make_shared<core::server_game_objects_factory>()};

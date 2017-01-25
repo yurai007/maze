@@ -31,10 +31,13 @@ std::vector<std::string> network_maze_loader::load()
 
         const auto response = m_maze_client->read_get_chunk_response();
 
+//        logger_.log_debug("response.content size = %zu", response.content.size());
+//        logger_.log_debug("response.content %d: %s", i, response.content.c_str());
+
         for (unsigned j = 0; j < rows_number; j++)
         {
-            const auto row = response.content.substr(j*maze_size, maze_size);
-            assert(row.size() == maze_size);
+            const auto row = response.content.substr(2*j*maze_size, 2*maze_size);
+            assert(row.size() == 2*maze_size);
             result.push_back(row);
         }
     }

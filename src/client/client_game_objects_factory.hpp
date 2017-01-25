@@ -44,9 +44,7 @@ public:
                                     int id, int posx, int posy,
                                     bool active, bool automatic);
 
-    smart::fit_smart_ptr<client_enemy> create_client_enemy(
-            core::client_world_manager &manager,
-            int posx, int posy, int id);
+    smart::fit_smart_ptr<client_enemy> create_client_enemy(int posx, int posy, int id);
 
     smart::fit_smart_ptr<client_resource> create_client_resource(
             const std::string &name, int posx, int posy);

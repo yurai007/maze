@@ -8,57 +8,6 @@ network_manager::network_manager(smart::fit_smart_ptr<networking::client> client
     assert(client != nullptr);
 }
 
-// TO DO: commented because log_debug_in_place does not work yet
-
-messages::get_enemies_data_response network_manager::get_enemies_data_from_network(int player_id)
-{
-    messages::get_enemies_data request(player_id);
-    client->send_request(request);
-
-    auto response = client->read_get_enemies_data_response();
-
-    logger_.log_debug("client_world_manager%d: get_enemies_data was load. Content dump:", player_id);
-//    size_t i = 0;
-//    for (; i < response.content.size(); i += 3)
-//    {
-//        if (i != 0 && (i % 15 == 0) )
-//            logger_.log_debug_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-//                response.content[i+2]);
-//        else
-//            logger_.log_debug_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-//                response.content[i+2]);
-//    }
-//    if ((i-3)%15 != 0)
-//        logger_.log_debug_in_place("\n");
-    assert(response.content.size() % 3 == 0);
-    return response;
-}
-
-messages::get_players_data_response network_manager::get_players_data_from_network(int player_id)
-{
-    messages::get_players_data request;
-    client->send_request(request);
-
-    auto response = client->read_get_players_data_response();
-
-    logger_.log_debug("client_world_manager%d: get_players_data was load. Content dump:", player_id);
-//    size_t i = 0;
-//    for (; i < response.content.size(); i += 3)
-//    {
-//        if (i != 0 && (i % 15 == 0) )
-//            logger_.log_debug_in_place("{%d, %d, %d}\n", response.content[i], response.content[i+1],
-//                response.content[i+2]);
-//        else
-//            logger_.log_debug_in_place("{%d, %d, %d} ", response.content[i], response.content[i+1],
-//                response.content[i+2]);
-//    }
-//    if ((i-3)%15 != 0)
-//        logger_.log_debug_in_place("\n");
-    assert(response.content.size() % 3 == 0);
-
-    return response;
-}
-
 messages::get_resources_data_response network_manager::get_resources_data_from_network()
 {
     messages::get_resources_data request;
@@ -80,7 +29,7 @@ int network_manager::get_id_data_from_network()
     auto response = client->read_get_id_response();
 
     logger_.log("client_world_manager: player_id = %d", response.player_id);
-    assert(response.player_id > 0);
+    assert(response.player_id >= 0);
     return response.player_id;
 }
 

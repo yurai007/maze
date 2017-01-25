@@ -6,6 +6,7 @@
 #include <functional>
 #include <vector>
 #include <map>
+#include <experimental/optional>
 
 #include "logger.hpp"
 #include "byte_buffer.hpp"
@@ -23,74 +24,97 @@ namespace networking
    2. Observing callstack is good idea to understanding how it works
  */
 
-typedef std::function<bool(serialization::byte_buffer &buffer)> dispatcher_type;
+template<class T>
+using optional = std::experimental::optional<T>;
 
-// those traits converts argument sequence e.g. int, std::string, Foo.. to std::tuple<int, std::string, Foo>
+using dispatcher_type = std::function<optional<serialization::byte_buffer>
+                                                    (serialization::byte_buffer &)>;
+
 template<typename T>
 struct function_traits;
 
 template<typename R, typename C, typename Arg>
 struct function_traits<R(C::*)(Arg)>
 {
+    using return_type = R;
     using arg_type = Arg;
 };
 
 template<typename R, typename C, typename Arg>
 struct function_traits<R(C::*)(Arg) const>
 {
+    using return_type = R;
     using arg_type = Arg;
 };
 
 
-template<typename T>
+template<typename Ret, typename Arg>
 struct dispatcher_maker;
 
-template<typename Arg>
+template<typename Ret, typename Arg>
 struct dispatcher;
 
 
-template<typename Arg>
+template<typename Ret, typename Arg>
 struct dispatcher_maker
 {
     template<typename F>
     dispatcher_type make(F&& f)
     {
-        return dispatcher<Arg>{std::forward<F>(f)};
+        return dispatcher<Ret, Arg>{std::forward<F>(f)};
     }
 };
 
 template<typename F>
 dispatcher_type make_dispatcher(F&& f) // add dispatcher_type
 {
-    using f_type = decltype(&F::operator()); // e.g. void (message_dispatcher_test_case()::<lambda(int)>::*)(int) const
-    using arg_type = typename function_traits<f_type>::arg_type; // e.g std::tuple<int>
+    using f_type = decltype(&F::operator());
+    using arg_type = typename function_traits<f_type>::arg_type;
+    using return_type = typename function_traits<f_type>::return_type;
 
-    return dispatcher_maker<arg_type>().make(std::forward<F>(f)); // temporary dispatcher_maker<arg_type>
+    return dispatcher_maker<return_type, arg_type>().make(std::forward<F>(f));
 }
 
-template<typename Arg>
+// concept for handlers, that can't be void??
+
+template<typename Ret, typename Arg>
 struct dispatcher
 {
+    constexpr static int sizeof_msg_size = sizeof(unsigned short);
+
     template<typename F> dispatcher(F f) : handler(std::move(f)) { }
 
-    bool operator() (serialization::byte_buffer &buffer)
+    optional<serialization::byte_buffer> operator()(serialization::byte_buffer &buffer)
     {
-        typedef typename std::remove_reference<Arg>::type Msg;
+        using Req = typename std::remove_reference<Arg>::type;
+        using Resp = typename std::remove_reference<Ret>::type;
         int id = buffer.m_byte_buffer[buffer.offset];
 
-        if (id == Msg::message_id())
+        if (id == Req::message_id())
         {
-            Msg msg;
+            // msg = it's request here
+            Req req;
             buffer.offset++;
-            msg.deserialize_from_buffer(buffer);
-            handler(msg);
-            return true;
+            req.deserialize_from_buffer(buffer);
+
+            Resp resp = handler(req);
+
+            serialization::byte_buffer data;
+            data.put_unsigned_short(0);
+            data.put_char(resp.message_id());
+            resp.serialize_to_buffer(data);
+
+            assert(data.get_size() >= sizeof_msg_size);
+            assert(data.get_size() - sizeof_msg_size < 256*256);
+            unsigned short size = (unsigned short)(data.get_size() - sizeof_msg_size);
+            memcpy(&data.m_byte_buffer[0], &size, sizeof(size));
+            return data;
         }
-        return false;
+        return {};
     }
 
 private:
-    std::function<void(Arg)> handler;
+    std::function<Ret(Arg)> handler;
 };
 
 
@@ -109,25 +133,26 @@ public:
         callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
     }
 
-    void dispatch_msg_from_buffer(serialization::byte_buffer &buffer)
+    serialization::byte_buffer dispatch_req_get_resp(serialization::byte_buffer &buffer)
     {
-        dispatch(buffer); // buffer[0] is data size
-    }
-
-    void dispatch(serialization::byte_buffer &buffer)
-    {
-        for (auto some_dispatcher : callbacks)
-        {
-            if (call(some_dispatcher, buffer))
-                return;
-        }
-//        logger_.log("message dispatcher: there is no handler for this msg");
+        return dispatch(buffer);
     }
 
 private:
+    serialization::byte_buffer dispatch(serialization::byte_buffer &buffer)
+    {
+        for (auto some_dispatcher : callbacks)
+        {
+            auto maybe_data = call(some_dispatcher, buffer);
+            if (maybe_data)
+                return *maybe_data;
+        }
+        assert(false); // no handler
+    }
 
     template<typename Dispatcher>
-    bool call(Dispatcher const& dispatcher, serialization::byte_buffer &buffer)
+    optional<serialization::byte_buffer> call(Dispatcher const& dispatcher,
+                                              serialization::byte_buffer &buffer)
     {
         return dispatcher(buffer);
     }

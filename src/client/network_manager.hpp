@@ -13,8 +13,6 @@ class network_manager
 {
 public:
     network_manager(smart::fit_smart_ptr<networking::client> client_);
-    messages::get_enemies_data_response get_enemies_data_from_network(int player_id);
-    messages::get_players_data_response get_players_data_from_network(int player_id);
     messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
     void send_position_changed_over_network(int id, int oldx, int oldy,

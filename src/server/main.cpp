@@ -1,5 +1,4 @@
 #include <thread>
-#include <boost/asio.hpp>
 
 #include "../common/maze_generator.hpp"
 #include "../common/logger.hpp"
@@ -9,8 +8,6 @@
 
 #include "server_world_manager.hpp"
 #include "game_server.hpp"
-
-using namespace boost::asio;
 
 /*
  * Great makefile tutorial:
@@ -106,6 +103,13 @@ using namespace boost::asio;
    Added extra protectors and ASan:
         CXXFALGS += -fsanitize-recover=address
         ASAN_OPTIONS=halt_on_error=0 ./maze_server
+
+
+   * Be careful with coversions between signed and unsigned types. Look at bug in
+     abstract_maze::get_extended_field (overflow for signed char < 0 to unsigned short)
+
+   TO DO1: compare get_players_data with these in maze in server_world_manager. Remove get_resources_data
+   TO DO2: replace Boost.Asio by Reactor in server class
 */
 
 class server_driver
@@ -119,13 +123,14 @@ public:
 
     int run()
     {
-        world_manager->make_maze(smart::smart_make_shared<core::file_maze_loader>());
-        world_manager->load_all();
+        world_manager->load_all(smart::smart_make_shared<core::file_maze_loader>());
 
         try
         {
             if (!pause_mode)
-                timer.async_wait([this](auto error_code){ this->tick(error_code); });
+                server.get_reactor().add_timer_handler(1, [=](){
+                    world_manager->tick_all();
+                });
             server.init(world_manager->get_maze(), world_manager);
             server.run();
         }
@@ -138,17 +143,8 @@ public:
 
 private:
 
-    void tick(const boost::system::error_code&)
-    {
-        world_manager->tick_all();
-        timer.expires_at(timer.expires_at() + interval);
-        timer.async_wait([this](auto error_code){ this->tick(error_code); });
-    }
-
     bool pause_mode;
     networking::game_server server;
-    boost::posix_time::milliseconds interval {1};
-    deadline_timer timer {server.get_io_service(), interval};
 
     smart::fit_smart_ptr<core::server_game_objects_factory> game_objects_factory
         {smart::smart_make_shared<core::server_game_objects_factory>()};

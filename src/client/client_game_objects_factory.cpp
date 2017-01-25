@@ -40,10 +40,9 @@ smart::fit_smart_ptr<client_player> client_game_objects_factory::create_client_p
 }
 
 smart::fit_smart_ptr<client_enemy> client_game_objects_factory::create_client_enemy(
-                client_world_manager &manager,
                 int posx, int posy, int id)
 {
-    return smart::smart_make_shared<client_enemy>(manager, renderer_, maze_, posx, posy, id);
+    return smart::smart_make_shared<client_enemy>(renderer_, posx, posy, id);
 }
 
 smart::fit_smart_ptr<client_resource> client_game_objects_factory::create_client_resource(

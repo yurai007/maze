@@ -32,6 +32,9 @@
    I have to store extra info in my chunks (small_chunk/big_chunk).
 */
 
+namespace networking
+{
+
 constexpr static int page_size = 4096;
 
 struct small_chunk
@@ -60,6 +63,7 @@ extern void *allocate(memory_pool *pool, size_t request_size);
 extern void *callocate(memory_pool *pool, size_t request_size);
 extern void *reallocate(memory_pool *pool, size_t request_size,
 						size_t old_request_size, void *ptr);
+}
 
 #endif // MEMORY_POOL_HPP
 

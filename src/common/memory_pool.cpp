@@ -3,6 +3,9 @@
 #include <cstring>
 #include "memory_pool.hpp"
 
+namespace networking
+{
+
 void init_pool(memory_pool *pool)
 {
 	pool->big_list = NULL;
@@ -98,6 +101,8 @@ void *reallocate(memory_pool *pool, size_t request_size, size_t old_request_size
 		destroy_chunk(pool, ptr);
 	}
 	return new_ptr;
+}
+
 }
 
 

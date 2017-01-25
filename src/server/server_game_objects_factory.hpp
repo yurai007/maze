@@ -20,9 +20,8 @@ public:
 
     smart::fit_smart_ptr<server_maze> create_server_maze(smart::fit_smart_ptr<maze_loader> loader);
     smart::fit_smart_ptr<server_player> create_server_player(
-            smart::fit_smart_ptr<std::unordered_map<int, std::pair<int, int>>> positions_cache,
-            int posx, int posy, bool alive);
-    smart::fit_smart_ptr<server_enemy> create_server_enemy(int posx, int posy);
+            int posx, int posy, bool alive, int id);
+    smart::fit_smart_ptr<server_enemy> create_server_enemy(int posx, int posy, int id);
     smart::fit_smart_ptr<server_resource> create_server_resource(const std::string &name,
                                                             int posx, int posy);
     smart::fit_smart_ptr<server_fireball> create_server_fireball(int player_id,

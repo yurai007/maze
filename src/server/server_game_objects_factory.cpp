@@ -11,16 +11,17 @@ smart::fit_smart_ptr<server_maze> server_game_objects_factory::create_server_maz
 }
 
 smart::fit_smart_ptr<server_player> server_game_objects_factory::create_server_player(
-        smart::fit_smart_ptr<std::unordered_map<int, std::pair<int, int>>> positions_cache,
-        int posx, int posy, bool alive)
+        int posx, int posy, bool alive, int id)
 {
-    return smart::smart_make_shared<server_player>(maze_, positions_cache, posx, posy, alive);
+    assert(maze_ != nullptr);
+    return smart::smart_make_shared<server_player>(maze_, posx, posy, alive, id);
 }
 
 smart::fit_smart_ptr<server_enemy> server_game_objects_factory::create_server_enemy(
-        int posx, int posy)
+        int posx, int posy, int id)
 {
-    return smart::smart_make_shared<server_enemy>(maze_, posx, posy);
+    assert(maze_ != nullptr);
+    return smart::smart_make_shared<server_enemy>(maze_, posx, posy, id);
 }
 
 smart::fit_smart_ptr<server_resource> server_game_objects_factory::create_server_resource(

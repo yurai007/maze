@@ -1,4 +1,4 @@
-#include "../common/custom_transport.hpp"
+#include "../common/reactor.hpp"
 #include "../common/logger.hpp"
 #include <stdio.h>
 #include <string.h>
@@ -51,9 +51,11 @@
    I shouldn't use logger in signal handler because log is not reentrant.
 */
 
-void read_handler(int bytes_transferred, connection_data *connection);
+networking::reactor reactor;
 
-void write_handler(int bytes_transferred, connection_data *connection)
+void read_handler(int bytes_transferred, networking::connection_data *connection);
+
+void write_handler(int bytes_transferred, networking::connection_data *connection)
 {
 	if (bytes_transferred >= 0)
 	{
@@ -63,16 +65,16 @@ void write_handler(int bytes_transferred, connection_data *connection)
 //        else
 //            logger_.log("Send back %d bytes. Send all data to client socket = %d. ", bytes_transferred,
 //                    connection->fd);
-		async_read(read_handler, connection);
+        reactor.async_read(read_handler, connection);
 	}
 }
 
-void prepare_echo_response(connection_data *connection)
+void prepare_echo_response(networking::connection_data *connection)
 {
-	async_write(write_handler, connection);
+    reactor.async_write(write_handler, connection);
 }
 
-void read_handler(int bytes_transferred, connection_data *connection)
+void read_handler(int bytes_transferred, networking::connection_data *connection)
 {
 	if(bytes_transferred == 0)
 	{
@@ -91,14 +93,14 @@ void read_handler(int bytes_transferred, connection_data *connection)
 	}
 }
 
-void accept_handler(int error, connection_data *connection,
+void accept_handler(int error, networking::connection_data *connection,
 					const char *address, const char *port)
 {
 	if (error == 0)
 	{
         logger_.log("Accepted connection on descriptor %d "
                "(host=%s, port=%s)", connection->fd, address, port);
-        async_read(read_handler, connection);
+        reactor.async_read(read_handler, connection);
 	}
 	else
 	{
@@ -115,9 +117,9 @@ int main(int argc, char* argv[])
     }
 
 	//logger_.enable(false);
-	async_accept(accept_handler);
+    reactor.async_accept(accept_handler);
 	int port = atoi(argv[1]);
-	init(port);
-	run();
+    reactor.init(port);
+    reactor.run();
     return 0;
 }

@@ -193,7 +193,7 @@ public:
         }
 		assert(send_bytes > 0);
 
-		logger_.log("synchronous_client::  Sent %d bytes", send_bytes);
+        logger_.log_debug("synchronous_client::  Sent %d bytes", send_bytes);
 	}
 
 	// blocks until read excatly expected_bytes B
@@ -202,7 +202,7 @@ public:
 		assert(expected_bytes <= max_buffer_size);
 		boost::system::error_code error;
 
-		logger_.log("synchronous_client::  Start recieving...");
+        logger_.log_debug("synchronous_client::  Start recieving...");
 		size_t recieved_bytes = boost::asio::read(socket, boost::asio::buffer(data, expected_bytes),
 												  error);
 
@@ -212,7 +212,7 @@ public:
         }
 		assert(recieved_bytes > 0 && expected_bytes == recieved_bytes);
 
-		logger_.log("synchronous_client::  Recieved %d bytes", recieved_bytes);
+        logger_.log_debug("synchronous_client::  Recieved %d bytes", recieved_bytes);
 		std::string result(data.begin(), data.begin() + recieved_bytes);
 		return result;
 	}
@@ -222,7 +222,7 @@ public:
     {
         boost::system::error_code error;
 
-        logger_.log("synchronous_client::  Start recieving...");
+        logger_.log_debug("synchronous_client::  Start recieving...");
         /* TO DO: I use here read_some only because in this point I have no idea how many data
                   I want to read. Using sth like
                   size_t recieved_bytes = boost::asio::read(socket, boost::asio::buffer(data), error);
@@ -237,7 +237,7 @@ public:
         assert(recieved_bytes > 0);
         assert(recieved_bytes <= max_buffer_size );
 
-        logger_.log("synchronous_client::  Recieved %d bytes", recieved_bytes);
+        logger_.log_debug("synchronous_client::  Recieved %d bytes", recieved_bytes);
         std::string result(data.begin(), data.begin() + recieved_bytes);
         return result;
     }
@@ -307,7 +307,7 @@ private:
 	{
 		if (!error_code)
 		{
-			logger_.log("read_handler: %d B was recieved", bytes_transferred);
+            logger_.log_debug("read_handler: %d B was recieved", bytes_transferred);
             const bool conversation_end = external_read_handler(connection_buffers[client_id],
                                                                 bytes_transferred, client_id);
 			if (conversation_end)
@@ -317,8 +317,8 @@ private:
 
 			boost::asio::async_write(sockets[client_id],
                                      boost::asio::buffer(connection_buffers[client_id], size),
-                                     [this, client_id](auto error_code_, auto bytes_transferred){
-                                         this->write_handler(error_code_, bytes_transferred, client_id);});
+                                     [this, client_id](auto error_code_, auto bytes_transferred_){
+                                         this->write_handler(error_code_, bytes_transferred_, client_id);});
 		}
         else
         {
@@ -332,7 +332,7 @@ private:
 		if (!error_code)
 		{
 			assert(bytes_transferred > 0);
-			logger_.log("write_handler: %d B was send", bytes_transferred);
+            logger_.log_debug("write_handler: %d B was send", bytes_transferred);
 
             boost::asio::async_read(sockets[client_id],
                                     boost::asio::buffer(connection_buffers[client_id], bytes_transferred),
@@ -659,7 +659,7 @@ void stress_test__4k_clients()
                                    + recieved_bytes);
 
         assert(response == expected_response);
-        logger_.log("OK. Recieved echo response from client %d.", client_id);
+        logger_.log_debug("OK. Recieved echo response from client %d.", client_id);
         return true;
     };
 

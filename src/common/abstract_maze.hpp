@@ -21,7 +21,9 @@ public:
 
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
+    unsigned short get_id(int column, int row) const;
     void set_field(int column, int row, char field);
+    void set_field(int column, int row, char field, int id);
 
     std::string get_chunk(unsigned leftdown_x, unsigned leftdown_y,
                                        unsigned rightupper_x, unsigned rightupper_y) const;
@@ -30,7 +32,7 @@ public:
                     const std::tuple<int, int> new_pos);
     void reset_field(const std::tuple<int, int> pos);
     int size() const;
-    int column_size(int column) const;
+    size_t column_size(int column) const;
     void update_content();
     void verify() const;
     virtual ~abstract_maze() = default;
@@ -110,6 +112,9 @@ public:
     }
 
 protected:
+    unsigned short get_extended_field(int column, int row) const;
+    void set_extended_field(int column, int row, unsigned short field);
+
     std::vector<std::string> content;
     smart::fit_smart_ptr<core::maze_loader> m_loader {nullptr};
 };

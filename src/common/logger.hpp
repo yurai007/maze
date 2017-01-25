@@ -22,7 +22,7 @@ public:
 
     static logger& get()
     {
-        static logger instance(true, true, true, false);
+        static logger instance(true, true, true, true);
         return instance;
     }
 

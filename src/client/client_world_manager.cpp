@@ -21,13 +21,6 @@ client_world_manager::client_world_manager(smart::fit_smart_ptr<client_game_obje
     logger_.log("client_world_manager: started");
 }
 
-smart::fit_smart_ptr<client_player> client_world_manager::find_player(int id)
-{
-    auto player_it = id_to_player.find(id);
-    assert(player_it != id_to_player.end());
-    return player_it->second;
-}
-
 void client_world_manager::load_all()
 {
     logger_.log("client_world_manager: start loading external players and enemies");
@@ -71,37 +64,54 @@ void client_world_manager::load_all()
 
 void client_world_manager::tick_all()
 {
-    assert(maze != nullptr);
     logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
 
     assert(maze != nullptr);
     maze->update_content();
 
-    auto players_data = get_players();
+        auto players_data = get_players();
 
-    logger_.log("client_world_manager%d: id_to_player.size() = %zu",
-                player_id, id_to_player.size());
-
-    for (auto &player_node : players_data)
-    {
-        auto id = player_node.first;
-        auto x = player_node.second.first;
-        auto y = player_node.second.second;
-
-        if ((id_to_player.find(id) == id_to_player.end()) && (id != player_id))
+        // pass one - add new
+        for (auto &player : players_data)
         {
-            auto new_player = make_external_player(id, x, y);
-            if (!automatic_players)
+            auto id = player.first;
+
+            if (id_to_player.find(id) == id_to_player.end())
             {
-                if (new_player != nullptr)
-                    new_player->load_image();
+                int posx = std::get<0>(player.second), posy = std::get<1>(player.second);
+                id_to_player[id] = objects_factory->create_client_player(*this, id, posx, posy,
+                                  false, automatic_players);
+
+                logger_.log("client_world_manager%d: added external player id = %d on position = {%d, %d}. "
+                            "Active = false, Automatic = %s",
+                            player_id, id, posx, posy, bool_to_string(automatic_players));
+                auto drawable_player = id_to_player[id];
+
+                if (!automatic_players)
+                    drawable_player->load_image();
             }
         }
-        else
-            id_to_player[id]->new_tick(x, y);
-    }
 
-    remove_absent_player(players_data);
+        // pass two - remove old and new_tick
+        auto itr = id_to_player.begin();
+        while (itr != id_to_player.end())
+        {
+            auto id = itr->first;
+            auto player = players_data.find(id);
+            if (player == players_data.end())
+            {
+                itr = id_to_player.erase(itr);
+                logger_.log("client_world_manager%d: removing player_id = %d from map",
+                                        player_id, id);
+            }
+            else
+            {
+                int posx = std::get<0>(player->second), posy = std::get<1>(player->second);
+                id_to_player[id]->new_tick(posx, posy);
+                ++itr;
+            }
+        }
+
     update_enemies();
 
     auto resources_data = get_resources_data_from_network();
@@ -151,13 +161,12 @@ void client_world_manager::tick_all()
     for (auto &player_node : id_to_player)
         if (player_node.first != player_id)
         {
-            auto player = find_player(player_node.first);
-            if (player != nullptr)
-                player->tick(tick_counter);
+            assert(player_node.second != nullptr);
+            player_node.second->tick(player_id);
         }
-    auto player = find_player(player_id);
-    if (player != nullptr)
-        player->tick(tick_counter);
+    auto &player = id_to_player[player_id];
+    assert(player != nullptr);
+    player->tick(tick_counter);
 
     logger_.log("client_world_manager%d: finished tick with id = %d", player_id, tick_counter);
     tick_counter++;
@@ -188,13 +197,12 @@ void client_world_manager::draw_all()
     for (auto &player_node : id_to_player)
         if (player_node.first != player_id)
         {
-            auto player = find_player(player_node.first);
-            if (player != nullptr)
-                player->draw(player_x, player_y);
+            assert(player_node.second != nullptr);
+            player_node.second->draw(player_x, player_y);
         }
-    auto player = find_player(player_id);
-    if (player != nullptr)
-        player->draw(player_x, player_y);
+    auto &player = id_to_player[player_id];
+    assert(player != nullptr);
+    player->draw(player_x, player_y);
 
 }
 
@@ -228,10 +236,10 @@ void client_world_manager::update_enemies()
 }
 
 // must be sorted by id!
-std::map<int, std::pair<int, int>> client_world_manager::get_players()
+std::map<int, std::tuple<int, int>> client_world_manager::get_players()
 {
     logger_.log_debug("client_world_manager: players data from maze");
-    std::map<int, std::pair<int, int>> tmp_player_id_to_position;
+    std::map<int, std::tuple<int, int>> tmp_player_id_to_position;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -249,47 +257,36 @@ std::map<int, std::pair<int, int>> client_world_manager::get_players()
 
 networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
 {
-    return network_manager->get_resources_data_from_network();
+    auto msg = network_manager->get_resources_data_from_network();
+
+    logger_.log_debug("client_world_manager: resource data from maze");
+    std::map<int, std::tuple<int, int>> tmp_resource_id_to_position;
+
+    for (int row = 0; row < maze->size(); row++)
+        for (int column = 0; column < maze->size(); column++)
+        {
+            const char field = maze->get_field(column, row);
+            if ( field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's')
+            {
+                auto id =  maze->get_id(column, row);
+                tmp_resource_id_to_position[id] = {column, row};
+                logger_.log_debug("{%d, %d, %d}", id, column, row);
+            }
+        }
+
+//    for (size_t i = 0; i < resources_data.content.size(); i += 3)
+//    {
+//        char resource_type = (char)resources_data.content[i];
+//        int x = resources_data.content[i+1];
+//        int y = resources_data.content[i+2];
+//    }
+
+    return msg;
 }
 
 int client_world_manager::get_id_data_from_network()
 {
     return network_manager->get_id_data_from_network();
-}
-
-// players_data must be sorted!
-// id_to_player = id_to_player /
-int client_world_manager::remove_absent_player(std::map<int, std::pair<int, int>> &players_data)
-{
-    auto player_it = players_data.begin();
-    int removed_player_id = 0;
-
-    auto item = id_to_player.begin();
-    for (; (item != id_to_player.end()) && player_it != players_data.end(); )
-    {
-        auto id = item->first;
-        if (player_it->first != id)
-        {
-            logger_.log("client_world_manager%d: removing player_id = %d from map",
-                        player_id, id);
-            removed_player_id = id;
-            item = id_to_player.erase(item);
-        }
-        else
-        {
-            player_it++;
-            item++;
-        }
-    }
-
-    if (item != id_to_player.end())
-    {
-        logger_.log("client_world_manager%d: removing player_id = %d from map",
-                    player_id, item->first);
-        removed_player_id = item->first;
-        id_to_player.erase(item);
-    }
-    return removed_player_id;
 }
 
 void client_world_manager::load_images_for_drawables()
@@ -299,13 +296,12 @@ void client_world_manager::load_images_for_drawables()
         for (auto &player_node : id_to_player)
             if (player_node.first != player_id)
             {
-                auto player = find_player(player_node.first);
-                if (player != nullptr)
-                    player->load_image();
+                assert(player_node.second != nullptr);
+                player_node.second->load_image();
             }
-        auto player = find_player(player_id);
-        if (player != nullptr)
-            player->load_image();
+        auto &player = id_to_player[player_id];
+        assert(player != nullptr);
+        player->load_image();
     }
 
     for (auto &enemy_node : id_to_enemy)
@@ -378,22 +374,6 @@ void client_world_manager::make_player(int posx, int posy)
 
     logger_.log("client_world_manager%d: added player on position = {%d, %d}. Active = %s, Automatic = %s",
                 player_id, posx, posy, bool_to_string(active), bool_to_string(automatic_players));
-}
-
-smart::fit_smart_ptr<drawable> client_world_manager::make_external_player(int id, int posx, int posy)
-{
-    id_to_player[id] = objects_factory->create_client_player(
-                               *this,
-                               id,
-                               posx,
-                               posy,
-                               false,
-                               automatic_players);
-    id_to_player[id]->new_tick(posx, posy);
-    logger_.log("client_world_manager%d: added external player id = %d on position = {%d, %d}. "
-                "Active = false, Automatic = %s",
-                player_id, id, posx, posy, bool_to_string(automatic_players));
-    return id_to_player[id];
 }
 
 void client_world_manager::make_resource(const std::string &name, int posx, int posy)

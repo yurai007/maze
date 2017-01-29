@@ -38,12 +38,10 @@ public:
 
 private:
 
-    smart::fit_smart_ptr<client_player> find_player(int id);
-
     static std::string map_field_to_resource_name(const char field);
 
     void update_enemies();
-    std::map<int, std::pair<int, int> > get_players();
+    std::map<int, std::tuple<int, int> > get_players();
     networking::messages::get_resources_data_response get_resources_data_from_network();
     int get_id_data_from_network();
 
@@ -53,10 +51,6 @@ private:
     void make_resource(const std::string &name, int posx, int posy);
 
     void add_enemy(int posx, int posy, int id);
-    // assumption that only one player disappeared which clearly can be wrong
-    int remove_absent_player(std::map<int, std::pair<int, int>> &players_data);
-    // same as above. Assumption that only one new at time
-    smart::fit_smart_ptr<drawable> make_external_player(int id, int posx, int posy);
 
     static const char *bool_to_string(bool x)
     {

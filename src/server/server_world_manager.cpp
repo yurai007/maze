@@ -86,46 +86,6 @@ void server_world_manager::tick_all()
     tick_counter++;
 }
 
-//std::vector<int> server_world_manager::get_players_data() const
-//{
-//    // only for verification purpose
-//    std::unordered_map<int, std::pair<int, int>> players_map;
-
-//    for (int row = 0; row < maze->size(); row++)
-//        for (int column = 0; column < maze->size(); column++)
-//        {
-//            const char field = maze->get_field(column, row);
-//            if (field == 'P')
-//            {
-//                auto id =  maze->get_id(column, row);
-//                players_map[id] = {column, row};
-//            }
-//        }
-
-//    std::vector<int> players_data;
-//    for (const auto &player : players)
-//    {
-//        if (player->is_alive())
-//        {
-//            const auto position = player->get_position();
-//            players_data.push_back(player->get_id());
-//            players_data.push_back(std::get<0>(position));
-//            players_data.push_back(std::get<1>(position));
-
-//            auto id = player->get_id();
-
-//            if (std::get<0>(position) != players_map[id].first ||
-//                    std::get<1>(position) != players_map[id].second)
-//            {
-//                logger_.log_debug("A.{%d, %d, %d}", id, std::get<0>(position), std::get<1>(position));
-//                logger_.log_debug("B.{%d, %d, %d}", id, players_map[id].first, players_map[id].second);
-//            }
-//        }
-//    }
-
-//    return players_data;
-//}
-
 std::vector<int> server_world_manager::get_resources_data() const
 {
     std::vector<int> result;

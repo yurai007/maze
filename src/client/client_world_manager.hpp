@@ -42,7 +42,7 @@ private:
 
     void update_enemies();
     std::map<int, std::tuple<int, int> > get_players();
-    networking::messages::get_resources_data_response get_resources_data_from_network();
+    std::vector<int> get_resources();
     int get_id_data_from_network();
 
     void load_images_for_drawables();

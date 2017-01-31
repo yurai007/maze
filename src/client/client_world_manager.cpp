@@ -114,12 +114,12 @@ void client_world_manager::tick_all()
 
     update_enemies();
 
-    auto resources_data = get_resources_data_from_network();
-    for (size_t i = 0; i < resources_data.content.size(); i += 3)
+    auto resources_data = get_resources();
+    for (size_t i = 0; i < resources_data.size(); i += 3)
     {
-        char resource_type = (char)resources_data.content[i];
-        int x = resources_data.content[i+1];
-        int y = resources_data.content[i+2];
+        char resource_type = (char)resources_data[i];
+        int x = resources_data[i+1];
+        int y = resources_data[i+2];
 
         if (resources_pos.find({x, y}) == resources_pos.end())
         {
@@ -255,12 +255,10 @@ std::map<int, std::tuple<int, int>> client_world_manager::get_players()
     return tmp_player_id_to_position;
 }
 
-networking::messages::get_resources_data_response client_world_manager::get_resources_data_from_network()
+std::vector<int> client_world_manager::get_resources()
 {
-    auto msg = network_manager->get_resources_data_from_network();
-
     logger_.log_debug("client_world_manager: resource data from maze");
-    std::map<int, std::tuple<int, int>> tmp_resource_id_to_position;
+    std::map<std::tuple<int, int>, char> tmp_resource_id_to_position;
 
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
@@ -268,19 +266,23 @@ networking::messages::get_resources_data_response client_world_manager::get_reso
             const char field = maze->get_field(column, row);
             if ( field == 'G' || field == 'M' || field == 'S' || field == 'W' || field == 's')
             {
-                auto id =  maze->get_id(column, row);
-                tmp_resource_id_to_position[id] = {column, row};
-                logger_.log_debug("{%d, %d, %d}", id, column, row);
+                //auto id =  maze->get_id(column, row);
+                std::tuple<int, int> pos = {column, row};
+                tmp_resource_id_to_position[pos] = field;
+                //logger_.log_debug("{%c, %d, %d}", field, column, row);
             }
         }
 
-//    for (size_t i = 0; i < resources_data.content.size(); i += 3)
-//    {
-//        char resource_type = (char)resources_data.content[i];
-//        int x = resources_data.content[i+1];
-//        int y = resources_data.content[i+2];
-//    }
-
+    std::vector<int> msg;
+        for (auto &it : tmp_resource_id_to_position)
+        {
+            int x = std::get<0>(it.first);
+            int y = std::get<1>(it.first);
+            char resource_type = it.second;
+            msg.push_back((int)resource_type);
+            msg.push_back(x);
+            msg.push_back(y);
+        }
     return msg;
 }
 

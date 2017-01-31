@@ -58,7 +58,9 @@ void server_world_manager::tick_all()
         n--;
     }
 
+    size_t i = 0;
     for (auto &resource : resources)
+    {
         if (resource != nullptr)
         {
             const auto position = resource->get_position();
@@ -69,15 +71,28 @@ void server_world_manager::tick_all()
                 resource = nullptr;
                 logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
                             std::get<0>(position), std::get<1>(position));
+                logger_.log("server_world_manager: id = %u", i);
             }
         }
+        i++;
+    }
 
-    for (auto &resource : resources)
-        if (resource == nullptr)
+    i = 0;
+    auto itr = resources.begin();
+    while (itr != resources.end())
+    {
+        if (*itr == nullptr)
         {
-            std::swap(resource, resources.back());
+            std::swap(*itr, resources.back());
             resources.pop_back();
+            logger_.log("server_world_manager: cleanup: id = %u", i);
         }
+        else
+        {
+            ++itr;
+        }
+        i++;
+    }
 
     if (resources.size() < 60)
         generate_resources(10);
@@ -93,9 +108,19 @@ std::vector<int> server_world_manager::get_resources_data() const
     {
         assert(resource != nullptr);
         const auto position = resource->get_position();
-        result.push_back(map_resource_name_to_type(resource->get_name()));
-        result.push_back(std::get<0>(position));
-        result.push_back(std::get<1>(position));
+        auto posx = std::get<0>(position);
+        auto posy = std::get<1>(position);
+        auto type = map_resource_name_to_type(resource->get_name());
+
+        auto type_from_maze = maze->get_field(posx, posy);
+        if (type_from_maze != type)
+        {
+            logger_.log_debug("Bad for {%c, %d, %d}", type, posx, posy);
+        }
+
+        result.push_back(type);
+        result.push_back(posx);
+        result.push_back(posy);
     }
     return result;
 }

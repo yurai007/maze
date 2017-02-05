@@ -117,6 +117,12 @@
      ~300us.
    - speed up maze_client for 512 players by reducing ticking from 4-5ms to 2ms
    - signals in no_gui_driver doesn't work -> shut_down doesn't work (but for gui-on everything is OK)
+
+ * TO DO fresh:
+
+   - on server side - vector resources and map_* methods should be probably removed because
+     full information about resource is encoded in maze. Then whole part of resources handling in
+     tick_all should be removed.
 */
 
 void generator_test_case()

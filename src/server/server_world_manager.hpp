@@ -19,13 +19,11 @@ public:
 
     void load_all(smart::fit_smart_ptr<maze_loader> loader);
     void tick_all();
-
-    std::vector<int> get_resources_data() const;
     smart::fit_smart_ptr<core::server_maze> get_maze() const;
 
     int allocate_data_for_new_player();
     void allocate_data_for_new_fireball(int player_id, int posx, int posy, char direction);
-    void generate_resources(unsigned resources_number);
+    void generate_resources(unsigned resources);
     void shutdown_player(int id);
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
     void repair_if_uncorrect_enemies();
@@ -33,24 +31,16 @@ public:
 
 
 private:
-
-    static std::string map_field_to_resource_name(const char field);
-    static char map_resource_name_to_type(const std::string &name);
+    void remove_resource(auto pos);
     void tick_and_move(smart::fit_smart_ptr<game_object> some_game_object, unsigned short tick_counter);
-
-    void make_maze(smart::fit_smart_ptr<maze_loader> loader);
-    void make_enemy(int posx, int posy, int id);
-    smart::fit_smart_ptr<server_player> make_player(int posx, int posy, bool alive, int id);
-    void make_resource(const std::string &name, int posx, int posy);
-    void make_fireball(int player_id, int posx, int posy, char direction);
 
     smart::fit_smart_ptr<server_game_objects_factory> objects_factory;
     smart::fit_smart_ptr<core::server_maze> maze {nullptr};
     std::vector<smart::fit_smart_ptr<server_enemy>> enemies;
     std::vector<smart::fit_smart_ptr<server_player>> players;
-    std::vector<smart::fit_smart_ptr<server_resource>> resources;
     std::vector<smart::fit_smart_ptr<server_fireball>> fireballs;
 
+    unsigned resources_number {0};
     int last_player_id {0};
 };
 

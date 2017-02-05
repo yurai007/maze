@@ -17,21 +17,35 @@ server_world_manager::server_world_manager(smart::fit_smart_ptr<server_game_obje
 
 void server_world_manager::load_all(smart::fit_smart_ptr<maze_loader> loader)
 {
-    logger_.log("server_world_manager: start loading");
+    logger_.log("server_world_manager: start loading");    
 
-    make_maze(loader);
+    maze = objects_factory->create_server_maze(loader);
+    maze->load();
+    logger_.log("server_world_manager: added maze");
+
     for (int row = 0; row < maze->size(); row++)
         for (int column = 0; column < maze->size(); column++)
         {
             const char field = maze->get_field(column, row);
             if (field == 'P')
-                make_player(column, row, false, last_player_id++);
+            {
+                players.push_back(objects_factory->create_server_player(column, row, false, last_player_id++));
+                logger_.log("server_world_manager: added player on position = {%d, %d}", column, row);
+            }
             else
                 if (field == 'E')
-                    make_enemy(column, row, maze->get_id(column, row));
+                {
+                    auto id = maze->get_id(column, row);
+                    enemies.push_back(objects_factory->create_server_enemy(column, row, id));
+                    logger_.log("server_world_manager: added enemy on position = {%d, %d}", column, row);
+                }
                 else
                     if (field != 'X' && field != ' ')
-                        make_resource(map_field_to_resource_name(field), column, row);
+                    {
+                        resources_number++;
+                        logger_.log("server_world_manager: added %c on position = {%d, %d}",
+                                    field, column, row);
+                    }
         }
 
     logger_.log("server_world_manager: all game objects were loaded successfully");
@@ -50,79 +64,11 @@ void server_world_manager::tick_all()
     for (auto &enemy : enemies)
         tick_and_move(enemy, tick_counter);
 
-    // last resource is not nullptr
-    int n = resources.size() - 1;
-    while (n >= 0 && resources[n] == nullptr)
-    {
-        resources.pop_back();
-        n--;
-    }
-
-    size_t i = 0;
-    for (auto &resource : resources)
-    {
-        if (resource != nullptr)
-        {
-            const auto position = resource->get_position();
-            const char field = maze->get_field(std::get<0>(position), std::get<1>(position));
-
-            if ( field != 'G' && field != 'M' && field != 'S'&& field != 'W' && field != 's')
-            {
-                resource = nullptr;
-                logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
-                            std::get<0>(position), std::get<1>(position));
-                logger_.log("server_world_manager: id = %u", i);
-            }
-        }
-        i++;
-    }
-
-    i = 0;
-    auto itr = resources.begin();
-    while (itr != resources.end())
-    {
-        if (*itr == nullptr)
-        {
-            std::swap(*itr, resources.back());
-            resources.pop_back();
-            logger_.log("server_world_manager: cleanup: id = %u", i);
-        }
-        else
-        {
-            ++itr;
-        }
-        i++;
-    }
-
-    if (resources.size() < 60)
+    if (resources_number < 60)
         generate_resources(10);
 
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
     tick_counter++;
-}
-
-std::vector<int> server_world_manager::get_resources_data() const
-{
-    std::vector<int> result;
-    for (auto &resource : resources)
-    {
-        assert(resource != nullptr);
-        const auto position = resource->get_position();
-        auto posx = std::get<0>(position);
-        auto posy = std::get<1>(position);
-        auto type = map_resource_name_to_type(resource->get_name());
-
-        auto type_from_maze = maze->get_field(posx, posy);
-        if (type_from_maze != type)
-        {
-            logger_.log_debug("Bad for {%c, %d, %d}", type, posx, posy);
-        }
-
-        result.push_back(type);
-        result.push_back(posx);
-        result.push_back(posy);
-    }
-    return result;
 }
 
 smart::fit_smart_ptr<server_maze> server_world_manager::get_maze() const
@@ -141,11 +87,10 @@ int server_world_manager::allocate_data_for_new_player()
         posy = rand()%size;
     }
 
-    auto player = make_player(posx, posy, true, last_player_id++);
-    assert(player != nullptr);
-
+    players.push_back(objects_factory->create_server_player(posx, posy, true, last_player_id++));
     maze->set_field(posx, posy, 'P', last_player_id-1);
-    return player->get_id();
+    logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
+    return players.back()->get_id();
 }
 
 void server_world_manager::allocate_data_for_new_fireball(int player_id, int posx, int posy,
@@ -154,18 +99,20 @@ void server_world_manager::allocate_data_for_new_fireball(int player_id, int pos
     assert(direction == 'L' || direction == 'R' || direction == 'U' || direction == 'D');
     assert(maze->get_field(posx, posy) == 'P');
 
-    make_fireball(player_id, posx, posy, direction);
+    fireballs.push_back(objects_factory->create_server_fireball(player_id, posx, posy, direction));
     maze->set_field(posx, posy, direction);
+    logger_.log("server_world_manager: added fireball with direction = '%c'' on position = {%d, %d}",
+                direction, posx, posy);
 }
 
-void server_world_manager::generate_resources(unsigned resources_number)
+void server_world_manager::generate_resources(unsigned resources)
 {
     const int size = maze->size();
     const std::array<char, 5> resource_type = {'G', 'M', 'S', 'W', 's'};
 
     logger_.log("server_world_manager: new resources will be generated");
 
-    for (unsigned i = 0; i < resources_number; i++)
+    for (unsigned i = 0; i < resources; i++)
     {
         unsigned n = rand()%5;
         unsigned posx = 0, posy = 0;
@@ -174,9 +121,13 @@ void server_world_manager::generate_resources(unsigned resources_number)
             posx = rand()%size;
             posy = rand()%size;
         }
-        make_resource(map_field_to_resource_name(resource_type[n]), posx, posy);
+
+        resources_number++;
         maze->set_field(posx, posy, resource_type[n]);
+        logger_.log("server_world_manager: added %c on position = {%d, %d}", resource_type[n], posx, posy);
     }
+
+    logger_.log("server_world_manager: resources number: %u", resources_number);
 }
 
 void server_world_manager::shutdown_player(int id)
@@ -259,41 +210,15 @@ void server_world_manager::repair_if_uncorrect_players()
     }
 }
 
-void server_world_manager::make_maze(smart::fit_smart_ptr<maze_loader> loader)
+void server_world_manager::remove_resource(auto pos)
 {
-    maze = objects_factory->create_server_maze(loader);
-    assert(maze != nullptr);
-    maze->load();
-    logger_.log("server_world_manager: added maze");
-}
-
-void server_world_manager::make_fireball(int player_id, int posx, int posy, char direction)
-{
-    fireballs.push_back(objects_factory->create_server_fireball(player_id, posx, posy, direction));
-    logger_.log("server_world_manager: added fireball with direction = '%c'' on position = {%d, %d}",
-                direction, posx, posy);
-}
-
-std::string server_world_manager::map_field_to_resource_name(const char field)
-{
-    static const std::unordered_map<char, std::string> field_to_resource_name =
+    auto field = maze->get_field(std::get<0>(pos), std::get<1>(pos));
+    if (field == 'G' || field == 'M' || field == 'S'|| field == 'W' || field == 's')
     {
-        {'G', "gold"}, {'M', "mercury"}, {'S', "stone"}, {'W', "wood"}, {'s', "sulfur"}
-    };
-    const auto name_it = field_to_resource_name.find(field);
-    assert(name_it != field_to_resource_name.end());
-    return name_it->second;
-}
-
-char server_world_manager::map_resource_name_to_type(const std::string &name)
-{
-    static const std::unordered_map<std::string, char> resource_name_to_field =
-    {
-        {"gold", 'G'}, {"mercury", 'M'}, {"stone", 'S'}, {"wood", 'W'}, {"sulfur", 's'}
-    };
-    const auto field_it = resource_name_to_field.find(name);
-    assert(field_it != resource_name_to_field.end());
-    return field_it->second;
+        resources_number--;
+        logger_.log("server_world_manager: removed resource from positon = {%d, %d}",
+                    std::get<0>(pos), std::get<1>(pos));
+    }
 }
 
  // TO DO: why passsing by reference is not ok for shared_ptr - unknown conversion ??
@@ -308,30 +233,16 @@ void server_world_manager::tick_and_move(smart::fit_smart_ptr<game_object> some_
     if (new_position != old_position)
     {
         if (std::get<0>(new_position) < INT_MAX)
+        {
+            remove_resource(new_position);
             maze->move_field(old_position, new_position);
+        }
         else
+        {
+            remove_resource(old_position);
             maze->reset_field(old_position);
+        }
     }
-}
-
-void server_world_manager::make_enemy(int posx, int posy, int id)
-{
-    enemies.push_back(objects_factory->create_server_enemy(posx, posy, id));
-    logger_.log("server_world_manager: added enemy on position = {%d, %d}", posx, posy);
-}
-
-smart::fit_smart_ptr<server_player> server_world_manager::make_player(int posx, int posy,
-                                                                      bool alive, int id)
-{
-    players.push_back(objects_factory->create_server_player(posx, posy, alive, id));
-    logger_.log("server_world_manager: added player on position = {%d, %d}", posx, posy);
-    return players.back();
-}
-
-void server_world_manager::make_resource(const std::string &name, int posx, int posy)
-{
-    resources.push_back(objects_factory->create_server_resource(name, posx, posy));
-    logger_.log("server_world_manager: added %s on position = {%d, %d}", name.c_str(), posx, posy);
 }
 
 }

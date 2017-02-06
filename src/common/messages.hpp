@@ -19,13 +19,14 @@ struct get_chunk_response;
 struct position_changed;
 struct position_changed_response;
 struct client_shutdown;
+struct client_shutdown_response;
 struct get_id;
 struct get_id_response;
 struct fireball_triggered;
 struct fireball_triggered_response;
 
 using registered_messages = boost::mpl::vector<get_chunk, get_chunk_response, position_changed,
-    position_changed_response, client_shutdown, get_id, get_id_response, fireball_triggered, fireball_triggered_response>;
+    position_changed_response, client_shutdown, client_shutdown_response, get_id, get_id_response, fireball_triggered, fireball_triggered_response>;
 
 template <class T>
 struct message_numerator
@@ -147,6 +148,23 @@ struct client_shutdown : public message_numerator<client_shutdown>
 	}
 
 	int player_id;
+};
+
+struct client_shutdown_response : public message_numerator<client_shutdown_response>
+{
+    client_shutdown_response() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+
+    std::string content {"OK"};
 };
 
 struct get_id : public message_numerator<get_id>

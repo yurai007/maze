@@ -11,16 +11,6 @@
 namespace core
 {
 
-struct hash_pair_helper
-{
-public:
-    template <typename T, typename U>
-    std::size_t operator()(const std::pair<T, U> &pair) const
-    {
-        return std::hash<T>()(pair.first) ^ std::hash<U>()(pair.second);
-    }
-};
-
 class client_world_manager
 {
 public:
@@ -37,18 +27,15 @@ public:
     unsigned player_cash {0};
 
 private:
-
-    static std::string map_field_to_resource_name(const char field);
-
     void update_enemies();
-    std::map<int, std::tuple<int, int> > get_players();
-    std::vector<int> get_resources();
+    void update_players();
+    void update_resources();
     int get_id_data_from_network();
 
     void load_images_for_drawables();
     void make_enemy(int posx, int posy);
     void make_player(int posx, int posy);
-    void make_resource(const std::string &name, int posx, int posy);
+    void make_resource(const char field, int posx, int posy);
 
     void add_enemy(int posx, int posy, int id);
 
@@ -58,14 +45,12 @@ private:
     }
 
     smart::fit_smart_ptr<core::client_maze> maze {nullptr};
-    std::vector<smart::fit_smart_ptr<client_resource>> resources;
-
     smart::fit_smart_ptr<client_game_objects_factory> objects_factory;
     smart::fit_smart_ptr<networking::network_manager> network_manager {nullptr};
 
     std::map<int, smart::fit_smart_ptr<client_enemy>> id_to_enemy;
     std::map<int, smart::fit_smart_ptr<client_player>> id_to_player;
-    std::unordered_set<std::pair<int, int>, hash_pair_helper> resources_pos;
+    std::map<std::tuple<int, int>, smart::fit_smart_ptr<client_resource>> resources;
 
     int player_id {0};
     bool automatic_players {false};

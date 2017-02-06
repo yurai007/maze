@@ -45,15 +45,14 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
         return response;
 	});
 
-//	dispatcher->add_handler(
-//				[&](messages::client_shutdown &msg)
-//	{
-//		logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
-//		manager->shutdown_player(msg.player_id);
-//        // TO DO: remove this - dummy network overhead involved
-//        int dummy_response {-1};
-//        return dummy_response;
-//	});
+    dispatcher->add_handler(
+                [&](messages::client_shutdown &msg)
+    {
+        logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
+        messages::client_shutdown_response response;
+        manager->shutdown_player(msg.player_id);
+        return response;
+    });
 
 //    dispatcher->add_handler(
 //                [&](messages::fireball_triggered &msg)

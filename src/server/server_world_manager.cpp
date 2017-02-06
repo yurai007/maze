@@ -68,6 +68,7 @@ void server_world_manager::tick_all()
         generate_resources(10);
 
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
+    logger_.log("server_world_manager: resources number: %u", resources_number);
     tick_counter++;
 }
 
@@ -166,7 +167,7 @@ void server_world_manager::update_player_position(
    for (auto &player : players)
        if (player->get_id() == player_id)
        {
-            player->update_player_position(oldx, oldy, newx, newy);
+            player->update_player_position(newx, newy);
             break;
        }
 }

@@ -19,7 +19,7 @@ public:
     void tick(unsigned short tick_counter) override;
     bool is_alive() const;
     int get_id() const;
-    void update_player_position(int oldx, int oldy, int newx, int newy);
+    void update_player_position(int newx, int newy);
 
 private:
     smart::fit_smart_ptr<core::server_maze> maze;

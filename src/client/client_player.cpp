@@ -72,9 +72,33 @@ void client_player::active_tick()
 
     if (controller->is_space_on())
     {
-        fireball_x6 = 6*posx;
-        fireball_y6 = 6*posy;
-        fireball_direction = rotation;
+        auto fposx = posx, fposy = posy;
+
+        if (rotation == 'L')
+        {
+            fposx--;
+        }
+        else
+            if (rotation == 'R')
+            {
+                fposx++;
+            }
+            else
+                if (rotation == 'U')
+                {
+                    fposy--;
+                }
+                else
+                    if (rotation == 'D')
+                    {
+                        fposy++;
+                    }
+
+        if (maze->in_range(fposx, fposy))
+        {
+            bool answer = network_manager->send_fireball_triggered_over_network(id, fposx, fposy, rotation);
+            logger_.log("client_player: fireball request with response: %d", answer);
+        }
     }
 
     controller->reset();
@@ -247,36 +271,6 @@ void client_player::draw(int active_player_x, int active_player_y)
         if (player_x >= 0 && player_y >= 0)
             renderer->draw_image(image_name, 30*player_x, 30*player_y);
     }
-
-    if (0 < fireball_x6 && (fireball_x6/6) < 1024
-            && 0 < fireball_y6 && (fireball_y6/6) < 768)
-    {
-        int dx = 0, dy = 0;
-        if (fireball_direction == 'L')
-        {
-            fireball_x6 -= 2; dx = 15;
-        }
-        else
-            if (fireball_direction == 'R')
-            {
-                fireball_x6 += 2; dx = 45;
-            }
-            else
-                if (fireball_direction == 'U')
-                {
-                    fireball_y6 -= 2; dx = 15;
-                }
-                else
-                    if (fireball_direction == 'D')
-                    {
-                        fireball_y6 += 2; dx = 15; dy = 30;
-                    }
-
-        const int real_fireball_x = (fireball_x6/6) + half_width - active_player_x;
-        const int real_fireball_y = (fireball_y6/6) + half_height - active_player_y;
-
-        renderer->draw_circle(30*real_fireball_x + dx, 30*real_fireball_y + 15 + dy);
-    };
 }
 
 }

@@ -31,6 +31,18 @@ void network_manager::send_position_changed_over_network(int id, int oldx, int o
                 "and got response", id, oldx, oldy, posx, posy);
 }
 
+bool network_manager::send_fireball_triggered_over_network(int id, int posx, int posy, char direction)
+{
+    messages::fireball_triggered request = {id, posx, posy, direction};
+    client->send_request(request);
+    auto response = client->read_fireball_triggered_response();
+
+    assert(response.content == "OK" || response.content == "NOK");
+    logger_.log("client_player: id = %d, send fireball_triggered request = {%d, %d, %d, %c} "
+                "and got response %s", id, id, posx, posy, direction, response.content.c_str());
+    return response.content == "OK";
+}
+
 void network_manager::shut_down_client(int player_id)
 {
     networking::messages::client_shutdown msg = {player_id};

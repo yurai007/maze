@@ -41,13 +41,20 @@ void client_maze::draw(int active_player_x, int active_player_y)
         {
             if (0 <= column && column < static_cast<int>(content.size()))
                 if (0 <= row && row < static_cast<int>(column_size(column)))
-                    if (is_field_filled(column, row))
-                    {
-                        const int posx = (column - (x - half_width)) * brick_size;
-                        const int posy = (row - (y - half_height)) * brick_size;
+                {
+                    const int posx = (column - (x - half_width)) * brick_size;
+                    const int posy = (row - (y - half_height)) * brick_size;
 
+                    if (get_field(column, row) == 'F')
+                    {
+                        renderer->draw_circle(posx + 15, posy + 15);
+                    }
+                    else
+                    if (get_field(column, row) == 'X')
+                    {
                         renderer->draw_image("brick", posx, posy);
                     }
+                }
         }
 }
 
@@ -87,12 +94,6 @@ void client_maze::load()
 void client_maze::attach_active_player(smart::fit_smart_ptr<client_player> player)
 {
     active_player = player;
-}
-
-bool client_maze::in_range(int x, int y) const
-{
-    return ((0 <= x) && (x < static_cast<int>(content.size()) ))
-            && ((0 <= y) && (y < static_cast<int>(column_size(0)) ));
 }
 
 smart::fit_smart_ptr<presentation::renderer> client_maze::get_renderer() const

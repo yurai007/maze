@@ -16,6 +16,7 @@ public:
     int get_id_data_from_network();
     void send_position_changed_over_network(int id, int oldx, int oldy,
                                             int posx, int posy);
+    bool send_fireball_triggered_over_network(int id, int posx, int posy, char direction);
     void shut_down_client(int player_id);
 
 private:

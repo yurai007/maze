@@ -63,8 +63,6 @@ private:
     char direction;
     char old_direction {0};
     int id;
-    unsigned fireball_x6 {0}, fireball_y6 {0};
-    char fireball_direction {0};
     char rotation {0};
 
     bool active, automatic;

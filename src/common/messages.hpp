@@ -206,6 +206,10 @@ struct fireball_triggered : public message_numerator<fireball_triggered>
     int player_id, pos_x, pos_y;
     char direction;
 
+    fireball_triggered() = default;
+    fireball_triggered(int player_id_, int pos_x_, int pos_y_, char direction_) :
+        player_id(player_id_), pos_x(pos_x_), pos_y(pos_y_), direction(direction_) {}
+
     void serialize_to_buffer(serialization::byte_buffer &buffer) const
     {
         buffer.put_int(player_id);

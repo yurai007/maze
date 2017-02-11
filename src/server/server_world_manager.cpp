@@ -67,6 +67,35 @@ void server_world_manager::tick_all()
     if (resources_number < 60)
         generate_resources(10);
 
+    for (auto &fireball : fireballs)
+    {
+        const auto old_position = fireball->get_position();
+        fireball->tick(tick_counter);
+        const auto new_position = fireball->get_position();
+
+        if (new_position != old_position)
+        {
+            if (std::get<0>(new_position) < INT_MAX)
+            {
+                int posx = std::get<0>(new_position), posy = std::get<1>(new_position);
+                // TO DO: because of is_field_filled impl now resources are blown up by
+                //        fireball -> should be removed
+                if (maze->in_range(posx, posy) && !maze->is_field_filled(posx, posy))
+                {
+                    int oldx = std::get<0>(old_position), oldy = std::get<1>(old_position);
+                    maze->move_field(old_position, new_position);
+                    logger_.log("server_world_manager: fireball move: {%d,%d} -> {%d,%d}", oldx, oldy,
+                                posx, posy);
+                }
+                else
+                {
+                    fireball->freeze = true;
+                    logger_.log("server_world_manager: fireball freeze on {%d,%d}", posx, posy);
+                }
+            }
+        }
+    }
+
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
     logger_.log("server_world_manager: resources number: %u", resources_number);
     tick_counter++;
@@ -94,16 +123,20 @@ int server_world_manager::allocate_data_for_new_player()
     return players.back()->get_id();
 }
 
-void server_world_manager::allocate_data_for_new_fireball(int player_id, int posx, int posy,
+bool server_world_manager::allocate_new_fireball_if_possible(int player_id, int posx, int posy,
                                                          char direction)
 {
     assert(direction == 'L' || direction == 'R' || direction == 'U' || direction == 'D');
-    assert(maze->get_field(posx, posy) == 'P');
+    if (maze->get_field(posx, posy) != ' ')
+        return false;
 
     fireballs.push_back(objects_factory->create_server_fireball(player_id, posx, posy, direction));
-    maze->set_field(posx, posy, direction);
-    logger_.log("server_world_manager: added fireball with direction = '%c'' on position = {%d, %d}",
-                direction, posx, posy);
+    last_fireball_id++;
+
+    maze->set_field(posx, posy, 'F', last_fireball_id-1);
+    logger_.log("server_world_manager: added fireball: id = %d, direction = '%c'', position = {%d, %d}",
+                last_fireball_id-1, direction, posx, posy);
+    return true;
 }
 
 void server_world_manager::generate_resources(unsigned resources)

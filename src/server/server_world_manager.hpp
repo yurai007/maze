@@ -22,7 +22,7 @@ public:
     smart::fit_smart_ptr<core::server_maze> get_maze() const;
 
     int allocate_data_for_new_player();
-    void allocate_data_for_new_fireball(int player_id, int posx, int posy, char direction);
+    bool allocate_new_fireball_if_possible(int player_id, int posx, int posy, char direction);
     void generate_resources(unsigned resources);
     void shutdown_player(int id);
     void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
@@ -42,6 +42,7 @@ private:
 
     unsigned resources_number {0};
     int last_player_id {0};
+    int last_fireball_id {0};
 };
 
 }

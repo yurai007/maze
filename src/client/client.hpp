@@ -43,6 +43,11 @@ public:
          send(msg);
     }
 
+    void send_request(messages::fireball_triggered &msg)
+    {
+         send(msg);
+    }
+
     messages::get_chunk_response read_get_chunk_response()
     {
         return read<messages::get_chunk_response>();
@@ -56,6 +61,11 @@ public:
     messages::get_id_response read_get_id_response()
     {
         return read<messages::get_id_response>();
+    }
+
+    messages::fireball_triggered_response read_fireball_triggered_response()
+    {
+        return read<messages::fireball_triggered_response>();
     }
 
 private:

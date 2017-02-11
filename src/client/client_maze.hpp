@@ -19,7 +19,6 @@ public:
     void draw(int active_player_x, int active_player_y) override;
     void load();
     void attach_active_player(smart::fit_smart_ptr<client_player> player);
-    bool in_range(int x, int y) const;
 
     smart::fit_smart_ptr<presentation::renderer> get_renderer() const;
 private:

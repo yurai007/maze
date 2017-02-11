@@ -54,15 +54,23 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
         return response;
     });
 
-//    dispatcher->add_handler(
-//                [&](messages::fireball_triggered &msg)
-//    {
-//        logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
-//        manager->allocate_data_for_new_fireball(msg.player_id, msg.pos_x, msg.pos_y, msg.direction);
-//        // TO DO: remove this - dummy network overhead involved
-//        int dummy_response {-1};
-//        return dummy_response;
-//    });
+    dispatcher->add_handler(
+                [&](messages::fireball_triggered &msg)
+    {
+        logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
+        messages::fireball_triggered_response response;
+
+        if (manager->allocate_new_fireball_if_possible(msg.player_id, msg.pos_x, msg.pos_y, msg.direction))
+        {
+            logger_.log("game_server: fireball triggering OK");
+        }
+        else
+        {
+            response.content = "NOK";
+            logger_.log("game_server: fireball triggering failed");
+        }
+        return response;
+    });
 
 	main_server.add_dispatcher(dispatcher);
 }

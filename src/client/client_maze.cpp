@@ -89,6 +89,12 @@ void client_maze::attach_active_player(smart::fit_smart_ptr<client_player> playe
     active_player = player;
 }
 
+bool client_maze::in_range(int x, int y) const
+{
+    return ((0 <= x) && (x < static_cast<int>(content.size()) ))
+            && ((0 <= y) && (y < static_cast<int>(column_size(0)) ));
+}
+
 smart::fit_smart_ptr<presentation::renderer> client_maze::get_renderer() const
 {
     return renderer;

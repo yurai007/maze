@@ -35,6 +35,7 @@ void network_manager::shut_down_client(int player_id)
 {
     networking::messages::client_shutdown msg = {player_id};
     client->send_request(msg);
+    logger_.log("client_player: id = %d, shutdown request", player_id);
 }
 
 }

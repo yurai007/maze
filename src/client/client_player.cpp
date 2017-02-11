@@ -33,6 +33,27 @@ void client_player::active_tick()
 
     const int oldx = posx, oldy = posy;
 
+    if (timer_for_escape > 0)
+        timer_for_escape--;
+
+    bool enemy_arround = maze->in_range(posx-1, posy) && (maze->get_field(posx-1, posy) == 'E');
+    enemy_arround = enemy_arround || (maze->in_range(posx+1, posy) && (maze->get_field(posx+1, posy) == 'E'));
+    enemy_arround = enemy_arround || (maze->in_range(posx, posy-1) && (maze->get_field(posx, posy-1) == 'E'));
+    enemy_arround = enemy_arround || (maze->in_range(posx, posy+1) && (maze->get_field(posx, posy+1) == 'E'));
+
+    if ((timer_for_escape == 0) && enemy_arround)
+    {
+        manager.player_health--;
+        logger_.log("client_player: contact with enemy, health: %d", manager.player_health);
+        if (manager.player_health == 0)
+        {
+            logger_.log("client_player: died :(");
+            died = true;
+            return;
+        }
+        timer_for_escape = 100;
+    }
+
     direction = controller->get_direction();
     posx += (direction == 'L')? -1 : (direction == 'R')? 1 :0;
     posy += (direction == 'U')? -1 : (direction == 'D')? 1 :0;
@@ -68,6 +89,7 @@ void client_player::active_tick()
             manager.player_cash++;
             logger_.log("client_player: player cash: %u", manager.player_cash);
         }
+
         network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
     }
 }

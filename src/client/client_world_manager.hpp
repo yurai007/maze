@@ -25,6 +25,8 @@ public:
     void shut_down_client();
 
     unsigned player_cash {0};
+    int player_health {3};
+    bool killed {false};
 
 private:
     void update_enemies();

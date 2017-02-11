@@ -51,8 +51,9 @@ public:
     void draw(int active_player_x, int active_player_y) override;
     void load_image() override;
 
-private:
+    bool died {false};
 
+private:
 
     core::client_world_manager &manager;
     smart::fit_smart_ptr<control::controller> controller;
@@ -67,6 +68,7 @@ private:
     char rotation {0};
 
     bool active, automatic;
+    unsigned timer_for_escape {0};
 
     std::tuple<int, int> new_position;
 };

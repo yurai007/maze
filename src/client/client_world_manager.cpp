@@ -78,8 +78,13 @@ void client_world_manager::tick_all()
     assert(player != nullptr);
     player->tick(tick_counter);
 
-    logger_.log("client_world_manager%d: resources number: %u", player_id, resources.size());
+    if (player->died)
+    {
+        shut_down_client();
+        killed = true;
+    }
 
+    logger_.log("client_world_manager%d: resources number: %u", player_id, resources.size());
     logger_.log("client_world_manager%d: finished tick with id = %d", player_id, tick_counter);
     tick_counter++;
 }

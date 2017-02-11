@@ -15,7 +15,7 @@ int gui_driver::run(const std::string &ip_address)
     application = Gtk::Application::create(argc_, argv_, "");
 
     auto qt_controller = smart::smart_make_shared<control::controller>();
-    auto qt_renderer = smart::smart_make_shared<presentation::renderer>();
+    auto qt_renderer = smart::smart_make_shared<presentation::renderer>(application);
     auto client = smart::smart_make_shared<networking::client>(ip_address);
     auto network_manager = smart::smart_make_shared<networking::network_manager>(client);
 
@@ -37,7 +37,8 @@ int gui_driver::run(const std::string &ip_address)
     qt_renderer->show();
 
     int result = application->run(*qt_controller);
-    world_manager->shut_down_client();
+    if (!world_manager->killed)
+        world_manager->shut_down_client();
 
     return result;
 }

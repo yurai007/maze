@@ -16,11 +16,12 @@ public:
 private:
 
     void tick(const boost::system::error_code&);
+    void stop_all();
 
     io_service m_io_service;
-    boost::posix_time::milliseconds interval {30}; //2ms - for > 1k
-                                                    //30ms - for 24
-    deadline_timer timer {m_io_service, interval};
+    boost::asio::signal_set m_signals {m_io_service};
+    std::unique_ptr<deadline_timer> timer {nullptr};
+    std::unique_ptr<boost::posix_time::milliseconds> interval {nullptr};
 
     int players_number;
     std::vector<smart::fit_smart_ptr<core::client_world_manager>> world_managers;

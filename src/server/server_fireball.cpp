@@ -16,6 +16,8 @@ void server_fireball::tick(unsigned short)
 
     if (internal_counter % 100 == 0)
     {
+        oldx = posx;
+        oldy = posy;
         if (direction == 'L')
         {
             posx--;

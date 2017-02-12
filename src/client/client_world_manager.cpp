@@ -53,6 +53,9 @@ void client_world_manager::load_all()
 
 void client_world_manager::tick_all()
 {
+    // stupid workaround :)
+    if (killed)
+        return;
     logger_.log("client_world_manager%d: started tick with id = %d", player_id, tick_counter);
 
     assert(maze != nullptr);
@@ -75,8 +78,14 @@ void client_world_manager::tick_all()
             player_node.second->tick(player_id);
         }
     auto &player = id_to_player[player_id];
-    assert(player != nullptr);
-    player->tick(tick_counter);
+    if (player == nullptr)
+    {
+        //shut_down_client();
+        killed = true;
+        return;
+    }
+    else
+        player->tick(tick_counter);
 
     if (player->died)
     {

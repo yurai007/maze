@@ -25,7 +25,7 @@ public:
     bool allocate_new_fireball_if_possible(int player_id, int posx, int posy, char direction);
     void generate_resources(unsigned resources);
     void shutdown_player(int id);
-    void update_player_position(int player_id, int oldx, int oldy, int newx, int newy);
+    bool update_player_position_if_possible(int player_id, int oldx, int oldy, int newx, int newy);
     void repair_if_uncorrect_enemies();
     void repair_if_uncorrect_players();
 

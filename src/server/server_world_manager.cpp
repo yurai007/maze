@@ -90,10 +90,34 @@ void server_world_manager::tick_all()
                 else
                 {
                     fireball->freeze = true;
+                    if (maze->in_range(posx, posy) && (maze->get_field(posx, posy) == 'P'))
+                    {
+                        auto victim_id = maze->get_id(posx, posy);
+                        logger_.log("server_world_manager: fireball hit player id = %d on {%d,%d}",
+                                    victim_id, posx, posy);
+                        shutdown_player(victim_id);
+                    }
+
                     logger_.log("server_world_manager: fireball freeze on {%d,%d}", posx, posy);
                 }
             }
         }
+    }
+
+    // remove freeze fireballs
+    auto itr = fireballs.begin();
+    while (itr != fireballs.end())
+    {
+        if ((*itr)->freeze)
+        {
+            int oldx = (*itr)->oldx, oldy = (*itr)->oldy;
+            maze->reset_field({oldx, oldy});
+            itr = fireballs.erase(itr);
+            logger_.log("server_world_manager: removed fireball from {%d, %d}",
+                        oldx, oldy);
+        }
+        else
+            ++itr;
     }
 
     logger_.log_debug("server_world_manager: finished tick with id = %d", tick_counter);
@@ -167,6 +191,7 @@ void server_world_manager::generate_resources(unsigned resources)
 void server_world_manager::shutdown_player(int id)
 {
     smart::fit_smart_ptr<server_player> found_player;
+    // TO DO: iterators invalidation or OK?
     for (auto &player : players)
     {
         if (player != nullptr)
@@ -186,15 +211,17 @@ void server_world_manager::shutdown_player(int id)
     maze->reset_field(position);
 }
 
-void server_world_manager::update_player_position(
-        int player_id, int oldx, int oldy,
-        int newx, int newy)
+bool server_world_manager::update_player_position_if_possible(
+        int player_id, int oldx, int oldy, int newx, int newy)
 {
    assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-   auto old_field = maze->get_field(oldx, oldy);
-   assert(old_field == 'P');
-   //auto new_field = maze->get_field(newx, newy);
-   //assert(new_field != 'X' && new_field != 'E' && new_field != 'P');
+
+   if ((maze->get_field(newx, newy) == 'E') || (maze->get_field(newx, newy) == 'P')
+           || (maze->get_field(newx, newy) == 'X') )
+       return false;
+   if (maze->get_field(oldx, oldy) != 'P')
+       return false;
+
    maze->move_field({oldx, oldy}, {newx, newy});
 
    for (auto &player : players)
@@ -203,6 +230,7 @@ void server_world_manager::update_player_position(
             player->update_player_position(newx, newy);
             break;
        }
+   return true;
 }
 
 void server_world_manager::repair_if_uncorrect_enemies()

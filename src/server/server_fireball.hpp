@@ -13,6 +13,7 @@ public:
     void tick(unsigned short) override;
 
     bool freeze {false};
+    int oldx, oldy;
 private:
     char direction;
     unsigned internal_counter {0};

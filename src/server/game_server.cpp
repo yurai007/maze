@@ -28,9 +28,17 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 	{
 		logger_.log("game_server: recieved position_changed for player id = %d, [%d,%d] --> [%d,%d]",
 					msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
+        messages::position_changed_response response;
 
-		manager->update_player_position(msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
-		messages::position_changed_response response;
+        if (manager->update_player_position_if_possible(msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y))
+        {
+            logger_.log("game_server: position_changed OK");
+        }
+        else
+        {
+            response.content = "NOK";
+            logger_.log("game_server: position_changed failed");
+        }
         return response;
 	});
 

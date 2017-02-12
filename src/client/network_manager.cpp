@@ -20,15 +20,16 @@ int network_manager::get_id_data_from_network()
     return response.player_id;
 }
 
-void network_manager::send_position_changed_over_network(int id, int oldx, int oldy,
+bool network_manager::send_position_changed_over_network(int id, int oldx, int oldy,
                                                          int posx, int posy)
 {
     messages::position_changed request = {id, oldx, oldy, posx, posy};
     client->send_request(request);
     auto response = client->read_position_changed_response();
-    assert(response.content == "OK");
+    assert(response.content == "OK" || response.content == "NOK");
     logger_.log("client_player: id = %d, send position_changed request = {%d, %d} -> {%d, %d} "
-                "and got response", id, oldx, oldy, posx, posy);
+                "and got response %s", id, oldx, oldy, posx, posy, response.content.c_str());
+    return response.content == "OK";
 }
 
 bool network_manager::send_fireball_triggered_over_network(int id, int posx, int posy, char direction)

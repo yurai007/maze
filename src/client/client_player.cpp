@@ -196,8 +196,49 @@ void client_player::automatic_tick(int)
         posy++;
     }
 
+
+    if ((rand()%3) == 0)
+    {
+        auto fposx = posx, fposy = posy;
+
+        if (direction == 'L')
+        {
+            fposx--;
+        }
+        else
+            if (direction == 'R')
+            {
+                fposx++;
+            }
+            else
+                if (direction == 'U')
+                {
+                    fposy--;
+                }
+                else
+                    if (direction == 'D')
+                    {
+                        fposy++;
+                    }
+
+        if (maze->in_range(fposx, fposy))
+        {
+            bool answer = network_manager->send_fireball_triggered_over_network(id, fposx, fposy, direction);
+            logger_.log("client_player: fireball request with response: %d", answer);
+        }
+    }
+
+
     if ((oldx != posx) || (oldy != posy))
-        network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
+    {
+        bool answer = network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
+        if (!answer)
+        {
+            posx = oldx;
+            posy = oldy;
+        }
+        logger_.log("client_player: position_changed request with response: %d", answer);
+    }
 }
 
 bool client_player::is_active() const
@@ -262,7 +303,10 @@ void client_player::draw(int active_player_x, int active_player_y)
     const int half_height = 50/2;
 
     if (active)
-        renderer->draw_image(image_name, 30*half_width, 30*half_height);
+    {
+        if (timer_for_escape % 10 == 0)
+            renderer->draw_image(image_name, 30*half_width, 30*half_height);
+    }
     else
     {
         const int player_x = posx + half_width - active_player_x;

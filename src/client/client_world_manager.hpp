@@ -25,7 +25,7 @@ public:
     void shut_down_client();
 
     unsigned player_cash {0};
-    int player_health {3};
+    int player_health {6};
     bool killed {false};
 
 private:

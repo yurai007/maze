@@ -10,6 +10,7 @@
 
 #include "logger.hpp"
 #include "byte_buffer.hpp"
+#include "messages.hpp"
 
 namespace networking
 {
@@ -75,8 +76,6 @@ dispatcher_type make_dispatcher(F&& f) // add dispatcher_type
     return dispatcher_maker<return_type, arg_type>().make(std::forward<F>(f));
 }
 
-// concept for handlers, that can't be void??
-
 template<typename Ret, typename Arg>
 struct dispatcher
 {
@@ -117,6 +116,26 @@ private:
     std::function<Ret(Arg)> handler;
 };
 
+template<typename Msg>
+concept bool IsMsg = requires()
+{
+    Msg::message_id();
+};
+
+/* For some reason:
+  1. Inside static_assert IsMsg< function_traits<Func>::arg_type> && IsMsg< function_traits<Func>::return_type>;
+     is OK
+  2. But inside IsProperHandler concept "typename" before function_traits<> IS requred!!
+     Thought it's g++ bug!!!
+*/
+
+template<class Func>
+concept bool IsProperHandler = requires()
+{
+    IsMsg<typename function_traits<Func>::arg_type> &&
+        IsMsg<typename function_traits<Func>::return_type>;
+};
+
 
 /*
  * be aware that there is no implicit conversion so 1.0 is double but 1.0f is float and "dupa"
@@ -127,7 +146,7 @@ struct message_dispatcher
 {
 public:
 
-    template<typename F>
+    template<typename F> requires IsProperHandler<decltype(&F::operator())>
     void add_handler(F&& f)
     {
         callbacks.emplace_back(make_dispatcher(std::forward<F>(f)));
@@ -135,7 +154,24 @@ public:
 
     serialization::byte_buffer dispatch_req_get_resp(serialization::byte_buffer &buffer)
     {
-        return dispatch(buffer);
+        try
+        {
+            return dispatch(buffer);
+        }
+        catch (const std::runtime_error &)
+        {
+            messages::internal_error_message resp;
+            serialization::byte_buffer data;
+            data.put_unsigned_short(0);
+            data.put_char(resp.message_id());
+            resp.serialize_to_buffer(data);
+
+            assert(data.get_size() >= sizeof(unsigned short));
+            assert(data.get_size() - sizeof(unsigned short) < 256*256);
+            unsigned short size = (unsigned short)(data.get_size() - sizeof(unsigned short));
+            memcpy(&data.m_byte_buffer[0], &size, sizeof(size));
+            return data;
+        }
     }
 
 private:
@@ -147,7 +183,8 @@ private:
             if (maybe_data)
                 return *maybe_data;
         }
-        assert(false); // no handler
+        logger_.log("message_dispatcher: no handler");
+        throw std::runtime_error("no handler");
     }
 
     template<typename Dispatcher>

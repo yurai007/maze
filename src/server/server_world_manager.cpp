@@ -150,7 +150,6 @@ int server_world_manager::allocate_data_for_new_player()
 bool server_world_manager::allocate_new_fireball_if_possible(int player_id, int posx, int posy,
                                                          char direction)
 {
-    assert(direction == 'L' || direction == 'R' || direction == 'U' || direction == 'D');
     if (maze->get_field(posx, posy) != ' ')
         return false;
 
@@ -214,8 +213,6 @@ void server_world_manager::shutdown_player(int id)
 bool server_world_manager::update_player_position_if_possible(
         int player_id, int oldx, int oldy, int newx, int newy)
 {
-   assert( ((newx - oldx == 0 ) || (newy - oldy == 0) ) && ("Some lags happened") );
-
    if ((maze->get_field(newx, newy) == 'E') || (maze->get_field(newx, newy) == 'P')
            || (maze->get_field(newx, newy) == 'X') )
        return false;

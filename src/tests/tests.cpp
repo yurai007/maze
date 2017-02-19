@@ -7,6 +7,9 @@
 #include "ut_fit_smart_ptr.hpp"
 #include "sct_custom_transport.hpp"
 
+#include"../common/message_dispatcher.hpp"
+#include"../common/messages.hpp"
+
 namespace networking
 {
 
@@ -60,9 +63,64 @@ static void set_operations_test_case()
     std::cout << '\n';
 }
 
+
+namespace helpers
+{
+
+static void concepts_for_dispatcher_test_case()
+{
+    using fireball = networking::messages::fireball_triggered;
+    static_assert(networking::IsMsg<fireball>, "NOK");
+    static_assert(!networking::IsMsg<void>, "NOK");
+
+    {
+        auto func = [](fireball f){
+            return f;
+        };
+        using Func = decltype(func);
+        using my_f_type = decltype(&Func::operator());
+
+        static_assert(networking::IsMsg<networking::function_traits<my_f_type>::arg_type>, "NOK");
+        static_assert(networking::IsProperHandler<my_f_type>, "NOK");
+    }
+
+
+    auto dispatcher = smart::smart_make_shared<networking::message_dispatcher>();
+    dispatcher->add_handler(
+                [&](fireball &msg)
+    {
+        return msg;
+    });
+
+     // OK, but not catched by constraints
+//    dispatcher->add_handler(
+//                [&](fireball &msg)
+//    {
+//        (void)msg;
+//    });
+
+    // OK, but not catched by constraints
+//    dispatcher->add_handler(
+//                [&](int msg)
+//    {
+//        (void)msg;
+//    });
+
+    // OK, catched by constraints
+//    dispatcher->add_handler(
+//                [&]()
+//    {
+
+//    });
+}
+
+
+}
+
 int main(int, char*[])
 {
-    set_operations_test_case();
+//    set_operations_test_case();
+    helpers::concepts_for_dispatcher_test_case();
 
     std::cout << "Running messages verification...\n";
     networking::messages::verify_messages();

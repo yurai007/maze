@@ -28,9 +28,16 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 	{
 		logger_.log("game_server: recieved position_changed for player id = %d, [%d,%d] --> [%d,%d]",
 					msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
-        messages::position_changed_response response;
 
-        if (manager->update_player_position_if_possible(msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y))
+        if (!((msg.new_x - msg.old_x == 0 ) || (msg.new_y - msg.old_y == 0)))
+        {
+            logger_.log("game_server: bad position_changed");
+            throw std::runtime_error("bad position_changed");
+        }
+
+        messages::position_changed_response response;
+        if (manager->update_player_position_if_possible(msg.player_id, msg.old_x, msg.old_y,
+                                                        msg.new_x, msg.new_y))
         {
             logger_.log("game_server: position_changed OK");
         }
@@ -66,8 +73,14 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
                 [&](messages::fireball_triggered &msg)
     {
         logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
-        messages::fireball_triggered_response response;
 
+        if (!(msg.direction == 'L' || msg.direction == 'R' || msg.direction == 'U' || msg.direction == 'D'))
+        {
+            logger_.log("game_server: bad fireball_triggered");
+            throw std::runtime_error("bad fireball_triggered");
+        }
+
+        messages::fireball_triggered_response response;
         if (manager->allocate_new_fireball_if_possible(msg.player_id, msg.pos_x, msg.pos_y, msg.direction))
         {
             logger_.log("game_server: fireball triggering OK");

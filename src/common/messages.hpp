@@ -24,9 +24,11 @@ struct get_id;
 struct get_id_response;
 struct fireball_triggered;
 struct fireball_triggered_response;
+struct internal_error_message;
 
 using registered_messages = boost::mpl::vector<get_chunk, get_chunk_response, position_changed,
-    position_changed_response, client_shutdown, client_shutdown_response, get_id, get_id_response, fireball_triggered, fireball_triggered_response>;
+    position_changed_response, client_shutdown, client_shutdown_response, get_id, get_id_response,
+    fireball_triggered, fireball_triggered_response, internal_error_message>;
 
 template <class T>
 struct message_numerator
@@ -225,7 +227,7 @@ struct fireball_triggered : public message_numerator<fireball_triggered>
         pos_y = buffer.get_int();
         direction = buffer.get_char();
     }
-};
+} __attribute__((packed));
 
 struct fireball_triggered_response : public message_numerator<fireball_triggered_response>
 {
@@ -241,6 +243,22 @@ struct fireball_triggered_response : public message_numerator<fireball_triggered
         content = buffer.get_string();
     }
     std::string content {"OK"};
+};
+
+struct internal_error_message : public message_numerator<internal_error_message>
+{
+    internal_error_message() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+    std::string content {"NOK"};
 };
 
 

@@ -174,6 +174,7 @@ int main(int argc, char** argv)
         }
         server_driver driver(true);
         driver.run();
+        return 0;
     }
     server_driver driver(false);
     driver.run();

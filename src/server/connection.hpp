@@ -91,6 +91,8 @@ private:
                                       socket.native_handle(), bytes_transferred, bytes_transferred);
                 }
                 data_buffer.offset = msg_size;
+
+                // TO DO: connections as Boost.Intrusive list??
                 auto data_out = m_server.get_dispatcher()->dispatch_req_get_resp(data_buffer);
                 data_buffer = data_out;
 

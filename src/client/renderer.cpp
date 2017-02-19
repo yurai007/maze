@@ -6,7 +6,8 @@
 namespace presentation
 {
 
-renderer::renderer()
+renderer::renderer(Glib::RefPtr<Gtk::Application> &application)
+    : app(application)
 {
     Glib::signal_timeout().connect( sigc::mem_fun(*this, &renderer::on_timeout), 30 );
 
@@ -107,6 +108,26 @@ void renderer::dummy_circle(const Cairo::RefPtr<Cairo::Context>& cairo_context, 
     cairo_context->stroke();
 }
 
+void renderer::dummy_text(const Cairo::RefPtr<Cairo::Context>& cairo_context, int pos_y,
+                          const std::string &text)
+{
+    // http://developer.gnome.org/pangomm/unstable/classPango_1_1FontDescription.html
+    Pango::FontDescription font;
+
+    font.set_family("Monospace");
+    font.set_weight(Pango::WEIGHT_BOLD);
+    font.set_size(15 * PANGO_SCALE); //
+
+    // http://developer.gnome.org/pangomm/unstable/classPango_1_1Layout.html
+    auto layout = create_pango_layout(text);
+
+    layout->set_font_description(font);
+
+    cairo_context->move_to(0, pos_y);
+
+    layout->show_in_cairo_context(cairo_context);
+}
+
 bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
 {
     if (world_manager != nullptr)
@@ -114,6 +135,11 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
         // maze have only newest state so moving fields is unecessary
         world_manager->tick_all();
         world_manager->draw_all();
+
+        if (world_manager->killed)
+        {
+            app->quit();
+        }
     }
 
     for (auto &arguments : buffer_calls)
@@ -132,6 +158,16 @@ bool renderer::on_draw(const Cairo::RefPtr<Cairo::Context>& cairo_context)
             cairo_context->paint();
         }
     }
+
+    std::string player_cash = "Cash: ";
+    player_cash += std::to_string(world_manager->player_cash);
+    std::string player_health = "Health: ";
+    player_health += std::to_string(world_manager->player_health);
+
+    cairo_context->set_source_rgb(1.0, 0.0, 0.0);
+    dummy_text(cairo_context, 0,  player_cash);
+    dummy_text(cairo_context, 20, player_health);
+
     buffer_calls.clear();
     return true;
 }

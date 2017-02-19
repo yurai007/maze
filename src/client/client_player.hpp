@@ -51,8 +51,9 @@ public:
     void draw(int active_player_x, int active_player_y) override;
     void load_image() override;
 
-private:
+    bool died {false};
 
+private:
 
     core::client_world_manager &manager;
     smart::fit_smart_ptr<control::controller> controller;
@@ -62,11 +63,10 @@ private:
     char direction;
     char old_direction {0};
     int id;
-    unsigned fireball_x6 {0}, fireball_y6 {0};
-    char fireball_direction {0};
     char rotation {0};
 
     bool active, automatic;
+    unsigned timer_for_escape {0};
 
     std::tuple<int, int> new_position;
 };

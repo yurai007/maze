@@ -29,19 +29,25 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
 		logger_.log("game_server: recieved position_changed for player id = %d, [%d,%d] --> [%d,%d]",
 					msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
 
-		manager->update_player_position(msg.player_id, msg.old_x, msg.old_y, msg.new_x, msg.new_y);
-		messages::position_changed_response response;
+        if (!((msg.new_x - msg.old_x == 0 ) || (msg.new_y - msg.old_y == 0)))
+        {
+            logger_.log("game_server: bad position_changed");
+            throw std::runtime_error("bad position_changed");
+        }
+
+        messages::position_changed_response response;
+        if (manager->update_player_position_if_possible(msg.player_id, msg.old_x, msg.old_y,
+                                                        msg.new_x, msg.new_y))
+        {
+            logger_.log("game_server: position_changed OK");
+        }
+        else
+        {
+            response.content = "NOK";
+            logger_.log("game_server: position_changed failed");
+        }
         return response;
 	});
-
-    dispatcher->add_handler(
-                [&](messages::get_resources_data &)
-    {
-        logger_.log("game_server: recieved get_resources_data");
-
-        messages::get_resources_data_response response(manager->get_resources_data());
-        return response;
-    });
 
 	dispatcher->add_handler(
 				[&](messages::get_id &)
@@ -54,25 +60,38 @@ void game_server::init(smart::fit_smart_ptr<core::server_maze> maze,
         return response;
 	});
 
-//	dispatcher->add_handler(
-//				[&](messages::client_shutdown &msg)
-//	{
-//		logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
-//		manager->shutdown_player(msg.player_id);
-//        // TO DO: remove this - dummy network overhead involved
-//        int dummy_response {-1};
-//        return dummy_response;
-//	});
+    dispatcher->add_handler(
+                [&](messages::client_shutdown &msg)
+    {
+        logger_.log("game_server: recieved client_shutdown from player_id = %d", msg.player_id);
+        messages::client_shutdown_response response;
+        manager->shutdown_player(msg.player_id);
+        return response;
+    });
 
-//    dispatcher->add_handler(
-//                [&](messages::fireball_triggered &msg)
-//    {
-//        logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
-//        manager->allocate_data_for_new_fireball(msg.player_id, msg.pos_x, msg.pos_y, msg.direction);
-//        // TO DO: remove this - dummy network overhead involved
-//        int dummy_response {-1};
-//        return dummy_response;
-//    });
+    dispatcher->add_handler(
+                [&](messages::fireball_triggered &msg)
+    {
+        logger_.log("game_server: recieved fireball_triggered from player_id = %d", msg.player_id);
+
+        if (!(msg.direction == 'L' || msg.direction == 'R' || msg.direction == 'U' || msg.direction == 'D'))
+        {
+            logger_.log("game_server: bad fireball_triggered");
+            throw std::runtime_error("bad fireball_triggered");
+        }
+
+        messages::fireball_triggered_response response;
+        if (manager->allocate_new_fireball_if_possible(msg.player_id, msg.pos_x, msg.pos_y, msg.direction))
+        {
+            logger_.log("game_server: fireball triggering OK");
+        }
+        else
+        {
+            response.content = "NOK";
+            logger_.log("game_server: fireball triggering failed");
+        }
+        return response;
+    });
 
 	main_server.add_dispatcher(dispatcher);
 }

@@ -33,17 +33,17 @@ public:
         send(msg);
     }
 
-    void send_request(messages::get_resources_data &msg)
-    {
-        send(msg);
-    }
-
     void send_request(messages::get_id &msg)
     {
          send(msg);
     }
 
     void send_request(messages::client_shutdown &msg)
+    {
+         send(msg);
+    }
+
+    void send_request(messages::fireball_triggered &msg)
     {
          send(msg);
     }
@@ -58,14 +58,14 @@ public:
         return read<messages::position_changed_response>();
     }
 
-    messages::get_resources_data_response read_get_resources_data_response()
-    {
-        return read<messages::get_resources_data_response>();
-    }
-
     messages::get_id_response read_get_id_response()
     {
         return read<messages::get_id_response>();
+    }
+
+    messages::fireball_triggered_response read_fireball_triggered_response()
+    {
+        return read<messages::fireball_triggered_response>();
     }
 
 private:

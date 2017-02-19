@@ -19,6 +19,7 @@ class abstract_maze : public game_object
 public:
     abstract_maze(smart::fit_smart_ptr<core::maze_loader> loader);
 
+    bool in_range(int x, int y) const;
     bool is_field_filled(int column, int row) const;
     char get_field(int column, int row) const;
     unsigned short get_id(int column, int row) const;

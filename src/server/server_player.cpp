@@ -14,7 +14,7 @@ server_player::server_player(smart::fit_smart_ptr<core::server_maze> maze_,
       id(id_),
       alive(alive_)
 {
-    update_player_position(posx, posy, posx, posy);
+    update_player_position(posx, posy);
 }
 
 void server_player::tick(unsigned short)
@@ -31,7 +31,7 @@ int server_player::get_id() const
     return id;
 }
 
-void server_player::update_player_position(int oldx, int oldy, int newx, int newy)
+void server_player::update_player_position(int newx, int newy)
 {
    //assert(oldx == posx && oldy == posy);
    logger_.log("server_player: id = %d, position changed = {%d, %d} -> {%d, %d}",

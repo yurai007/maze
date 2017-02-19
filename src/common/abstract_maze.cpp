@@ -21,6 +21,12 @@ abstract_maze::abstract_maze(smart::fit_smart_ptr<maze_loader> loader)
 {
 }
 
+bool abstract_maze::in_range(int x, int y) const
+{
+    return ((0 <= x) && (x < static_cast<int>(content.size()) ))
+            && ((0 <= y) && (y < static_cast<int>(column_size(0)) ));
+}
+
 bool abstract_maze::is_field_filled(int column, int row) const
 {
     if (!((0 <= column) && (column < static_cast<int>(content.size()) )))
@@ -63,7 +69,7 @@ void abstract_maze::set_field(int column, int row, char field, int id)
     assert((0 <= column) && (column < size));
     assert((0 <= row) && (row < size));
     assert(field == 'P' || field == 'E' || field == 'G' || field == 'W' || field == 'M'
-           || field == 's' || field == 'S' || field == ' ');
+           || field == 's' || field == 'S' || field == ' ' || field == 'F');
     auto out_field = to_extended(field, id);
     content[column][2*row] = out_field & 0xFF;
     content[column][2*row+1] = (out_field >> 8);

@@ -108,8 +108,14 @@
    * Be careful with coversions between signed and unsigned types. Look at bug in
      abstract_maze::get_extended_field (overflow for signed char < 0 to unsigned short)
 
-   TO DO1: compare get_players_data with these in maze in server_world_manager. Remove get_resources_data
-   TO DO2: replace Boost.Asio by Reactor in server class
+
+   TO DO1: now resources are blown up by 'fireball' - should be removed on server side
+   TO DO2: add fireballs on client side
+   TO DO3: move fireball drawing from client_maze::draw to client_world_manager::draw_all
+   TO DO4: automatic players should throw fireballs as well
+   TO DO5: fireball should disappear after some time (~10s ?)
+   TO DO6: boss?
+
 */
 
 class server_driver
@@ -168,6 +174,7 @@ int main(int argc, char** argv)
         }
         server_driver driver(true);
         driver.run();
+        return 0;
     }
     server_driver driver(false);
     driver.run();

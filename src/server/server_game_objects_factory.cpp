@@ -24,12 +24,6 @@ smart::fit_smart_ptr<server_enemy> server_game_objects_factory::create_server_en
     return smart::smart_make_shared<server_enemy>(maze_, posx, posy, id);
 }
 
-smart::fit_smart_ptr<server_resource> server_game_objects_factory::create_server_resource(
-        const std::string &name, int posx, int posy)
-{
-    return smart::smart_make_shared<server_resource>(name, posx, posy);
-}
-
 smart::fit_smart_ptr<server_fireball> server_game_objects_factory::create_server_fireball(
         int player_id, int posx, int posy, char direction)
 {

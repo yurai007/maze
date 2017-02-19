@@ -33,6 +33,27 @@ void client_player::active_tick()
 
     const int oldx = posx, oldy = posy;
 
+    if (timer_for_escape > 0)
+        timer_for_escape--;
+
+    bool enemy_arround = maze->in_range(posx-1, posy) && (maze->get_field(posx-1, posy) == 'E');
+    enemy_arround = enemy_arround || (maze->in_range(posx+1, posy) && (maze->get_field(posx+1, posy) == 'E'));
+    enemy_arround = enemy_arround || (maze->in_range(posx, posy-1) && (maze->get_field(posx, posy-1) == 'E'));
+    enemy_arround = enemy_arround || (maze->in_range(posx, posy+1) && (maze->get_field(posx, posy+1) == 'E'));
+
+    if ((timer_for_escape == 0) && enemy_arround)
+    {
+        manager.player_health--;
+        logger_.log("client_player: contact with enemy, health: %d", manager.player_health);
+        if (manager.player_health == 0)
+        {
+            logger_.log("client_player: died :(");
+            died = true;
+            return;
+        }
+        timer_for_escape = 100;
+    }
+
     direction = controller->get_direction();
     posx += (direction == 'L')? -1 : (direction == 'R')? 1 :0;
     posy += (direction == 'U')? -1 : (direction == 'D')? 1 :0;
@@ -51,9 +72,33 @@ void client_player::active_tick()
 
     if (controller->is_space_on())
     {
-        fireball_x6 = 6*posx;
-        fireball_y6 = 6*posy;
-        fireball_direction = rotation;
+        auto fposx = posx, fposy = posy;
+
+        if (rotation == 'L')
+        {
+            fposx--;
+        }
+        else
+            if (rotation == 'R')
+            {
+                fposx++;
+            }
+            else
+                if (rotation == 'U')
+                {
+                    fposy--;
+                }
+                else
+                    if (rotation == 'D')
+                    {
+                        fposy++;
+                    }
+
+        if (maze->in_range(fposx, fposy))
+        {
+            bool answer = network_manager->send_fireball_triggered_over_network(id, fposx, fposy, rotation);
+            logger_.log("client_player: fireball request with response: %d", answer);
+        }
     }
 
     controller->reset();
@@ -68,6 +113,7 @@ void client_player::active_tick()
             manager.player_cash++;
             logger_.log("client_player: player cash: %u", manager.player_cash);
         }
+
         network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
     }
 }
@@ -150,8 +196,49 @@ void client_player::automatic_tick(int)
         posy++;
     }
 
+
+    if ((rand()%3) == 0)
+    {
+        auto fposx = posx, fposy = posy;
+
+        if (direction == 'L')
+        {
+            fposx--;
+        }
+        else
+            if (direction == 'R')
+            {
+                fposx++;
+            }
+            else
+                if (direction == 'U')
+                {
+                    fposy--;
+                }
+                else
+                    if (direction == 'D')
+                    {
+                        fposy++;
+                    }
+
+        if (maze->in_range(fposx, fposy))
+        {
+            bool answer = network_manager->send_fireball_triggered_over_network(id, fposx, fposy, direction);
+            logger_.log("client_player: fireball request with response: %d", answer);
+        }
+    }
+
+
     if ((oldx != posx) || (oldy != posy))
-        network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
+    {
+        bool answer = network_manager->send_position_changed_over_network(id, oldx, oldy, posx, posy);
+        if (!answer)
+        {
+            posx = oldx;
+            posy = oldy;
+        }
+        logger_.log("client_player: position_changed request with response: %d", answer);
+    }
 }
 
 bool client_player::is_active() const
@@ -216,7 +303,10 @@ void client_player::draw(int active_player_x, int active_player_y)
     const int half_height = 50/2;
 
     if (active)
-        renderer->draw_image(image_name, 30*half_width, 30*half_height);
+    {
+        if (timer_for_escape % 10 == 0)
+            renderer->draw_image(image_name, 30*half_width, 30*half_height);
+    }
     else
     {
         const int player_x = posx + half_width - active_player_x;
@@ -225,36 +315,6 @@ void client_player::draw(int active_player_x, int active_player_y)
         if (player_x >= 0 && player_y >= 0)
             renderer->draw_image(image_name, 30*player_x, 30*player_y);
     }
-
-    if (0 < fireball_x6 && (fireball_x6/6) < 1024
-            && 0 < fireball_y6 && (fireball_y6/6) < 768)
-    {
-        int dx = 0, dy = 0;
-        if (fireball_direction == 'L')
-        {
-            fireball_x6 -= 2; dx = 15;
-        }
-        else
-            if (fireball_direction == 'R')
-            {
-                fireball_x6 += 2; dx = 45;
-            }
-            else
-                if (fireball_direction == 'U')
-                {
-                    fireball_y6 -= 2; dx = 15;
-                }
-                else
-                    if (fireball_direction == 'D')
-                    {
-                        fireball_y6 += 2; dx = 15; dy = 30;
-                    }
-
-        const int real_fireball_x = (fireball_x6/6) + half_width - active_player_x;
-        const int real_fireball_y = (fireball_y6/6) + half_height - active_player_y;
-
-        renderer->draw_circle(30*real_fireball_x + dx, 30*real_fireball_y + 15 + dy);
-    };
 }
 
 }

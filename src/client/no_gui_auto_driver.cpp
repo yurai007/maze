@@ -40,18 +40,26 @@ int no_gui_auto_driver::run(const std::string &ip_address)
 
     try
     {
-        timer.async_wait([this](auto error_code){ this->tick(error_code); });
+        int ms = std::max(2, 1000/players_number);
+        logger_.log("ms: %d", ms);
+        interval = std::make_unique<boost::posix_time::milliseconds>(ms);
+        timer = std::make_unique<deadline_timer>(m_io_service, *interval);
+        timer->async_wait([this](auto error_code){ this->tick(error_code); });
+
+        m_signals.add(SIGINT);
+        m_signals.add(SIGTERM);
+        m_signals.add(SIGQUIT);
+        m_signals.async_wait([this](auto, auto){
+            this->stop_all();
+        });
+
         m_io_service.run();
     }
     catch (std::exception& exception)
     {
         logger_.log("exception: %s", exception.what());
     }
-    // TO DO: Doesn't work yet
-    for (int i = 0; i < players_number; i++)
-    {
-        world_managers[i]->shut_down_client();
-    }
+
     return 0;
 }
 
@@ -64,6 +72,15 @@ void no_gui_auto_driver::tick(const boost::system::error_code&)
 
     manager_id = (manager_id+1)%world_managers.size();
 
-    timer.expires_at(timer.expires_at() + interval);
-    timer.async_wait([this](auto error_code){ this->tick(error_code); });
+    timer->expires_at(timer->expires_at() + *interval);
+    timer->async_wait([this](auto error_code){ this->tick(error_code); });
+}
+
+void no_gui_auto_driver::stop_all()
+{
+    for (int i = 0; i < players_number; i++)
+    {
+        if (!world_managers[i]->killed)
+            world_managers[i]->shut_down_client();
+    }
 }

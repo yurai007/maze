@@ -19,16 +19,16 @@ struct get_chunk_response;
 struct position_changed;
 struct position_changed_response;
 struct client_shutdown;
+struct client_shutdown_response;
 struct get_id;
 struct get_id_response;
-struct get_resources_data;
-struct get_resources_data_response;
 struct fireball_triggered;
 struct fireball_triggered_response;
+struct internal_error_message;
 
 using registered_messages = boost::mpl::vector<get_chunk, get_chunk_response, position_changed,
-    position_changed_response, client_shutdown, get_id, get_id_response, get_resources_data,
-    get_resources_data_response, fireball_triggered, fireball_triggered_response>;
+    position_changed_response, client_shutdown, client_shutdown_response, get_id, get_id_response,
+    fireball_triggered, fireball_triggered_response, internal_error_message>;
 
 template <class T>
 struct message_numerator
@@ -152,6 +152,23 @@ struct client_shutdown : public message_numerator<client_shutdown>
 	int player_id;
 };
 
+struct client_shutdown_response : public message_numerator<client_shutdown_response>
+{
+    client_shutdown_response() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+
+    std::string content {"OK"};
+};
+
 struct get_id : public message_numerator<get_id>
 {
 	get_id() = default;
@@ -186,49 +203,14 @@ struct get_id_response : public message_numerator<get_id_response>
 	int player_id;
 };
 
-struct get_resources_data : public message_numerator<get_resources_data>
-{
-    get_resources_data() = default;
-
-    void serialize_to_buffer(serialization::byte_buffer &buffer) const
-    {
-        buffer.put_string(content);
-    }
-
-    void deserialize_from_buffer(serialization::byte_buffer &buffer)
-    {
-        content = buffer.get_string();
-    }
-
-    std::string content {"resources"};
-};
-
-struct get_resources_data_response : public message_numerator<get_resources_data_response>
-{
-    get_resources_data_response() = default;
-
-    get_resources_data_response(const std::vector<int> &resources_data)
-        : content(resources_data)
-    {
-    }
-
-    void serialize_to_buffer(serialization::byte_buffer &buffer) const
-    {
-        buffer.put_int_vector(content);
-    }
-
-    void deserialize_from_buffer(serialization::byte_buffer &buffer)
-    {
-        content = buffer.get_int_vector();
-    }
-
-    std::vector<int> content; //[type, posx, posy]
-};
-
 struct fireball_triggered : public message_numerator<fireball_triggered>
 {
     int player_id, pos_x, pos_y;
     char direction;
+
+    fireball_triggered() = default;
+    fireball_triggered(int player_id_, int pos_x_, int pos_y_, char direction_) :
+        player_id(player_id_), pos_x(pos_x_), pos_y(pos_y_), direction(direction_) {}
 
     void serialize_to_buffer(serialization::byte_buffer &buffer) const
     {
@@ -245,7 +227,7 @@ struct fireball_triggered : public message_numerator<fireball_triggered>
         pos_y = buffer.get_int();
         direction = buffer.get_char();
     }
-};
+} __attribute__((packed));
 
 struct fireball_triggered_response : public message_numerator<fireball_triggered_response>
 {
@@ -261,6 +243,22 @@ struct fireball_triggered_response : public message_numerator<fireball_triggered
         content = buffer.get_string();
     }
     std::string content {"OK"};
+};
+
+struct internal_error_message : public message_numerator<internal_error_message>
+{
+    internal_error_message() = default;
+
+    void serialize_to_buffer(serialization::byte_buffer &buffer) const
+    {
+        buffer.put_string(content);
+    }
+
+    void deserialize_from_buffer(serialization::byte_buffer &buffer)
+    {
+        content = buffer.get_string();
+    }
+    std::string content {"NOK"};
 };
 
 
